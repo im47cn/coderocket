@@ -1,0 +1,8 @@
+#!/bin/sh
+
+echo "🚀 正在执行 commit 后的代码审查..."
+if cat "./prompts/git-commit-review-prompt.md" | gemini -p "请你现在按照指令开始执行最新提交的commit" -y; then
+    echo "👌 代码审查完成"
+else
+    echo "❌ 代码审查失败，但不影响提交"
+fi
