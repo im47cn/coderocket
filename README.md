@@ -4,7 +4,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/issues)
 
-一个基于 Google Gemini AI 的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查。
+一个基于 Google Gemini AI 的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
 
 ## 🚀 核心功能
 
@@ -12,6 +12,8 @@
 - **全局代码搜索**：基于提交信息进行智能的全局代码搜索分析
 - **多维度评估**：从功能完整性、代码质量、可维护性、扩展性等多个维度进行评估
 - **智能状态标记**：使用 ✅ ⚠️ ❌ 🔍 等状态符号直观显示审查结果
+- **智能 MR 创建**：集成 Gemini AI 自动生成简洁有意义的 MR 标题和描述信息
+- **VS Code 兼容**：完全支持 VS Code Git 工具，提供一致的用户体验
 - **详细审查报告**：生成结构化的 Markdown 审查报告，包含具体的改进建议
 - **配置灵活性**：支持全局和项目级别的配置定制
 
@@ -94,6 +96,29 @@ chmod +x .git/hooks/post-commit
 ```bash
 cp prompts/git-commit-review-prompt.md ./prompts/
 ```
+
+### 7. VS Code 兼容性安装（推荐）
+
+如果你主要在 VS Code 中使用 Git，推荐使用增强版安装脚本：
+
+```bash
+# 运行增强版安装脚本
+./install-hooks.sh
+
+# 配置环境变量（二选一）
+# 方式1：使用项目环境文件
+cp .env.example .env
+# 编辑 .env 文件，设置你的 GitLab Token
+
+# 方式2：设置全局环境变量
+export GITLAB_PERSONAL_ACCESS_TOKEN="your_token_here"
+```
+
+**增强版安装的优势：**
+- ✅ 解决 VS Code Git 工具兼容性问题
+- ✅ 自动处理环境变量加载
+- ✅ 支持项目级环境配置
+- ✅ 更健壮的路径处理
 
 ## 📖 使用说明
 
