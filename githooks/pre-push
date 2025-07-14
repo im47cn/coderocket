@@ -1,0 +1,502 @@
+#!/bin/bash
+
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+NC='\033[0m' # No Color
+
+# 从环境变量获取配置
+GITLAB_API_URL=${GITLAB_API_URL:-"https://gitlab.com/api/v4"}
+GITLAB_PERSONAL_ACCESS_TOKEN=${GITLAB_PERSONAL_ACCESS_TOKEN:-""}
+
+# 函数：从 git remote 获取项目路径
+get_project_path_from_remote() {
+    local remote_name=${1:-"origin"}
+    local remote_url=$(git config --get remote.$remote_name.url)
+    local project_path=""
+
+    if [[ $remote_url =~ git@.*:(.+)\.git ]]; then
+        # SSH 格式: git@gitlab.com:namespace/project.git
+        project_path="${BASH_REMATCH[1]}"
+    elif [[ $remote_url =~ https?://[^/]+/(.+)\.git ]]; then
+        # HTTPS 格式: https://gitlab.com/namespace/project.git
+        project_path="${BASH_REMATCH[1]}"
+    fi
+
+    echo "$project_path"
+}
+
+# 函数：检测 GitLab remote
+detect_gitlab_remote() {
+    local remotes=$(git remote)
+    local gitlab_remote=""
+
+    # 检查每个 remote 是否指向 GitLab
+    for remote in $remotes; do
+        local remote_url=$(git config --get remote.$remote.url)
+        if [[ $remote_url =~ gitlab ]]; then
+            gitlab_remote="$remote"
+            break
+        fi
+    done
+
+    echo "$gitlab_remote"
+}
+
+# 函数：通过 API 获取项目 ID
+get_project_id_by_path() {
+    local project_path=$1
+    # URL 编码项目路径
+    local encoded_path=$(echo -n "$project_path" | python3 -c "import sys, urllib.parse; print(urllib.parse.quote(sys.stdin.read(), safe=''))")
+    
+    local response=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PERSONAL_ACCESS_TOKEN" \
+        "$GITLAB_API_URL/projects/$encoded_path")
+    
+    local project_id=$(echo "$response" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('id', ''))
+except:
+    print('')
+")
+    
+    echo "$project_id"
+}
+
+# 函数：从缓存文件读取项目 ID
+get_cached_project_id() {
+    local cache_file=".git/gitlab-project-id"
+    if [ -f "$cache_file" ]; then
+        cat "$cache_file"
+    else
+        echo ""
+    fi
+}
+
+# 函数：缓存项目 ID
+cache_project_id() {
+    local project_id=$1
+    local cache_file=".git/gitlab-project-id"
+    echo "$project_id" > "$cache_file"
+}
+
+# 函数：自动获取项目 ID
+auto_get_project_id() {
+    local project_id=""
+    
+    # 1. 尝试从 CI 环境变量获取
+    if [ ! -z "$CI_PROJECT_ID" ]; then
+        echo -e "${GREEN}✓ 从 CI 环境变量获取项目 ID: $CI_PROJECT_ID${NC}" >&2
+        echo "$CI_PROJECT_ID"
+        return
+    fi
+    
+    # 2. 尝试从缓存获取
+    project_id=$(get_cached_project_id)
+    if [ ! -z "$project_id" ]; then
+        echo -e "${GREEN}✓ 从缓存获取项目 ID: $project_id${NC}" >&2
+        echo "$project_id"
+        return
+    fi
+    
+    # 3. 尝试从 git remote 获取
+    echo -e "${YELLOW}→ 正在从 Git remote 获取项目信息...${NC}" >&2
+
+    # 检测 GitLab remote
+    local gitlab_remote=$(detect_gitlab_remote)
+    if [ -z "$gitlab_remote" ]; then
+        echo -e "${RED}✗ 未找到 GitLab remote${NC}" >&2
+        echo ""
+        return
+    fi
+
+    echo -e "${YELLOW}→ 使用 GitLab remote: $gitlab_remote${NC}" >&2
+    local project_path=$(get_project_path_from_remote "$gitlab_remote")
+    
+    if [ ! -z "$project_path" ]; then
+        echo -e "${YELLOW}→ 项目路径: $project_path${NC}" >&2
+        
+        # 通过 API 获取项目 ID
+        if [ ! -z "$GITLAB_PERSONAL_ACCESS_TOKEN" ]; then
+            project_id=$(get_project_id_by_path "$project_path")
+            
+            if [ ! -z "$project_id" ]; then
+                echo -e "${GREEN}✓ 通过 API 获取项目 ID: $project_id${NC}" >&2
+                # 缓存项目 ID
+                cache_project_id "$project_id"
+                echo "$project_id"
+                return
+            fi
+        else
+            echo -e "${RED}✗ 未设置 GITLAB_PERSONAL_ACCESS_TOKEN，无法调用 API${NC}" >&2
+        fi
+    fi
+    
+    # 4. 尝试从本地配置文件读取
+    if [ -f ".gitlab-ci.yml" ]; then
+        project_id=$(grep -E "PROJECT_ID:" .gitlab-ci.yml | awk '{print $2}' | tr -d '"')
+        if [ ! -z "$project_id" ]; then
+            echo -e "${GREEN}✓ 从 .gitlab-ci.yml 获取项目 ID: $project_id${NC}" >&2
+            cache_project_id "$project_id"
+            echo "$project_id"
+            return
+        fi
+    fi
+    
+    echo ""
+}
+
+# 函数：交互式获取项目 ID
+interactive_get_project_id() {
+    local gitlab_remote=$(detect_gitlab_remote)
+    local project_path=$(get_project_path_from_remote "$gitlab_remote")
+    
+    echo -e "${YELLOW}无法自动获取项目 ID${NC}"
+    echo "项目路径: $project_path"
+    echo ""
+    echo "请通过以下方式之一获取项目 ID："
+    echo "1. 访问项目页面: $GITLAB_API_URL/$project_path"
+    echo "2. 在项目页面查看 Settings > General > Project ID"
+    echo ""
+    read -p "请输入项目 ID: " project_id </dev/tty
+    
+    if [ ! -z "$project_id" ]; then
+        cache_project_id "$project_id"
+        echo "$project_id"
+    else
+        echo ""
+    fi
+}
+
+# 函数：检测基础分支
+detect_base_branch() {
+    local current_branch=$1
+    local gitlab_remote=$2
+
+    # 常见的基础分支列表，按优先级排序
+    local base_branches=("develop" "main" "master" "dev")
+
+    for base_branch in "${base_branches[@]}"; do
+        # 检查远程分支是否存在
+        if git show-ref --verify --quiet "refs/remotes/$gitlab_remote/$base_branch"; then
+            # 检查当前分支是否从这个基础分支分叉出来
+            local merge_base=$(git merge-base "$current_branch" "$gitlab_remote/$base_branch" 2>/dev/null)
+            if [ ! -z "$merge_base" ]; then
+                echo "$base_branch"
+                return
+            fi
+        fi
+    done
+
+    # 如果没有找到，默认使用 main
+    echo "main"
+}
+
+# 函数：获取分支的所有提交信息
+get_branch_commits() {
+    local source_branch=$1
+    local base_branch=$2
+    local gitlab_remote=$3
+
+    # 获取从基础分支到当前分支的所有提交
+    local commits=$(git log --reverse --pretty=format:"%h|%s|%an|%ad" --date=short "$gitlab_remote/$base_branch..$source_branch" 2>/dev/null)
+
+    if [ -z "$commits" ]; then
+        # 如果没有找到提交差异，获取最近的几个提交
+        commits=$(git log --reverse --pretty=format:"%h|%s|%an|%ad" --date=short -n 5 "$source_branch")
+    fi
+
+    echo "$commits"
+}
+
+# 函数：使用 Gemini 生成智能 MR 标题
+generate_mr_title_with_gemini() {
+    local source_branch=$1
+    local base_branch=$2
+    local gitlab_remote=$3
+
+    # 获取所有相关提交
+    local commits=$(get_branch_commits "$source_branch" "$base_branch" "$gitlab_remote")
+    local commit_count=$(echo "$commits" | wc -l | tr -d ' ')
+
+    if [ "$commit_count" -eq 1 ]; then
+        # 单个提交，直接使用提交信息
+        echo "$commits" | cut -d'|' -f2
+        return
+    fi
+
+    # 检查 gemini 命令是否可用
+    if ! command -v gemini &> /dev/null; then
+        echo "🔀 Update: $source_branch"
+        return
+    fi
+
+    # 准备提交信息给 Gemini
+    local commit_list=""
+    while IFS='|' read -r hash subject author date; do
+        if [ ! -z "$hash" ]; then
+            commit_list+="- $subject\n"
+        fi
+    done <<< "$commits"
+
+    # 使用 Gemini 生成标题
+    local prompt="请根据以下 Git 提交记录，生成一个简洁有意义的 MR 标题。要求：
+1. 标题应该概括主要变更内容
+2. 使用中文
+3. 不超过 50 个字符
+4. 不需要包含提交数量
+5. 可以使用适当的 emoji 图标（如 ✨ 🐛 📝 ♻️ 等）
+
+提交记录：
+$commit_list
+
+请直接返回标题，不要包含其他解释："
+
+    local title=$(echo "$prompt" | gemini -y 2>/dev/null | head -1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
+
+    # 如果 Gemini 调用失败，使用备用方案
+    if [ -z "$title" ] || [ ${#title} -gt 100 ]; then
+        # 根据分支名称生成备用标题
+        if [[ $source_branch =~ ^feature/.* ]]; then
+            title="✨ Feature: ${source_branch#feature/}"
+        elif [[ $source_branch =~ ^fix/.* ]]; then
+            title="🐛 Fix: ${source_branch#fix/}"
+        elif [[ $source_branch =~ ^hotfix/.* ]]; then
+            title="🚑 Hotfix: ${source_branch#hotfix/}"
+        else
+            title="🔀 Update: $source_branch"
+        fi
+    fi
+
+    echo "$title"
+}
+
+# 函数：使用 Gemini 生成智能 MR 描述
+generate_mr_description_with_gemini() {
+    local source_branch=$1
+    local base_branch=$2
+    local gitlab_remote=$3
+
+    # 获取所有相关提交
+    local commits=$(get_branch_commits "$source_branch" "$base_branch" "$gitlab_remote")
+    local commit_count=$(echo "$commits" | wc -l | tr -d ' ')
+
+    # 如果只有一个提交，使用该提交的详细信息
+    if [ "$commit_count" -eq 1 ]; then
+        local commit_msg=$(git log -1 --pretty=%B)
+        local description="## 📋 变更概述\n\n$commit_msg\n\n"
+        description+="## ✅ 检查清单\n\n"
+        description+="- [ ] 代码已经过自测\n"
+        description+="- [ ] 相关文档已更新\n"
+        description+="- [ ] 测试用例已添加/更新\n"
+        description+="- [ ] 无明显的性能影响\n"
+        description+="- [ ] 符合代码规范\n\n"
+        echo -e "$description"
+        return
+    fi
+
+    # 检查 gemini 命令是否可用
+    if ! command -v gemini &> /dev/null; then
+        # 备用方案：简单列出提交
+        local description="## 📋 变更概述\n\n本次合并包含 **$commit_count** 个提交：\n\n"
+        while IFS='|' read -r hash subject author date; do
+            if [ ! -z "$hash" ]; then
+                description+="- $subject\n"
+            fi
+        done <<< "$commits"
+        description+="\n## ✅ 检查清单\n\n"
+        description+="- [ ] 代码已经过自测\n"
+        description+="- [ ] 相关文档已更新\n"
+        description+="- [ ] 测试用例已添加/更新\n"
+        description+="- [ ] 无明显的性能影响\n"
+        description+="- [ ] 符合代码规范\n\n"
+        echo -e "$description"
+        return
+    fi
+
+    # 准备提交信息给 Gemini
+    local commit_list=""
+    while IFS='|' read -r hash subject author date; do
+        if [ ! -z "$hash" ]; then
+            commit_list+="- $subject ($date)\n"
+        fi
+    done <<< "$commits"
+
+    # 使用 Gemini 生成描述
+    local prompt="请根据以下 Git 提交记录，生成一个专业的 MR 描述。要求：
+1. 总结主要变更内容和目标
+2. 使用中文
+3. 结构清晰，重点突出
+4. 不要简单罗列提交，而是要概括和总结
+5. 描述应该让审查者快速理解这次变更的目的和影响
+
+提交记录：
+$commit_list
+
+请按以下格式返回：
+## 📋 变更概述
+
+[在这里写变更的总结和目标]
+
+## 🔧 主要改进
+
+[在这里列出主要的改进点，用简洁的要点形式]"
+
+    local ai_description=$(echo "$prompt" | gemini -y 2>/dev/null)
+
+    # 如果 Gemini 调用失败，使用备用方案
+    if [ -z "$ai_description" ]; then
+        local description="## 📋 变更概述\n\n本次合并包含 **$commit_count** 个提交，主要变更如下：\n\n"
+        while IFS='|' read -r hash subject author date; do
+            if [ ! -z "$hash" ]; then
+                description+="- $subject\n"
+            fi
+        done <<< "$commits"
+        ai_description="$description"
+    fi
+
+    # 添加检查清单
+    local final_description="$ai_description\n\n## ✅ 检查清单\n\n"
+    final_description+="- [ ] 代码已经过自测\n"
+    final_description+="- [ ] 相关文档已更新\n"
+    final_description+="- [ ] 测试用例已添加/更新\n"
+    final_description+="- [ ] 无明显的性能影响\n"
+    final_description+="- [ ] 符合代码规范\n\n"
+
+    echo -e "$final_description"
+}
+
+# 函数：创建 MR
+create_merge_request() {
+    local project_id=$1
+    local source_branch=$2
+    local target_branch=${3:-"main"}
+
+    # 检测 GitLab remote
+    local gitlab_remote=$(detect_gitlab_remote)
+
+    # 自动检测基础分支
+    if [ "$target_branch" = "main" ]; then
+        target_branch=$(detect_base_branch "$source_branch" "$gitlab_remote")
+        echo -e "${YELLOW}→ 自动检测目标分支: $target_branch${NC}"
+    fi
+
+    # 检查是否已存在 MR
+    local existing_mr=$(curl -s --header "PRIVATE-TOKEN: $GITLAB_PERSONAL_ACCESS_TOKEN" \
+        "$GITLAB_API_URL/projects/$project_id/merge_requests?source_branch=$source_branch&target_branch=$target_branch&state=opened" \
+        | python3 -c "import sys, json; print(len(json.load(sys.stdin)))")
+
+    if [ "$existing_mr" -gt 0 ]; then
+        echo -e "${YELLOW}⚠ MR 已存在${NC}"
+        return
+    fi
+
+    # 生成智能 MR 标题和描述
+    echo -e "${YELLOW}→ 使用 Gemini 生成 MR 标题和描述...${NC}"
+    local mr_title=$(generate_mr_title_with_gemini "$source_branch" "$target_branch" "$gitlab_remote")
+    local mr_description=$(generate_mr_description_with_gemini "$source_branch" "$target_branch" "$gitlab_remote")
+    
+    # 创建 MR
+    echo -e "${YELLOW}→ 创建 MR: $mr_title${NC}"
+
+    # 转义 JSON 字符串
+    local escaped_title=$(echo "$mr_title" | python3 -c "import sys, json; print(json.dumps(sys.stdin.read().strip()))")
+    local escaped_description=$(echo "$mr_description" | python3 -c "import sys, json; print(json.dumps(sys.stdin.read().strip()))")
+
+    local response=$(curl -s -X POST --header "PRIVATE-TOKEN: $GITLAB_PERSONAL_ACCESS_TOKEN" \
+        --header "Content-Type: application/json" \
+        --data "{
+            \"source_branch\": \"$source_branch\",
+            \"target_branch\": \"$target_branch\",
+            \"title\": $escaped_title,
+            \"description\": $escaped_description,
+            \"remove_source_branch\": true
+        }" \
+        "$GITLAB_API_URL/projects/$project_id/merge_requests")
+    
+    local mr_url=$(echo "$response" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    print(data.get('web_url', ''))
+except:
+    print('')
+")
+    
+    if [ ! -z "$mr_url" ]; then
+        echo -e "${GREEN}✓ MR 创建成功: $mr_url${NC}"
+    else
+        echo -e "${RED}✗ MR 创建失败${NC}"
+        echo -e "${YELLOW}API 响应:${NC}"
+        echo "$response" | python3 -c "
+import sys, json
+try:
+    data = json.load(sys.stdin)
+    if 'message' in data:
+        print('错误信息:', data['message'])
+    if 'error' in data:
+        print('错误详情:', data['error'])
+    if 'errors' in data:
+        print('验证错误:', data['errors'])
+    print('完整响应:', json.dumps(data, indent=2, ensure_ascii=False))
+except:
+    print('原始响应:', sys.stdin.read())
+"
+    fi
+}
+
+# 主流程
+main() {
+    # 读取并丢弃 Git 传递的标准输入（推送引用信息）
+    # 使用超时读取避免阻塞，如果没有输入则继续
+    while IFS= read -r -t 0.1 line 2>/dev/null; do
+        # 丢弃 Git 传递的引用信息
+        :
+    done
+
+    echo -e "${GREEN}=== GitLab MR 自动创建 ===${NC}"
+
+    # 获取当前分支
+    local current_branch=$(git branch --show-current)
+
+    # 检查是否为主分支
+    if [[ "$current_branch" =~ ^(main|master|develop)$ ]]; then
+        echo -e "${YELLOW}当前在主分支，跳过 MR 创建${NC}"
+        exit 0
+    fi
+
+    # 检查 GITLAB_PERSONAL_ACCESS_TOKEN
+    if [ -z "$GITLAB_PERSONAL_ACCESS_TOKEN" ]; then
+        echo -e "${RED}✗ 未设置 GITLAB_PERSONAL_ACCESS_TOKEN 环境变量${NC}"
+        echo "请设置: export GITLAB_PERSONAL_ACCESS_TOKEN='your-token'"
+        exit 1
+    fi
+
+    # 自动获取项目 ID
+    local project_id=$(auto_get_project_id)
+
+    # 如果自动获取失败，尝试交互式获取
+    if [ -z "$project_id" ]; then
+        project_id=$(interactive_get_project_id)
+    fi
+
+    if [ -z "$project_id" ]; then
+        echo -e "${RED}✗ 无法获取项目 ID${NC}"
+        exit 1
+    fi
+
+    echo -e "${GREEN}✓ 项目 ID: $project_id${NC}"
+
+    # 询问是否创建 MR
+    read -p "是否创建 MR？(y/n) " -n 1 -r </dev/tty
+    echo
+
+    if [[ $REPLY =~ ^[Yy]$ ]]; then
+        create_merge_request "$project_id" "$current_branch"
+    fi
+}
+
+# 执行主流程
+main
