@@ -469,33 +469,52 @@ cleanup() {
 
 # 选择安装模式
 choose_install_mode() {
-    echo -e "${BLUE}请选择安装模式：${NC}"
     echo ""
-    echo "1) 全局安装（推荐）"
-    echo "   - 新创建的 Git 仓库自动包含 CodeReview CLI"
-    echo "   - 提供 'codereview-cli' 全局命令"
-    echo "   - 现有仓库需要运行 'codereview-cli setup'"
+    echo -e "${BLUE}=== 选择安装模式 ===${NC}"
     echo ""
-    echo "2) 仅当前项目"
-    echo "   - 只为当前项目安装"
-    echo "   - 需要为每个项目单独安装"
+    echo -e "${GREEN}1) 全局安装（推荐）${NC}"
+    echo "   ✅ 新创建的 Git 仓库自动包含 CodeReview CLI"
+    echo "   ✅ 提供 'codereview-cli' 全局命令"
+    echo "   ✅ 现有仓库只需运行 'codereview-cli setup'"
+    echo "   ✅ 一次安装，终身受益"
     echo ""
-    read -p "请选择 (1/2，默认为 1): " choice
+    echo -e "${YELLOW}2) 仅当前项目${NC}"
+    echo "   ⚠️  只为当前项目安装"
+    echo "   ⚠️  需要为每个项目单独安装"
+    echo "   ⚠️  容易遗漏新项目"
+    echo ""
 
-    case ${choice:-1} in
-        1)
-            echo -e "${GREEN}✓ 选择全局安装模式${NC}"
-            return 0
-            ;;
-        2)
-            echo -e "${GREEN}✓ 选择项目安装模式${NC}"
-            return 1
-            ;;
-        *)
-            echo -e "${YELLOW}无效选择，使用默认的全局安装模式${NC}"
-            return 0
-            ;;
-    esac
+    # 检查是否有可用的终端输入
+    if [ -t 0 ]; then
+        # 有终端输入，可以交互
+        while true; do
+            read -p "请选择安装模式 (1/2，默认为 1): " choice
+            case ${choice:-1} in
+                1)
+                    echo -e "${GREEN}✓ 选择全局安装模式${NC}"
+                    return 0
+                    ;;
+                2)
+                    echo -e "${GREEN}✓ 选择项目安装模式${NC}"
+                    return 1
+                    ;;
+                *)
+                    echo -e "${RED}无效选择，请输入 1 或 2${NC}"
+                    ;;
+            esac
+        done
+    else
+        # 没有终端输入（如通过 curl | bash），使用默认选择
+        echo -e "${YELLOW}检测到非交互式环境，使用默认的全局安装模式${NC}"
+        echo -e "${BLUE}如需选择安装模式，请下载脚本后本地执行：${NC}"
+        echo -e "${BLUE}  wget https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh${NC}"
+        echo -e "${BLUE}  chmod +x install.sh${NC}"
+        echo -e "${BLUE}  ./install.sh${NC}"
+        echo ""
+        sleep 3
+        echo -e "${GREEN}✓ 使用默认的全局安装模式${NC}"
+        return 0
+    fi
 }
 
 # 主函数
