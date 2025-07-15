@@ -23,13 +23,26 @@ if ! command -v gemini &> /dev/null; then
     exit 1
 fi
 
+# 创建 review_logs 目录（如果不存在）
+mkdir -p "$REPO_ROOT/review_logs"
+
 echo "🚀 正在执行 commit 后的代码审查..."
 
 # 切换到仓库根目录执行
 cd "$REPO_ROOT"
 
-if cat "$PROMPT_FILE" | gemini -p "请你现在按照指令开始执行最新提交的commit" -y; then
+# 准备更明确的提示词
+PROMPT="请执行以下任务：
+1. 你是代码审查专家，需要对最新的 git commit 进行审查
+2. 使用 git --no-pager show 命令获取最新提交的详细信息
+3. 根据提示词文件中的指导进行全面代码审查
+4. 生成审查报告并保存到 review_logs 目录
+5. 不要询问用户，直接自主执行所有步骤
+6. 这是一个自动化流程，请直接开始执行"
+
+if cat "$PROMPT_FILE" | gemini -p "$PROMPT" -y; then
     echo "👌 代码审查完成"
+    echo "📝 审查报告已保存到 $REPO_ROOT/review_logs 目录"
 else
     echo "❌ 代码审查失败，但不影响提交"
 fi
