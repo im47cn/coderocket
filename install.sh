@@ -1,0 +1,528 @@
+#!/bin/bash
+
+# CodeReview CLI 一键安装脚本
+# 使用方法: curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+
+set -e
+
+# 颜色定义
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+# 配置
+REPO_URL="https://github.com/im47cn/codereview-cli.git"
+INSTALL_DIR="$HOME/.codereview-cli"
+TEMP_DIR="/tmp/codereview-cli-install"
+
+echo -e "${BLUE}=== CodeReview CLI 一键安装 ===${NC}"
+echo ""
+
+# 检查系统要求
+check_requirements() {
+    echo -e "${YELLOW}→ 检查系统要求...${NC}"
+    
+    # 检查 Git
+    if ! command -v git &> /dev/null; then
+        echo -e "${RED}✗ Git 未安装${NC}"
+        echo "请先安装 Git: https://git-scm.com/downloads"
+        exit 1
+    fi
+    echo -e "${GREEN}✓ Git 已安装${NC}"
+    
+    # 检查 Node.js
+    if ! command -v node &> /dev/null; then
+        echo -e "${YELLOW}⚠ Node.js 未安装${NC}"
+        echo "将尝试安装 Node.js..."
+        
+        # 尝试使用不同的包管理器安装 Node.js
+        if command -v brew &> /dev/null; then
+            brew install node
+        elif command -v apt-get &> /dev/null; then
+            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+        elif command -v yum &> /dev/null; then
+            curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
+            sudo yum install -y nodejs
+        else
+            echo -e "${RED}✗ 无法自动安装 Node.js${NC}"
+            echo "请手动安装 Node.js: https://nodejs.org/"
+            exit 1
+        fi
+    fi
+    echo -e "${GREEN}✓ Node.js 已安装${NC}"
+    
+    # 检查 Python3
+    if ! command -v python3 &> /dev/null; then
+        echo -e "${YELLOW}⚠ Python3 未安装${NC}"
+        echo "Python3 是 GitLab API 调用所必需的"
+        
+        # 尝试安装 Python3
+        if command -v brew &> /dev/null; then
+            brew install python3
+        elif command -v apt-get &> /dev/null; then
+            sudo apt-get update && sudo apt-get install -y python3
+        elif command -v yum &> /dev/null; then
+            sudo yum install -y python3
+        else
+            echo -e "${RED}✗ 无法自动安装 Python3${NC}"
+            echo "请手动安装 Python3"
+            exit 1
+        fi
+    fi
+    echo -e "${GREEN}✓ Python3 已安装${NC}"
+}
+
+# 安装 Gemini CLI
+install_gemini_cli() {
+    echo -e "${YELLOW}→ 安装 Google Gemini CLI...${NC}"
+    
+    if command -v gemini &> /dev/null; then
+        echo -e "${GREEN}✓ Gemini CLI 已安装${NC}"
+        return
+    fi
+    
+    if npm install -g @google/generative-ai-cli; then
+        echo -e "${GREEN}✓ Gemini CLI 安装成功${NC}"
+    else
+        echo -e "${RED}✗ Gemini CLI 安装失败${NC}"
+        echo "请手动安装: npm install -g @google/generative-ai-cli"
+        exit 1
+    fi
+}
+
+# 下载项目文件
+download_project() {
+    echo -e "${YELLOW}→ 下载项目文件...${NC}"
+    
+    # 清理临时目录
+    rm -rf "$TEMP_DIR"
+    mkdir -p "$TEMP_DIR"
+    
+    # 克隆项目
+    if git clone "$REPO_URL" "$TEMP_DIR"; then
+        echo -e "${GREEN}✓ 项目文件下载成功${NC}"
+    else
+        echo -e "${RED}✗ 项目文件下载失败${NC}"
+        exit 1
+    fi
+}
+
+# 安装到目标目录
+install_to_directory() {
+    echo -e "${YELLOW}→ 安装到 $INSTALL_DIR...${NC}"
+
+    # 创建安装目录
+    mkdir -p "$INSTALL_DIR"
+
+    # 复制文件
+    cp -r "$TEMP_DIR"/* "$INSTALL_DIR/"
+
+    # 设置执行权限
+    chmod +x "$INSTALL_DIR/install-hooks.sh"
+    chmod +x "$INSTALL_DIR/githooks/post-commit"
+    chmod +x "$INSTALL_DIR/githooks/pre-push"
+
+    echo -e "${GREEN}✓ 安装完成${NC}"
+}
+
+# 创建全局命令
+create_global_command() {
+    echo -e "${YELLOW}→ 创建全局命令...${NC}"
+
+    # 创建 codereview-cli 命令脚本
+    local bin_dir="/usr/local/bin"
+    local cmd_file="$bin_dir/codereview-cli"
+
+    # 检查是否有写入权限
+    if [ ! -w "$bin_dir" ]; then
+        echo -e "${YELLOW}  需要管理员权限来创建全局命令${NC}"
+        sudo tee "$cmd_file" > /dev/null << EOF
+#!/bin/bash
+
+# CodeReview CLI 全局命令
+INSTALL_DIR="$INSTALL_DIR"
+
+case "\$1" in
+    "setup")
+        echo "🔧 为当前项目设置 CodeReview CLI..."
+        if [ ! -d ".git" ]; then
+            echo "❌ 错误：当前目录不是 Git 仓库"
+            exit 1
+        fi
+        "\$INSTALL_DIR/install-hooks.sh"
+        ;;
+    "update")
+        echo "🔄 更新 CodeReview CLI..."
+        cd "\$INSTALL_DIR"
+        git pull origin main
+        echo "✅ 更新完成"
+        ;;
+    "config")
+        echo "⚙️ 配置 Gemini API..."
+        gemini config
+        ;;
+    "version"|"-v"|"--version")
+        echo "CodeReview CLI v1.0.0"
+        echo "安装路径: \$INSTALL_DIR"
+        ;;
+    "help"|"-h"|"--help"|"")
+        echo "CodeReview CLI - AI 驱动的代码审查工具"
+        echo ""
+        echo "用法: codereview-cli <命令>"
+        echo ""
+        echo "命令:"
+        echo "  setup    为当前项目设置 CodeReview CLI"
+        echo "  update   更新到最新版本"
+        echo "  config   配置 Gemini API 密钥"
+        echo "  version  显示版本信息"
+        echo "  help     显示此帮助信息"
+        echo ""
+        echo "全局安装后，新创建的 Git 仓库会自动包含 CodeReview CLI"
+        echo "对于现有仓库，请在仓库目录中运行: codereview-cli setup"
+        ;;
+    *)
+        echo "❌ 未知命令: \$1"
+        echo "运行 'codereview-cli help' 查看可用命令"
+        exit 1
+        ;;
+esac
+EOF
+        sudo chmod +x "$cmd_file"
+    else
+        tee "$cmd_file" > /dev/null << EOF
+#!/bin/bash
+
+# CodeReview CLI 全局命令
+INSTALL_DIR="$INSTALL_DIR"
+
+case "\$1" in
+    "setup")
+        echo "🔧 为当前项目设置 CodeReview CLI..."
+        if [ ! -d ".git" ]; then
+            echo "❌ 错误：当前目录不是 Git 仓库"
+            exit 1
+        fi
+        "\$INSTALL_DIR/install-hooks.sh"
+        ;;
+    "update")
+        echo "🔄 更新 CodeReview CLI..."
+        cd "\$INSTALL_DIR"
+        git pull origin main
+        echo "✅ 更新完成"
+        ;;
+    "config")
+        echo "⚙️ 配置 Gemini API..."
+        gemini config
+        ;;
+    "version"|"-v"|"--version")
+        echo "CodeReview CLI v1.0.0"
+        echo "安装路径: \$INSTALL_DIR"
+        ;;
+    "help"|"-h"|"--help"|"")
+        echo "CodeReview CLI - AI 驱动的代码审查工具"
+        echo ""
+        echo "用法: codereview-cli <命令>"
+        echo ""
+        echo "命令:"
+        echo "  setup    为当前项目设置 CodeReview CLI"
+        echo "  update   更新到最新版本"
+        echo "  config   配置 Gemini API 密钥"
+        echo "  version  显示版本信息"
+        echo "  help     显示此帮助信息"
+        echo ""
+        echo "全局安装后，新创建的 Git 仓库会自动包含 CodeReview CLI"
+        echo "对于现有仓库，请在仓库目录中运行: codereview-cli setup"
+        ;;
+    *)
+        echo "❌ 未知命令: \$1"
+        echo "运行 'codereview-cli help' 查看可用命令"
+        exit 1
+        ;;
+esac
+EOF
+        chmod +x "$cmd_file"
+    fi
+
+    echo -e "${GREEN}✓ 全局命令创建完成${NC}"
+    echo -e "${BLUE}  现在可以使用 'codereview-cli' 命令${NC}"
+}
+
+# 全局安装 Git hooks 模板
+setup_global_hooks() {
+    echo -e "${YELLOW}→ 配置全局 Git hooks 模板...${NC}"
+
+    # 创建全局 Git hooks 模板目录
+    local git_template_dir="$HOME/.git-templates/hooks"
+    mkdir -p "$git_template_dir"
+
+    # 创建全局 post-commit hook
+    cat > "$git_template_dir/post-commit" << 'EOF'
+#!/bin/bash
+
+# 获取 Git 仓库根目录
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+
+# 如果不在 Git 仓库中，退出
+if [ -z "$REPO_ROOT" ]; then
+    echo "❌ 错误：不在 Git 仓库中"
+    exit 1
+fi
+
+# 加载环境变量（如果存在）
+if [ -f "$HOME/.bashrc" ]; then
+    source "$HOME/.bashrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.zshrc" ]; then
+    source "$HOME/.zshrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.profile" ]; then
+    source "$HOME/.profile" 2>/dev/null
+fi
+
+# 尝试从项目环境文件加载
+if [ -f "$REPO_ROOT/.env" ]; then
+    source "$REPO_ROOT/.env" 2>/dev/null
+fi
+
+# 检查提示词文件是否存在（优先使用项目级配置）
+PROMPT_FILE=""
+if [ -f "$REPO_ROOT/prompts/git-commit-review-prompt.md" ]; then
+    PROMPT_FILE="$REPO_ROOT/prompts/git-commit-review-prompt.md"
+elif [ -f "$HOME/.codereview-cli/prompts/git-commit-review-prompt.md" ]; then
+    PROMPT_FILE="$HOME/.codereview-cli/prompts/git-commit-review-prompt.md"
+else
+    echo "❌ 错误：提示词文件不存在"
+    echo "请运行: codereview-cli setup 来配置项目"
+    exit 1
+fi
+
+# 检查 Gemini CLI 是否可用
+if ! command -v gemini &> /dev/null; then
+    echo "❌ 错误：Gemini CLI 未安装"
+    echo "安装命令: npm install -g @google/generative-ai-cli"
+    exit 1
+fi
+
+echo "🚀 正在执行 commit 后的代码审查..."
+
+# 切换到仓库根目录执行
+cd "$REPO_ROOT"
+
+if cat "$PROMPT_FILE" | gemini -p "请你现在按照指令开始执行最新提交的commit" -y; then
+    echo "👌 代码审查完成"
+else
+    echo "❌ 代码审查失败，但不影响提交"
+fi
+EOF
+
+    # 创建全局 pre-push hook
+    cp "$INSTALL_DIR/githooks/pre-push" "$git_template_dir/pre-push"
+
+    # 设置执行权限
+    chmod +x "$git_template_dir/post-commit"
+    chmod +x "$git_template_dir/pre-push"
+
+    # 配置 Git 使用全局模板
+    git config --global init.templateDir "$HOME/.git-templates"
+
+    echo -e "${GREEN}✓ 全局 Git hooks 模板配置完成${NC}"
+    echo -e "${BLUE}  新创建的 Git 仓库将自动包含 CodeReview CLI hooks${NC}"
+}
+
+# 为现有仓库安装 hooks
+setup_existing_repos() {
+    echo -e "${YELLOW}→ 为现有仓库安装 hooks...${NC}"
+
+    # 检查是否在 Git 仓库中
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        echo -e "${BLUE}  检测到当前目录是 Git 仓库，正在安装 hooks...${NC}"
+        setup_current_project
+    fi
+
+    # 询问是否为其他仓库安装
+    echo ""
+    echo "是否要为其他现有的 Git 仓库安装 hooks？"
+    echo "1) 是 - 我会提供仓库路径"
+    echo "2) 否 - 跳过"
+    read -p "请选择 (1/2): " choice
+
+    case $choice in
+        1)
+            while true; do
+                read -p "请输入 Git 仓库路径 (或输入 'done' 完成): " repo_path
+                if [ "$repo_path" = "done" ]; then
+                    break
+                fi
+
+                if [ -d "$repo_path/.git" ]; then
+                    echo -e "${BLUE}  为 $repo_path 安装 hooks...${NC}"
+                    (cd "$repo_path" && "$INSTALL_DIR/install-hooks.sh")
+                else
+                    echo -e "${RED}✗ $repo_path 不是有效的 Git 仓库${NC}"
+                fi
+            done
+            ;;
+        2)
+            echo -e "${BLUE}  跳过现有仓库配置${NC}"
+            ;;
+        *)
+            echo -e "${YELLOW}  无效选择，跳过现有仓库配置${NC}"
+            ;;
+    esac
+}
+
+# 配置当前项目
+setup_current_project() {
+    # 复制必要文件到当前项目
+    cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/ 2>/dev/null || {
+        mkdir -p ./prompts
+        cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/
+    }
+
+    cp "$INSTALL_DIR/.env.example" ./ 2>/dev/null || true
+
+    # 运行安装脚本
+    if "$INSTALL_DIR/install-hooks.sh"; then
+        echo -e "${GREEN}✓ 项目配置完成${NC}"
+    else
+        echo -e "${YELLOW}⚠ 项目配置失败，请手动运行: $INSTALL_DIR/install-hooks.sh${NC}"
+    fi
+}
+
+# 配置 Gemini API
+configure_gemini() {
+    echo -e "${YELLOW}→ 配置 Gemini API...${NC}"
+    
+    if gemini config --help &> /dev/null; then
+        echo "请按照提示配置 Gemini API 密钥："
+        echo "1. 访问 https://aistudio.google.com/app/apikey"
+        echo "2. 创建 API 密钥"
+        echo "3. 在下面的提示中输入密钥"
+        echo ""
+        
+        if gemini config; then
+            echo -e "${GREEN}✓ Gemini API 配置完成${NC}"
+        else
+            echo -e "${YELLOW}⚠ Gemini API 配置跳过，请稍后手动配置: gemini config${NC}"
+        fi
+    else
+        echo -e "${YELLOW}⚠ 无法配置 Gemini API，请稍后手动配置: gemini config${NC}"
+    fi
+}
+
+# 显示后续步骤
+show_next_steps() {
+    echo ""
+    echo -e "${GREEN}=== 安装完成 ===${NC}"
+    echo ""
+    echo "🎉 CodeReview CLI 已成功安装！"
+    echo ""
+
+    # 检查是否为全局安装
+    if command -v codereview-cli &> /dev/null; then
+        echo -e "${BLUE}全局安装完成！${NC}"
+        echo ""
+        echo -e "${BLUE}常用命令：${NC}"
+        echo "• codereview-cli setup    - 为现有项目设置 CodeReview CLI"
+        echo "• codereview-cli update   - 更新到最新版本"
+        echo "• codereview-cli config   - 配置 Gemini API"
+        echo "• codereview-cli help     - 查看帮助信息"
+        echo ""
+        echo -e "${BLUE}使用说明：${NC}"
+        echo "1. 新创建的 Git 仓库会自动包含 CodeReview CLI"
+        echo "2. 对于现有仓库，请在仓库目录中运行: codereview-cli setup"
+        echo "3. 配置环境变量（可选）："
+        echo "   export GITLAB_PERSONAL_ACCESS_TOKEN='your_token_here'"
+        echo ""
+    else
+        echo -e "${BLUE}项目安装完成！${NC}"
+        echo ""
+        echo -e "${BLUE}后续步骤：${NC}"
+        echo "1. 配置环境变量："
+        echo "   cp .env.example .env"
+        echo "   # 编辑 .env 文件，设置你的 GitLab Token"
+        echo ""
+        echo "2. 在其他项目中使用："
+        echo "   cd /path/to/your/project"
+        echo "   $INSTALL_DIR/install-hooks.sh"
+        echo ""
+    fi
+
+    echo -e "${BLUE}文档链接：${NC}"
+    echo "- 项目主页: https://github.com/im47cn/codereview-cli"
+    echo "- VS Code 设置: $INSTALL_DIR/docs/VSCODE_SETUP.md"
+    echo "- 测试指南: $INSTALL_DIR/docs/VSCODE_TEST_GUIDE.md"
+    echo ""
+    echo -e "${GREEN}现在你可以正常使用 git commit 和 git push 了！${NC}"
+}
+
+# 清理临时文件
+cleanup() {
+    echo -e "${YELLOW}→ 清理临时文件...${NC}"
+    rm -rf "$TEMP_DIR"
+}
+
+# 选择安装模式
+choose_install_mode() {
+    echo -e "${BLUE}请选择安装模式：${NC}"
+    echo ""
+    echo "1) 全局安装（推荐）"
+    echo "   - 新创建的 Git 仓库自动包含 CodeReview CLI"
+    echo "   - 提供 'codereview-cli' 全局命令"
+    echo "   - 现有仓库需要运行 'codereview-cli setup'"
+    echo ""
+    echo "2) 仅当前项目"
+    echo "   - 只为当前项目安装"
+    echo "   - 需要为每个项目单独安装"
+    echo ""
+    read -p "请选择 (1/2，默认为 1): " choice
+
+    case ${choice:-1} in
+        1)
+            echo -e "${GREEN}✓ 选择全局安装模式${NC}"
+            return 0
+            ;;
+        2)
+            echo -e "${GREEN}✓ 选择项目安装模式${NC}"
+            return 1
+            ;;
+        *)
+            echo -e "${YELLOW}无效选择，使用默认的全局安装模式${NC}"
+            return 0
+            ;;
+    esac
+}
+
+# 主函数
+main() {
+    check_requirements
+    install_gemini_cli
+    download_project
+    install_to_directory
+
+    # 选择安装模式
+    if choose_install_mode; then
+        # 全局安装模式
+        create_global_command
+        setup_global_hooks
+        setup_existing_repos
+    else
+        # 项目安装模式
+        setup_current_project
+    fi
+
+    configure_gemini
+    cleanup
+    show_next_steps
+}
+
+# 错误处理
+trap 'echo -e "${RED}安装过程中发生错误${NC}"; cleanup; exit 1' ERR
+
+# 执行主函数
+main
