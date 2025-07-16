@@ -368,6 +368,31 @@ git push
 
 ### AI 服务配置
 
+#### 环境变量详细说明
+
+复制 `.env.example` 为 `.env` 并根据需要配置：
+
+```bash
+cp .env.example .env
+```
+
+**必填环境变量**：
+- `GITLAB_PERSONAL_ACCESS_TOKEN` - GitLab访问令牌（必须）
+- `GEMINI_API_KEY` - Gemini API密钥（如果使用Gemini）
+- `OPENCODE_API_KEY` - OpenCode API密钥（如果使用OpenCode）
+- `CLAUDECODE_API_KEY` - ClaudeCode API密钥（如果使用ClaudeCode）
+
+**选填环境变量**：
+- `AI_SERVICE` - 选择AI服务（默认: gemini）
+- `AI_TIMEOUT` - API调用超时时间（默认: 30秒）
+- `AI_MAX_RETRIES` - 重试次数（默认: 3次）
+- `GITLAB_API_URL` - GitLab API地址（默认: https://gitlab.com/api/v4）
+- `GEMINI_MODEL` - Gemini模型（默认: gemini-pro）
+- `OPENCODE_MODEL` - OpenCode模型（默认: opencode-pro）
+- `CLAUDECODE_MODEL` - ClaudeCode模型（默认: claude-3-sonnet）
+- `REVIEW_LOGS_DIR` - 审查日志目录（默认: ./review_logs）
+- `DEBUG` - 调试模式（默认: false）
+
 #### 选择AI服务
 
 您可以通过以下方式选择和配置AI服务：
@@ -434,76 +459,22 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 - `//PERFORMANCE`: 性能相关的问题
 - `//DEPENDENCY`: 依赖相关的问题
 
-## 🤝 贡献指南
+## 🤝 贡献
 
-我们欢迎社区贡献！请遵循以下步骤：
+我们欢迎社区贡献！详细的贡献指南请参考 [CONTRIBUTING.md](CONTRIBUTING.md)。
 
-### 开发环境设置
+### 快速开始
 
 1. Fork 本仓库
-2. 克隆您的 fork：
-   ```bash
-git clone https://github.com/YOUR_USERNAME/codereview-cli.git
-```
-3. 创建功能分支：
-   ```bash
-git checkout -b feature/your-feature-name
-```
+2. 创建功能分支
+3. 进行开发和测试
+4. 提交 Pull Request
 
-### 提交规范
+### 开发资源
 
-请使用以下提交信息格式：
-
-```
-<type>(<scope>): <description>
-
-[optional body]
-
-[optional footer]
-```
-
-**类型**：
-- `feat`: 新功能
-- `fix`: 修复 bug
-- `docs`: 文档更新
-- `style`: 代码格式调整
-- `refactor`: 代码重构
-- `test`: 测试相关
-- `chore`: 构建过程或辅助工具的变动
-
-### Pull Request 流程
-
-1. 确保代码通过所有测试
-2. 更新相关文档
-3. 提交 Pull Request
-4. 等待代码审查和合并
-
-### 代码规范
-
-- 遵循项目现有的代码风格
-- 添加适当的注释和文档
-- 确保向后兼容性
-- 编写测试用例（如适用）
-
-## 📄 许可证
-
-本项目采用 [Apache License 2.0](LICENSE) 许可证。
-
-```
-Copyright 2024 im47cn
-
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
-
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-```
+- [贡献指南](CONTRIBUTING.md) - 详细的开发和贡献流程
+- [AI服务指南](docs/AI_SERVICES_GUIDE.md) - AI服务配置和使用
+- [测试脚本](test-ai-services.sh) - 完整的测试套件
 
 ## 🔗 相关链接
 
