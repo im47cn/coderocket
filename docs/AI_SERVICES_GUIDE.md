@@ -171,7 +171,7 @@ npm install -g @claudecode/cli
 
 ```bash
 # 测试网络连接
-curl -I https://api.openai.com
+curl -I https://aistudio.google.com
 curl -I https://api.opencode.com
 curl -I https://api.claudecode.com
 

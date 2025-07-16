@@ -1,2 +1,4 @@
 .idea/
 /review_logs/
+.ai-config
+.env

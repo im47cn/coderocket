@@ -196,7 +196,8 @@ configure_service_interactive() {
     
     case "$service" in
         "gemini")
-            read -p "请输入 Gemini API Key: " api_key
+            read -sp "请输入 Gemini API Key: " api_key
+            echo  # 换行
             if [ ! -z "$api_key" ]; then
                 set_config_value "GEMINI_API_KEY" "$api_key" "$scope"
             fi
@@ -206,7 +207,8 @@ configure_service_interactive() {
             set_config_value "GEMINI_MODEL" "$model" "$scope"
             ;;
         "opencode")
-            read -p "请输入 OpenCode API Key: " api_key
+            read -sp "请输入 OpenCode API Key: " api_key
+            echo  # 换行
             if [ ! -z "$api_key" ]; then
                 set_config_value "OPENCODE_API_KEY" "$api_key" "$scope"
             fi
@@ -220,7 +222,8 @@ configure_service_interactive() {
             set_config_value "OPENCODE_MODEL" "$model" "$scope"
             ;;
         "claudecode")
-            read -p "请输入 ClaudeCode API Key: " api_key
+            read -sp "请输入 ClaudeCode API Key: " api_key
+            echo  # 换行
             if [ ! -z "$api_key" ]; then
                 set_config_value "CLAUDECODE_API_KEY" "$api_key" "$scope"
             fi

@@ -10,9 +10,10 @@ YELLOW='\033[1;33m'
 BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
-# 导入配置管理
+# 导入配置管理和共享模块
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/ai-config.sh"
+source "$SCRIPT_DIR/mr-generator.sh"
 
 # OpenCode 默认配置
 DEFAULT_OPENCODE_API_URL="https://api.opencode.com/v1"
@@ -110,10 +111,12 @@ call_opencode_api() {
     fi
     
     # 否则使用curl直接调用API
+    # 安全地构建JSON，避免特殊字符问题
+    local escaped_prompt=$(printf '%s' "$prompt" | python3 -c "import sys, json; print(json.dumps(sys.stdin.read()))")
     local json_payload=$(cat <<EOF
 {
     "model": "$model",
-    "prompt": "$prompt",
+    "prompt": $escaped_prompt,
     "max_tokens": 2048,
     "temperature": 0.7
 }
@@ -127,21 +130,36 @@ EOF
         "$api_url/completions" 2>/dev/null)
     
     if [ $? -eq 0 ] && [ ! -z "$response" ]; then
-        # 解析JSON响应，提取生成的文本
+        # 解析JSON响应，提取生成的文本，增强错误处理
         echo "$response" | python3 -c "
 import sys, json
 try:
     data = json.load(sys.stdin)
+    # 检查API错误
+    if 'error' in data:
+        print('', file=sys.stderr)
+        sys.exit(1)
+    # 尝试多种响应格式
     if 'choices' in data and len(data['choices']) > 0:
-        print(data['choices'][0]['text'].strip())
+        if 'text' in data['choices'][0]:
+            print(data['choices'][0]['text'].strip())
+        elif 'message' in data['choices'][0] and 'content' in data['choices'][0]['message']:
+            print(data['choices'][0]['message']['content'].strip())
     elif 'content' in data:
         print(data['content'].strip())
+    elif 'text' in data:
+        print(data['text'].strip())
     else:
-        print('')
-except:
-    print('')
+        print('', file=sys.stderr)
+        sys.exit(1)
+except json.JSONDecodeError:
+    print('', file=sys.stderr)
+    sys.exit(1)
+except Exception as e:
+    print('', file=sys.stderr)
+    sys.exit(1)
 " 2>/dev/null
-        return 0
+        return $?
     else
         return 1
     fi
@@ -173,93 +191,54 @@ $additional_prompt"
 opencode_generate_mr_title() {
     local commits=$1
     local branch_name=$2
-    
-    local prompt="请根据以下 Git 提交记录，生成一个简洁有意义的 MR 标题。要求：
-1. 标题应该概括主要变更内容
-2. 使用中文
-3. 不超过 50 个字符
-4. 不需要包含提交数量
-5. 可以使用适当的 emoji 图标（如 ✨ 🐛 📝 ♻️ 等）
 
-提交记录：
-$commits
+    # 验证提交格式
+    if ! validate_commits_format "$commits"; then
+        generate_fallback_mr_title "$branch_name"
+        return
+    fi
 
-请直接返回标题，不要包含其他解释："
-    
+    # 准备提交列表
+    local commit_list=$(prepare_commit_list "$commits")
+    local prompt=$(get_mr_title_prompt "$commit_list")
+
     local result=$(call_opencode_api "$prompt" 15)
-    
-    # 清理结果
+
+    # 清理和验证结果
     if [ ! -z "$result" ]; then
-        echo "$result" | head -1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//'
-    else
-        # 备用方案
-        if [[ $branch_name =~ ^feature/.* ]]; then
-            echo "✨ Feature: ${branch_name#feature/}"
-        elif [[ $branch_name =~ ^fix/.* ]]; then
-            echo "🐛 Fix: ${branch_name#fix/}"
-        elif [[ $branch_name =~ ^hotfix/.* ]]; then
-            echo "🚑 Hotfix: ${branch_name#hotfix/}"
-        else
-            echo "🔀 Update: $branch_name"
+        local cleaned_title=$(clean_and_validate_title "$result")
+        if [ $? -eq 0 ]; then
+            echo "$cleaned_title"
+            return
         fi
     fi
+
+    # 使用备用方案
+    generate_fallback_mr_title "$branch_name"
 }
 
 # 生成MR描述
 opencode_generate_mr_description() {
     local commits=$1
     local commit_count=$2
-    
-    local prompt="请根据以下 Git 提交记录，生成一个专业的 MR 描述。要求：
-1. 总结主要变更内容和目标
-2. 使用中文
-3. 结构清晰，重点突出
-4. 不要简单罗列提交，而是要概括和总结
-5. 描述应该让审查者快速理解这次变更的目的和影响
 
-提交记录：
-$commits
+    # 验证提交格式
+    if ! validate_commits_format "$commits"; then
+        generate_fallback_mr_description "$commits" "$commit_count"
+        return
+    fi
 
-请按以下格式返回：
-## 📋 变更概述
+    # 准备提交列表
+    local commit_list=$(prepare_commit_list "$commits")
+    local prompt=$(get_mr_description_prompt "$commit_list")
 
-[在这里写变更的总结和目标]
-
-## 🔧 主要改进
-
-[在这里列出主要的改进点，用简洁的要点形式]"
-    
     local result=$(call_opencode_api "$prompt" 30)
-    
+
     if [ ! -z "$result" ]; then
-        echo "$result"
-        echo ""
-        echo "## ✅ 检查清单"
-        echo ""
-        echo "- [ ] 代码已经过自测"
-        echo "- [ ] 相关文档已更新"
-        echo "- [ ] 测试用例已添加/更新"
-        echo "- [ ] 无明显的性能影响"
-        echo "- [ ] 符合代码规范"
+        add_checklist_to_description "$result"
     else
-        # 备用方案
-        echo "## 📋 变更概述"
-        echo ""
-        echo "本次合并包含 **$commit_count** 个提交，主要变更如下："
-        echo ""
-        echo "$commits" | while IFS='|' read -r hash subject author date; do
-            if [ ! -z "$hash" ]; then
-                echo "- $subject"
-            fi
-        done
-        echo ""
-        echo "## ✅ 检查清单"
-        echo ""
-        echo "- [ ] 代码已经过自测"
-        echo "- [ ] 相关文档已更新"
-        echo "- [ ] 测试用例已添加/更新"
-        echo "- [ ] 无明显的性能影响"
-        echo "- [ ] 符合代码规范"
+        # 使用备用方案
+        generate_fallback_mr_description "$commits" "$commit_count"
     fi
 }
 

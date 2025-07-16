@@ -10,22 +10,34 @@ NC='\033[0m' # No Color
 # 获取 Git 仓库根目录
 REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 
-# 加载环境变量（如果存在）
-if [ -f "$HOME/.bashrc" ]; then
-    source "$HOME/.bashrc" 2>/dev/null
-fi
+# 安全地加载必要的环境变量
+# 只加载项目相关的环境变量，避免全局profile污染
 
-if [ -f "$HOME/.zshrc" ]; then
-    source "$HOME/.zshrc" 2>/dev/null
-fi
-
-if [ -f "$HOME/.profile" ]; then
-    source "$HOME/.profile" 2>/dev/null
-fi
-
-# 尝试从项目环境文件加载
+# 加载项目环境文件
 if [ -f "$REPO_ROOT/.env" ]; then
-    source "$REPO_ROOT/.env" 2>/dev/null
+    # 只加载以特定前缀开头的环境变量，避免污染
+    while IFS='=' read -r key value; do
+        # 跳过注释和空行
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z $key ]] && continue
+
+        # 只加载AI和GitLab相关的环境变量
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_) ]]; then
+            export "$key=$value"
+        fi
+    done < "$REPO_ROOT/.env" 2>/dev/null
+fi
+
+# 加载全局CodeReview CLI配置
+if [ -f "$HOME/.codereview-cli/env" ]; then
+    while IFS='=' read -r key value; do
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z $key ]] && continue
+
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_) ]]; then
+            export "$key=$value"
+        fi
+    done < "$HOME/.codereview-cli/env" 2>/dev/null
 fi
 
 # 导入AI服务管理器

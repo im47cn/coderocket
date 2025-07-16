@@ -67,12 +67,15 @@ run_test "AI配置工具 - 获取配置" "./lib/ai-config.sh get AI_SERVICE"
 
 # 3. 测试各个AI服务模块
 echo -e "\n${YELLOW}=== 测试各个AI服务模块 ===${NC}"
+echo -e "${BLUE}注意: 以下测试预期失败，因为需要有效的API密钥${NC}"
 
-# 测试OpenCode服务
-run_test "OpenCode服务 - 状态检查" "./lib/opencode-service.sh test" 1  # 预期失败，因为没有API密钥
+# 测试OpenCode服务 (预期失败 - 需要API密钥)
+echo -e "${YELLOW}→ OpenCode服务测试 (预期失败: 未配置API密钥)${NC}"
+run_test "OpenCode服务 - 状态检查" "./lib/opencode-service.sh test" 1
 
-# 测试ClaudeCode服务
-run_test "ClaudeCode服务 - 状态检查" "./lib/claudecode-service.sh test" 1  # 预期失败，因为没有API密钥
+# 测试ClaudeCode服务 (预期失败 - 需要API密钥)
+echo -e "${YELLOW}→ ClaudeCode服务测试 (预期失败: 未配置API密钥)${NC}"
+run_test "ClaudeCode服务 - 状态检查" "./lib/claudecode-service.sh test" 1
 
 # 4. 测试配置设置和获取
 echo -e "\n${YELLOW}=== 测试配置管理 ===${NC}"
