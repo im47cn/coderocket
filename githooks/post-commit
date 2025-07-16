@@ -9,6 +9,34 @@ if [ -z "$REPO_ROOT" ]; then
     exit 1
 fi
 
+# 加载环境变量（如果存在）
+if [ -f "$HOME/.bashrc" ]; then
+    source "$HOME/.bashrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.zshrc" ]; then
+    source "$HOME/.zshrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.profile" ]; then
+    source "$HOME/.profile" 2>/dev/null
+fi
+
+# 尝试从项目环境文件加载
+if [ -f "$REPO_ROOT/.env" ]; then
+    source "$REPO_ROOT/.env" 2>/dev/null
+fi
+
+# 导入AI服务管理器
+if [ -f "$REPO_ROOT/lib/ai-service-manager.sh" ]; then
+    source "$REPO_ROOT/lib/ai-service-manager.sh"
+elif [ -f "$HOME/.codereview-cli/lib/ai-service-manager.sh" ]; then
+    source "$HOME/.codereview-cli/lib/ai-service-manager.sh"
+else
+    echo "❌ 错误：AI服务管理器未找到"
+    exit 1
+fi
+
 # 检查提示词文件是否存在
 PROMPT_FILE="$REPO_ROOT/prompts/git-commit-review-prompt.md"
 if [ ! -f "$PROMPT_FILE" ]; then
@@ -16,10 +44,13 @@ if [ ! -f "$PROMPT_FILE" ]; then
     exit 1
 fi
 
-# 检查 Gemini CLI 是否可用
-if ! command -v gemini &> /dev/null; then
-    echo "❌ 错误：Gemini CLI 未安装"
-    echo "安装命令: npm install -g @google/generative-ai-cli"
+# 获取当前AI服务
+CURRENT_AI_SERVICE=$(get_ai_service)
+
+# 检查AI服务是否可用
+if ! check_ai_service_available "$CURRENT_AI_SERVICE"; then
+    echo "❌ 错误：AI服务 $CURRENT_AI_SERVICE 不可用"
+    echo "安装命令: $(get_install_command "$CURRENT_AI_SERVICE")"
     exit 1
 fi
 
@@ -27,6 +58,7 @@ fi
 mkdir -p "$REPO_ROOT/review_logs"
 
 echo "🚀 正在执行 commit 后的代码审查..."
+echo "📡 使用AI服务: $CURRENT_AI_SERVICE"
 
 # 切换到仓库根目录执行
 cd "$REPO_ROOT"
@@ -40,7 +72,7 @@ PROMPT="请执行以下任务：
 5. 不要询问用户，直接自主执行所有步骤
 6. 这是一个自动化流程，请直接开始执行"
 
-if cat "$PROMPT_FILE" | gemini -p "$PROMPT" -y; then
+if call_ai_for_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"; then
     echo "👌 代码审查完成"
     echo "📝 审查报告已保存到 $REPO_ROOT/review_logs 目录"
 else

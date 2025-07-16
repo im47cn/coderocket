@@ -133,13 +133,35 @@ else
     echo -e "${GREEN}✓ GITLAB_PERSONAL_ACCESS_TOKEN 已配置${NC}"
 fi
 
-# 检查 Gemini CLI
-if command -v gemini &> /dev/null; then
-    echo -e "${GREEN}✓ Gemini CLI 已安装${NC}"
+# 检查AI服务
+echo -e "\n${YELLOW}=== AI服务检查 ===${NC}"
+
+# 检查当前配置的AI服务
+if [ -f "lib/ai-service-manager.sh" ]; then
+    source lib/ai-service-manager.sh
+    show_ai_service_status
 else
-    echo -e "${YELLOW}⚠ 未检测到 Gemini CLI${NC}"
-    echo "安装 Gemini CLI 以启用智能 MR 生成功能："
-    echo "npm install -g @google/generative-ai-cli"
+    # 备用检查
+    if command -v gemini &> /dev/null; then
+        echo -e "${GREEN}✓ Gemini CLI 已安装${NC}"
+    else
+        echo -e "${YELLOW}⚠ 未检测到 Gemini CLI${NC}"
+        echo "安装 Gemini CLI: npm install -g @google/gemini-cli"
+    fi
+
+    if command -v opencode &> /dev/null; then
+        echo -e "${GREEN}✓ OpenCode CLI 已安装${NC}"
+    else
+        echo -e "${YELLOW}⚠ 未检测到 OpenCode CLI${NC}"
+        echo "安装 OpenCode CLI: npm install -g @opencode/cli"
+    fi
+
+    if command -v claudecode &> /dev/null; then
+        echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
+    else
+        echo -e "${YELLOW}⚠ 未检测到 ClaudeCode CLI${NC}"
+        echo "安装 ClaudeCode CLI: npm install -g @claudecode/cli"
+    fi
 fi
 
 echo -e "\n${GREEN}=== 安装完成 ===${NC}"

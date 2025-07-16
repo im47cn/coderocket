@@ -75,21 +75,37 @@ check_requirements() {
     echo -e "${GREEN}✓ Python3 已安装${NC}"
 }
 
-# 安装 Gemini CLI
-install_gemini_cli() {
-    echo -e "${YELLOW}→ 安装 Google Gemini CLI...${NC}"
-    
+# 安装AI服务CLI工具
+install_ai_services() {
+    echo -e "${YELLOW}→ 安装AI服务CLI工具...${NC}"
+
+    # 安装 Gemini CLI
     if command -v gemini &> /dev/null; then
         echo -e "${GREEN}✓ Gemini CLI 已安装${NC}"
-        return
-    fi
-    
-    if npm install -g @google/generative-ai-cli; then
-        echo -e "${GREEN}✓ Gemini CLI 安装成功${NC}"
     else
-        echo -e "${RED}✗ Gemini CLI 安装失败${NC}"
-        echo "请手动安装: npm install -g @google/generative-ai-cli"
-        exit 1
+        echo -e "${YELLOW}→ 安装 Gemini CLI...${NC}"
+        if npm install -g @google/gemini-cli; then
+            echo -e "${GREEN}✓ Gemini CLI 安装成功${NC}"
+        else
+            echo -e "${YELLOW}⚠ Gemini CLI 安装失败，可稍后手动安装${NC}"
+            echo "  手动安装: npm install -g @google/gemini-cli"
+        fi
+    fi
+
+    # 安装 OpenCode CLI (可选)
+    if command -v opencode &> /dev/null; then
+        echo -e "${GREEN}✓ OpenCode CLI 已安装${NC}"
+    else
+        echo -e "${YELLOW}→ OpenCode CLI 未安装 (可选)${NC}"
+        echo "  手动安装: npm install -g @opencode/cli"
+    fi
+
+    # 安装 ClaudeCode CLI (可选)
+    if command -v claudecode &> /dev/null; then
+        echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
+    else
+        echo -e "${YELLOW}→ ClaudeCode CLI 未安装 (可选)${NC}"
+        echo "  手动安装: npm install -g @claudecode/cli"
     fi
 }
 
@@ -161,8 +177,15 @@ case "\$1" in
         echo "✅ 更新完成"
         ;;
     "config")
-        echo "⚙️ 配置 Gemini API..."
-        gemini config
+        echo "⚙️ 配置AI服务..."
+        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
+            "\$INSTALL_DIR/lib/ai-config.sh" select
+        else
+            echo "请选择要配置的AI服务："
+            echo "1. Gemini - gemini config"
+            echo "2. OpenCode - opencode config"
+            echo "3. ClaudeCode - claudecode config"
+        fi
         ;;
     "version"|"-v"|"--version")
         echo "CodeReview CLI v1.0.0"
@@ -176,7 +199,7 @@ case "\$1" in
         echo "命令:"
         echo "  setup    为当前项目设置 CodeReview CLI"
         echo "  update   更新到最新版本"
-        echo "  config   配置 Gemini API 密钥"
+        echo "  config   配置AI服务"
         echo "  version  显示版本信息"
         echo "  help     显示此帮助信息"
         echo ""
@@ -214,8 +237,15 @@ case "\$1" in
         echo "✅ 更新完成"
         ;;
     "config")
-        echo "⚙️ 配置 Gemini API..."
-        gemini config
+        echo "⚙️ 配置AI服务..."
+        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
+            "\$INSTALL_DIR/lib/ai-config.sh" select
+        else
+            echo "请选择要配置的AI服务："
+            echo "1. Gemini - gemini config"
+            echo "2. OpenCode - opencode config"
+            echo "3. ClaudeCode - claudecode config"
+        fi
         ;;
     "version"|"-v"|"--version")
         echo "CodeReview CLI v1.0.0"
@@ -229,7 +259,7 @@ case "\$1" in
         echo "命令:"
         echo "  setup    为当前项目设置 CodeReview CLI"
         echo "  update   更新到最新版本"
-        echo "  config   配置 Gemini API 密钥"
+        echo "  config   配置AI服务"
         echo "  version  显示版本信息"
         echo "  help     显示此帮助信息"
         echo ""
@@ -304,7 +334,7 @@ fi
 # 检查 Gemini CLI 是否可用
 if ! command -v gemini &> /dev/null; then
     echo "❌ 错误：Gemini CLI 未安装"
-    echo "安装命令: npm install -g @google/generative-ai-cli"
+    echo "安装命令: npm install -g @google/gemini-cli"
     exit 1
 fi
 
@@ -407,24 +437,59 @@ setup_current_project() {
     fi
 }
 
-# 配置 Gemini API
-configure_gemini() {
-    echo -e "${YELLOW}→ 配置 Gemini API...${NC}"
-    
-    if gemini config --help &> /dev/null; then
-        echo "请按照提示配置 Gemini API 密钥："
-        echo "1. 访问 https://aistudio.google.com/app/apikey"
-        echo "2. 创建 API 密钥"
-        echo "3. 在下面的提示中输入密钥"
-        echo ""
-        
-        if gemini config; then
-            echo -e "${GREEN}✓ Gemini API 配置完成${NC}"
-        else
-            echo -e "${YELLOW}⚠ Gemini API 配置跳过，请稍后手动配置: gemini config${NC}"
-        fi
+# 配置AI服务
+configure_ai_services() {
+    echo -e "${YELLOW}→ 配置AI服务...${NC}"
+
+    # 检查是否有AI配置工具
+    if [ -f "$INSTALL_DIR/lib/ai-config.sh" ]; then
+        echo "使用AI配置工具进行配置..."
+        "$INSTALL_DIR/lib/ai-config.sh" select
     else
-        echo -e "${YELLOW}⚠ 无法配置 Gemini API，请稍后手动配置: gemini config${NC}"
+        # 备用配置方式
+        echo "请选择要配置的AI服务："
+        echo "1. Gemini (默认)"
+        echo "2. OpenCode"
+        echo "3. ClaudeCode"
+        echo "4. 跳过配置"
+
+        read -p "请选择 (1-4，默认为1): " choice
+        case ${choice:-1} in
+            1)
+                if command -v gemini &> /dev/null; then
+                    echo "配置 Gemini API..."
+                    echo "1. 访问 https://aistudio.google.com/app/apikey"
+                    echo "2. 创建 API 密钥"
+                    echo "3. 运行: gemini config"
+                    echo ""
+                    if gemini config; then
+                        echo -e "${GREEN}✓ Gemini API 配置完成${NC}"
+                    else
+                        echo -e "${YELLOW}⚠ Gemini API 配置跳过${NC}"
+                    fi
+                else
+                    echo -e "${YELLOW}⚠ Gemini CLI 未安装${NC}"
+                fi
+                ;;
+            2)
+                echo "OpenCode 配置说明："
+                echo "1. 获取 OpenCode API 密钥"
+                echo "2. 运行: opencode config"
+                echo "3. 或设置环境变量: export OPENCODE_API_KEY='your_key'"
+                ;;
+            3)
+                echo "ClaudeCode 配置说明："
+                echo "1. 获取 ClaudeCode API 密钥"
+                echo "2. 运行: claudecode config"
+                echo "3. 或设置环境变量: export CLAUDECODE_API_KEY='your_key'"
+                ;;
+            4)
+                echo -e "${YELLOW}⚠ 跳过AI服务配置${NC}"
+                ;;
+            *)
+                echo -e "${RED}无效选择${NC}"
+                ;;
+        esac
     fi
 }
 
@@ -533,7 +598,7 @@ choose_install_mode() {
 # 主函数
 main() {
     check_requirements
-    install_gemini_cli
+    install_ai_services
     download_project
     install_to_directory
 
@@ -548,7 +613,7 @@ main() {
         setup_current_project
     fi
 
-    configure_gemini
+    configure_ai_services
     cleanup
     show_next_steps
 }

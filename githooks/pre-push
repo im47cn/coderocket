@@ -4,7 +4,36 @@
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
 NC='\033[0m' # No Color
+
+# 获取 Git 仓库根目录
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+
+# 加载环境变量（如果存在）
+if [ -f "$HOME/.bashrc" ]; then
+    source "$HOME/.bashrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.zshrc" ]; then
+    source "$HOME/.zshrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.profile" ]; then
+    source "$HOME/.profile" 2>/dev/null
+fi
+
+# 尝试从项目环境文件加载
+if [ -f "$REPO_ROOT/.env" ]; then
+    source "$REPO_ROOT/.env" 2>/dev/null
+fi
+
+# 导入AI服务管理器
+if [ -f "$REPO_ROOT/lib/ai-service-manager.sh" ]; then
+    source "$REPO_ROOT/lib/ai-service-manager.sh"
+elif [ -f "$HOME/.codereview-cli/lib/ai-service-manager.sh" ]; then
+    source "$HOME/.codereview-cli/lib/ai-service-manager.sh"
+fi
 
 # 从环境变量获取配置
 GITLAB_API_URL=${GITLAB_API_URL:-"https://gitlab.com/api/v4"}
@@ -211,8 +240,8 @@ get_branch_commits() {
     echo "$commits"
 }
 
-# 函数：使用 Gemini 生成智能 MR 标题
-generate_mr_title_with_gemini() {
+# 函数：使用 AI 生成智能 MR 标题
+generate_mr_title_with_ai() {
     local source_branch=$1
     local base_branch=$2
     local gitlab_remote=$3
@@ -227,13 +256,10 @@ generate_mr_title_with_gemini() {
         return
     fi
 
-    # 检查 gemini 命令是否可用
-    if ! command -v gemini &> /dev/null; then
-        echo "🔀 Update: $source_branch"
-        return
-    fi
+    # 获取当前AI服务
+    local ai_service=$(get_ai_service)
 
-    # 准备提交信息给 Gemini
+    # 准备提交信息
     local commit_list=""
     while IFS='|' read -r hash subject author date; do
         if [ ! -z "$hash" ]; then
@@ -241,8 +267,8 @@ generate_mr_title_with_gemini() {
         fi
     done <<< "$commits"
 
-    # 使用 Gemini 生成标题
-    local prompt="请根据以下 Git 提交记录，生成一个简洁有意义的 MR 标题。要求：
+    # 使用智能AI调用生成标题
+    local title=$(smart_ai_call "$ai_service" "mr_title" "请根据以下 Git 提交记录，生成一个简洁有意义的 MR 标题。要求：
 1. 标题应该概括主要变更内容
 2. 使用中文
 3. 不超过 50 个字符
@@ -252,29 +278,27 @@ generate_mr_title_with_gemini() {
 提交记录：
 $commit_list
 
-请直接返回标题，不要包含其他解释："
+请直接返回标题，不要包含其他解释：" "$source_branch")
 
-    local title=$(echo "$prompt" | gemini -y 2>/dev/null | head -1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//')
-
-    # 如果 Gemini 调用失败，使用备用方案
-    if [ -z "$title" ] || [ ${#title} -gt 100 ]; then
-        # 根据分支名称生成备用标题
+    # 清理结果
+    if [ ! -z "$title" ]; then
+        echo "$title" | head -1 | sed 's/^[[:space:]]*//' | sed 's/[[:space:]]*$//'
+    else
+        # 最终备用方案
         if [[ $source_branch =~ ^feature/.* ]]; then
-            title="✨ Feature: ${source_branch#feature/}"
+            echo "✨ Feature: ${source_branch#feature/}"
         elif [[ $source_branch =~ ^fix/.* ]]; then
-            title="🐛 Fix: ${source_branch#fix/}"
+            echo "🐛 Fix: ${source_branch#fix/}"
         elif [[ $source_branch =~ ^hotfix/.* ]]; then
-            title="🚑 Hotfix: ${source_branch#hotfix/}"
+            echo "🚑 Hotfix: ${source_branch#hotfix/}"
         else
-            title="🔀 Update: $source_branch"
+            echo "🔀 Update: $source_branch"
         fi
     fi
-
-    echo "$title"
 }
 
-# 函数：使用 Gemini 生成智能 MR 描述
-generate_mr_description_with_gemini() {
+# 函数：使用 AI 生成智能 MR 描述
+generate_mr_description_with_ai() {
     local source_branch=$1
     local base_branch=$2
     local gitlab_remote=$3
@@ -297,26 +321,10 @@ generate_mr_description_with_gemini() {
         return
     fi
 
-    # 检查 gemini 命令是否可用
-    if ! command -v gemini &> /dev/null; then
-        # 备用方案：简单列出提交
-        local description="## 📋 变更概述\n\n本次合并包含 **$commit_count** 个提交：\n\n"
-        while IFS='|' read -r hash subject author date; do
-            if [ ! -z "$hash" ]; then
-                description+="- $subject\n"
-            fi
-        done <<< "$commits"
-        description+="\n## ✅ 检查清单\n\n"
-        description+="- [ ] 代码已经过自测\n"
-        description+="- [ ] 相关文档已更新\n"
-        description+="- [ ] 测试用例已添加/更新\n"
-        description+="- [ ] 无明显的性能影响\n"
-        description+="- [ ] 符合代码规范\n\n"
-        echo -e "$description"
-        return
-    fi
+    # 获取当前AI服务
+    local ai_service=$(get_ai_service)
 
-    # 准备提交信息给 Gemini
+    # 准备提交信息
     local commit_list=""
     while IFS='|' read -r hash subject author date; do
         if [ ! -z "$hash" ]; then
@@ -324,8 +332,8 @@ generate_mr_description_with_gemini() {
         fi
     done <<< "$commits"
 
-    # 使用 Gemini 生成描述
-    local prompt="请根据以下 Git 提交记录，生成一个专业的 MR 描述。要求：
+    # 使用智能AI调用生成描述
+    local ai_description=$(smart_ai_call "$ai_service" "mr_description" "请根据以下 Git 提交记录，生成一个专业的 MR 描述。要求：
 1. 总结主要变更内容和目标
 2. 使用中文
 3. 结构清晰，重点突出
@@ -342,30 +350,39 @@ $commit_list
 
 ## 🔧 主要改进
 
-[在这里列出主要的改进点，用简洁的要点形式]"
-
-    local ai_description=$(echo "$prompt" | gemini -y 2>/dev/null)
-
-    # 如果 Gemini 调用失败，使用备用方案
-    if [ -z "$ai_description" ]; then
-        local description="## 📋 变更概述\n\n本次合并包含 **$commit_count** 个提交，主要变更如下：\n\n"
-        while IFS='|' read -r hash subject author date; do
-            if [ ! -z "$hash" ]; then
-                description+="- $subject\n"
-            fi
-        done <<< "$commits"
-        ai_description="$description"
-    fi
+[在这里列出主要的改进点，用简洁的要点形式]" "$commit_count")
 
     # 添加检查清单
-    local final_description="$ai_description\n\n## ✅ 检查清单\n\n"
-    final_description+="- [ ] 代码已经过自测\n"
-    final_description+="- [ ] 相关文档已更新\n"
-    final_description+="- [ ] 测试用例已添加/更新\n"
-    final_description+="- [ ] 无明显的性能影响\n"
-    final_description+="- [ ] 符合代码规范\n\n"
-
-    echo -e "$final_description"
+    if [ ! -z "$ai_description" ]; then
+        echo "$ai_description"
+        echo ""
+        echo "## ✅ 检查清单"
+        echo ""
+        echo "- [ ] 代码已经过自测"
+        echo "- [ ] 相关文档已更新"
+        echo "- [ ] 测试用例已添加/更新"
+        echo "- [ ] 无明显的性能影响"
+        echo "- [ ] 符合代码规范"
+    else
+        # 最终备用方案
+        echo "## 📋 变更概述"
+        echo ""
+        echo "本次合并包含 **$commit_count** 个提交，主要变更如下："
+        echo ""
+        while IFS='|' read -r hash subject author date; do
+            if [ ! -z "$hash" ]; then
+                echo "- $subject"
+            fi
+        done <<< "$commits"
+        echo ""
+        echo "## ✅ 检查清单"
+        echo ""
+        echo "- [ ] 代码已经过自测"
+        echo "- [ ] 相关文档已更新"
+        echo "- [ ] 测试用例已添加/更新"
+        echo "- [ ] 无明显的性能影响"
+        echo "- [ ] 符合代码规范"
+    fi
 }
 
 # 函数：创建 MR
@@ -394,9 +411,10 @@ create_merge_request() {
     fi
 
     # 生成智能 MR 标题和描述
-    echo -e "${YELLOW}→ 使用 Gemini 生成 MR 标题和描述...${NC}"
-    local mr_title=$(generate_mr_title_with_gemini "$source_branch" "$target_branch" "$gitlab_remote")
-    local mr_description=$(generate_mr_description_with_gemini "$source_branch" "$target_branch" "$gitlab_remote")
+    local ai_service=$(get_ai_service)
+    echo -e "${YELLOW}→ 使用 $ai_service 生成 MR 标题和描述...${NC}"
+    local mr_title=$(generate_mr_title_with_ai "$source_branch" "$target_branch" "$gitlab_remote")
+    local mr_description=$(generate_mr_description_with_ai "$source_branch" "$target_branch" "$gitlab_remote")
     
     # 创建 MR
     echo -e "${YELLOW}→ 创建 MR: $mr_title${NC}"

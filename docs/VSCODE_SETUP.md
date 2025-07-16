@@ -71,7 +71,7 @@ export GITLAB_API_URL="https://gitlab.yeepay.com/api/v4"
 **解决方案：**
 ```bash
 # 安装 Gemini CLI
-npm install -g @google/generative-ai-cli
+npm install -g @google/gemini-cli
 
 # 配置 API 密钥
 gemini config

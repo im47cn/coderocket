@@ -4,7 +4,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/issues)
 
-一个基于 Google Gemini AI 的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
+一个基于多种 AI 服务（Gemini、OpenCode、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
 
 ## 🚀 核心功能
 
@@ -31,9 +31,9 @@
 
 ## 🛠 技术栈
 
-- **AI 引擎**: Google Gemini CLI
+- **AI 引擎**: 多AI服务支持（Gemini、OpenCode、ClaudeCode）
 - **脚本语言**: Shell Script
-- **版本控制**: Git Hooks (post-commit)
+- **版本控制**: Git Hooks (post-commit, pre-push)
 - **文档格式**: Markdown
 - **配置管理**: 基于文件的配置系统
 
@@ -75,21 +75,46 @@ chmod +x install.sh
 
 ### 手动安装
 
-#### 1. 安装 Google Gemini CLI
+#### 1. 安装 AI 服务 CLI
 
+根据您选择的AI服务安装对应的CLI工具：
+
+**Gemini (默认)**
 ```bash
 npm install -g @google/gemini-cli
 ```
 
-#### 2. 配置 Gemini API
-
-首次使用需要配置 Gemini API 密钥：
-
+**OpenCode (可选)**
 ```bash
-gemini config
+npm install -g @opencode/cli
 ```
 
-按照提示输入您的 Google AI Studio API 密钥。
+**ClaudeCode (可选)**
+```bash
+npm install -g @claudecode/cli
+```
+
+#### 2. 配置 AI 服务
+
+根据您选择的AI服务进行配置：
+
+**Gemini 配置**
+```bash
+gemini config
+# 按照提示输入您的 Google AI Studio API 密钥
+```
+
+**OpenCode 配置**
+```bash
+opencode config
+# 或设置环境变量: export OPENCODE_API_KEY='your_key'
+```
+
+**ClaudeCode 配置**
+```bash
+claudecode config
+# 或设置环境变量: export CLAUDECODE_API_KEY='your_key'
+```
 
 #### 3. 克隆项目
 
@@ -332,9 +357,44 @@ git push
 
 | 变量名 | 描述 | 默认值 |
 |--------|------|--------|
+| `AI_SERVICE` | 选择AI服务 | `gemini` |
 | `REVIEW_LOGS_DIR` | 审查报告输出目录 | `./review_logs` |
+| `AI_TIMEOUT` | AI服务调用超时时间 | `30` |
+| `AI_MAX_RETRIES` | AI服务重试次数 | `3` |
 | `GEMINI_MODEL` | Gemini 模型参数 | `gemini-pro` |
+| `OPENCODE_MODEL` | OpenCode 模型参数 | `opencode-pro` |
+| `CLAUDECODE_MODEL` | ClaudeCode 模型参数 | `claude-3-sonnet` |
 | `DEBUG` | 启用调试模式 | `false` |
+
+### AI 服务配置
+
+#### 选择AI服务
+
+您可以通过以下方式选择和配置AI服务：
+
+**方式一：环境变量**
+```bash
+export AI_SERVICE=gemini  # 或 opencode, claudecode
+```
+
+**方式二：配置文件**
+```bash
+# 项目级配置
+echo "AI_SERVICE=gemini" > .ai-config
+
+# 全局配置
+mkdir -p ~/.codereview-cli
+echo "AI_SERVICE=gemini" > ~/.codereview-cli/ai-config
+```
+
+**方式三：使用配置工具**
+```bash
+# 交互式选择AI服务
+./lib/ai-config.sh select
+
+# 配置特定服务
+./lib/ai-config.sh configure gemini
+```
 
 ## 📊 审查报告
 
@@ -470,9 +530,11 @@ limitations under the License.
 
 ### AI 驱动的智能分析
 
-- **深度代码理解**：基于 Google Gemini 的先进 AI 模型
+- **多AI服务支持**：支持 Gemini、OpenCode、ClaudeCode 等多种AI服务
+- **深度代码理解**：基于先进 AI 模型的代码分析能力
 - **上下文感知**：理解代码变更的业务逻辑和技术影响
 - **多维度评估**：从功能、质量、性能、安全等角度全面分析
+- **智能备用方案**：AI服务不可用时自动使用备用方案
 
 ### 无缝集成体验
 
@@ -490,10 +552,23 @@ limitations under the License.
 
 ### 常见问题解决
 
-**问题 1**: Gemini API 配置失败
+**问题 1**: AI服务配置失败
+
 ```bash
-# 解决方案：重新配置 API 密钥
+# 检查当前AI服务状态
+./lib/ai-service-manager.sh status
+
+# 重新配置AI服务
+./lib/ai-config.sh select
+
+# Gemini 重新配置
 gemini config --reset
+
+# OpenCode 重新配置
+opencode config
+
+# ClaudeCode 重新配置
+claudecode config
 ```
 
 **问题 2**: Hook 权限问题
