@@ -123,12 +123,40 @@ run_test "检查环境变量模板" "test -f .env.example"
 # 8. 测试Git hooks更新
 echo -e "\n${YELLOW}=== 测试Git hooks ===${NC}"
 
-run_test "检查post-commit hook" "test -f githooks/post-commit"
-run_test "检查pre-push hook" "test -f githooks/pre-push"
+# 根据新逻辑，钩子可能在项目本地，也可能在全局 ~/.codereview-cli 中
+POST_COMMIT_PATH=""
+PRE_PUSH_PATH=""
+
+if [ -f "githooks/post-commit" ]; then
+    POST_COMMIT_PATH="githooks/post-commit"
+elif [ -f "$HOME/.codereview-cli/githooks/post-commit" ]; then
+    POST_COMMIT_PATH="$HOME/.codereview-cli/githooks/post-commit"
+fi
+
+if [ -f "githooks/pre-push" ]; then
+    PRE_PUSH_PATH="githooks/pre-push"
+elif [ -f "$HOME/.codereview-cli/githooks/pre-push" ]; then
+    PRE_PUSH_PATH="$HOME/.codereview-cli/githooks/pre-push"
+fi
+
+run_test "检查post-commit hook是否存在" "test -n \"$POST_COMMIT_PATH\""
+run_test "检查pre-push hook是否存在" "test -n \"$PRE_PUSH_PATH\""
 
 # 检查hooks中是否包含AI服务管理器调用
-run_test "post-commit包含AI服务调用" "grep -q 'call_ai_for_review' githooks/post-commit"
-run_test "pre-push包含AI服务调用" "grep -q 'generate_mr_title_with_ai' githooks/pre-push"
+if [ -n "$POST_COMMIT_PATH" ]; then
+    run_test "post-commit包含AI服务调用" "grep -q 'call_ai_for_review' \"$POST_COMMIT_PATH\""
+else
+    # 如果文件不存在，这个测试应该失败
+    run_test "post-commit包含AI服务调用" "false"
+fi
+
+if [ -n "$PRE_PUSH_PATH" ]; then
+    run_test "pre-push包含AI服务调用" "grep -q 'generate_mr_title_with_ai' \"$PRE_PUSH_PATH\""
+else
+    # 如果文件不存在，这个测试应该失败
+    run_test "pre-push包含AI服务调用" "false"
+fi
+
 
 # 9. 测试文档
 echo -e "\n${YELLOW}=== 测试文档 ===${NC}"
