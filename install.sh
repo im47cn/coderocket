@@ -404,7 +404,8 @@ setup_existing_repos() {
 
                 if [ -d "$repo_path/.git" ]; then
                     echo -e "${BLUE}  为 $repo_path 安装 hooks...${NC}"
-                    (cd "$repo_path" && "$INSTALL_DIR/install-hooks.sh")
+                    # 进入目标仓库目录并运行配置
+                    (cd "$repo_path" && setup_current_project)
                 else
                     echo -e "${RED}✗ $repo_path 不是有效的 Git 仓库${NC}"
                 fi
@@ -419,17 +420,48 @@ setup_existing_repos() {
     esac
 }
 
+# 询问并创建项目级提示词文档
+setup_project_prompts() {
+    # 询问是否需要创建项目级提示词文档
+    echo ""
+    echo "是否需要创建项目级的代码审查提示词文档？"
+    echo "  - 选择 'y': 在当前项目创建 prompts/git-commit-review-prompt.md，可自定义审查规则"
+    echo "  - 选择 'n': 使用全局默认提示词，无需在项目中创建文件"
+    echo ""
+    read -p "创建项目级提示词文档? (y/N): " create_prompts
+
+    if [[ "$create_prompts" =~ ^[Yy]$ ]]; then
+        echo -e "${YELLOW}→ 创建项目级提示词文档...${NC}"
+        # 创建prompts目录并复制提示词文档
+        mkdir -p ./prompts
+        if cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/; then
+            echo -e "${GREEN}✓ 提示词文档已创建: ./prompts/git-commit-review-prompt.md${NC}"
+            echo -e "${BLUE}  您可以编辑此文件来自定义代码审查规则${NC}"
+            return 0
+        else
+            echo -e "${YELLOW}⚠ 提示词文档创建失败，将使用全局默认提示词${NC}"
+            return 1
+        fi
+    else
+        echo -e "${BLUE}✓ 将使用全局默认提示词，无需创建项目文件${NC}"
+        return 0
+    fi
+}
+
 # 配置当前项目
 setup_current_project() {
-    # 复制必要文件到当前项目
-    cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/ 2>/dev/null || {
-        mkdir -p ./prompts
-        cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/
-    }
+    echo -e "${BLUE}=== 项目配置 ===${NC}"
 
-    cp "$INSTALL_DIR/.env.example" ./ 2>/dev/null || true
+    # 设置项目级提示词文档
+    setup_project_prompts
+
+    # 复制环境变量模板（总是复制，用户可能需要配置）
+    if cp "$INSTALL_DIR/.env.example" ./ 2>/dev/null; then
+        echo -e "${GREEN}✓ 环境变量模板已创建: ./.env.example${NC}"
+    fi
 
     # 运行安装脚本
+    echo -e "${YELLOW}→ 安装Git hooks...${NC}"
     if "$INSTALL_DIR/install-hooks.sh"; then
         echo -e "${GREEN}✓ 项目配置完成${NC}"
     else

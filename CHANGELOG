@@ -1,0 +1,19 @@
+# Changelog
+
+All notable changes to this project will be documented in this file.
+
+## [Unreleased]
+
+### Added
+- 可选的项目级提示词文档创建功能
+- 安装时询问用户是否需要创建项目级提示词文档
+- 支持使用全局默认提示词，避免项目目录污染
+
+### Changed
+- 优化安装脚本，提示词文档创建变为可选
+- 改进用户体验，提供清晰的选择说明
+- 更新README文档，说明提示词配置选项
+
+### Fixed
+- 解决安装时无条件创建提示词文档的问题
+- 避免不需要自定义审查规则的项目产生不必要的文件
