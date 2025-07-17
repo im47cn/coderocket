@@ -58,14 +58,20 @@ if [ -f "$REPO_ROOT/.env" ]; then
     source "$REPO_ROOT/.env" 2>/dev/null
 fi
 
-# 检查 post-commit 脚本是否存在
-if [ ! -f "$REPO_ROOT/githooks/post-commit" ]; then
-    echo "错误：post-commit 脚本不存在: $REPO_ROOT/githooks/post-commit"
+# 查找 post-commit 脚本
+POST_COMMIT_SCRIPT=""
+if [ -f "$REPO_ROOT/githooks/post-commit" ]; then
+    POST_COMMIT_SCRIPT="$REPO_ROOT/githooks/post-commit"
+elif [ -f "$HOME/.codereview-cli/githooks/post-commit" ]; then
+    POST_COMMIT_SCRIPT="$HOME/.codereview-cli/githooks/post-commit"
+else
+    echo "错误：post-commit 脚本不存在"
+    echo "请确保 CodeReview CLI 已正确安装"
     exit 1
 fi
 
 # 执行 post-commit hook
-"$REPO_ROOT/githooks/post-commit"
+"$POST_COMMIT_SCRIPT"
 EOF
 
 # 安装 pre-push hook
@@ -100,14 +106,20 @@ if [ -f "$REPO_ROOT/.env" ]; then
     source "$REPO_ROOT/.env" 2>/dev/null
 fi
 
-# 检查 pre-push 脚本是否存在
-if [ ! -f "$REPO_ROOT/githooks/pre-push" ]; then
-    echo "错误：pre-push 脚本不存在: $REPO_ROOT/githooks/pre-push"
+# 查找 pre-push 脚本
+PRE_PUSH_SCRIPT=""
+if [ -f "$REPO_ROOT/githooks/pre-push" ]; then
+    PRE_PUSH_SCRIPT="$REPO_ROOT/githooks/pre-push"
+elif [ -f "$HOME/.codereview-cli/githooks/pre-push" ]; then
+    PRE_PUSH_SCRIPT="$HOME/.codereview-cli/githooks/pre-push"
+else
+    echo "错误：pre-push 脚本不存在"
+    echo "请确保 CodeReview CLI 已正确安装"
     exit 1
 fi
 
-# 执行 pre-push hook
-"$REPO_ROOT/githooks/pre-push"
+# 执行 pre-push hook，传递所有参数
+"$PRE_PUSH_SCRIPT" "$@"
 EOF
 
 # 设置执行权限

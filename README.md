@@ -523,7 +523,23 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 
 ### 常见问题解决
 
-**问题 1**: AI服务配置失败
+**问题 1**: Git hooks路径错误
+
+如果遇到 `错误：pre-push 脚本不存在` 错误：
+
+```bash
+# 快速修复（推荐）
+curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/fix-hooks.sh -o fix-hooks.sh
+chmod +x fix-hooks.sh
+./fix-hooks.sh
+
+# 或重新设置项目
+codereview-cli setup
+```
+
+详细解决方案请参考：[快速修复指南](QUICK_FIX.md)
+
+**问题 2**: AI服务配置失败
 
 ```bash
 # 检查当前AI服务状态
@@ -542,27 +558,27 @@ opencode config
 claudecode config
 ```
 
-**问题 2**: Hook 权限问题
+**问题 3**: Hook 权限问题
 ```bash
 # 解决方案：确保 hook 文件有执行权限
 chmod +x .git/hooks/post-commit
 chmod +x .git/hooks/pre-push
 ```
 
-**问题 3**: 审查报告生成失败
+**问题 4**: 审查报告生成失败
 ```bash
 # 解决方案：检查 review_logs 目录权限
 mkdir -p review_logs
 chmod 755 review_logs
 ```
 
-**问题 4**: VS Code 中环境变量未加载
+**问题 5**: VS Code 中环境变量未加载
 ```bash
 # 解决方案：重启 VS Code 或检查环境变量配置
 echo $GITLAB_PERSONAL_ACCESS_TOKEN
 ```
 
-**问题 5**: MR 创建失败
+**问题 6**: MR 创建失败
 ```bash
 # 解决方案：检查 GitLab Token 权限
 # 确保 Token 具有 api, read_repository, write_repository 权限
