@@ -123,40 +123,91 @@ run_test "检查环境变量模板" "test -f .env.example"
 # 8. 测试Git hooks更新
 echo -e "\n${YELLOW}=== 测试Git hooks ===${NC}"
 
-# 根据新逻辑，钩子可能在项目本地，也可能在全局 ~/.codereview-cli 中
-POST_COMMIT_PATH=""
-PRE_PUSH_PATH=""
+# 创建测试函数来检查hooks的多种路径
+test_hook_exists() {
+    local hook_name=$1
+    # 检查项目本地路径
+    if [ -f "githooks/$hook_name" ]; then
+        return 0
+    fi
+    # 检查全局安装路径
+    if [ -f "$HOME/.codereview-cli/githooks/$hook_name" ]; then
+        return 0
+    fi
+    return 1
+}
 
-if [ -f "githooks/post-commit" ]; then
-    POST_COMMIT_PATH="githooks/post-commit"
-elif [ -f "$HOME/.codereview-cli/githooks/post-commit" ]; then
-    POST_COMMIT_PATH="$HOME/.codereview-cli/githooks/post-commit"
-fi
+# 创建测试函数来检查hooks内容
+test_hook_content() {
+    local hook_name=$1
+    local pattern=$2
+    # 检查项目本地路径
+    if [ -f "githooks/$hook_name" ] && grep -q "$pattern" "githooks/$hook_name"; then
+        return 0
+    fi
+    # 检查全局安装路径
+    if [ -f "$HOME/.codereview-cli/githooks/$hook_name" ] && grep -q "$pattern" "$HOME/.codereview-cli/githooks/$hook_name"; then
+        return 0
+    fi
+    return 1
+}
 
-if [ -f "githooks/pre-push" ]; then
-    PRE_PUSH_PATH="githooks/pre-push"
-elif [ -f "$HOME/.codereview-cli/githooks/pre-push" ]; then
-    PRE_PUSH_PATH="$HOME/.codereview-cli/githooks/pre-push"
-fi
-
-run_test "检查post-commit hook是否存在" "test -n \"$POST_COMMIT_PATH\""
-run_test "检查pre-push hook是否存在" "test -n \"$PRE_PUSH_PATH\""
+run_test "检查post-commit hook存在" "test_hook_exists post-commit"
+run_test "检查pre-push hook存在" "test_hook_exists pre-push"
 
 # 检查hooks中是否包含AI服务管理器调用
-if [ -n "$POST_COMMIT_PATH" ]; then
-    run_test "post-commit包含AI服务调用" "grep -q 'call_ai_for_review' \"$POST_COMMIT_PATH\""
-else
-    # 如果文件不存在，这个测试应该失败
-    run_test "post-commit包含AI服务调用" "false"
+run_test "post-commit包含AI服务调用" "test_hook_content post-commit 'call_ai_for_review'"
+run_test "pre-push包含AI服务调用" "test_hook_content pre-push 'generate_mr_title_with_ai'"
+
+# 额外测试：验证全局安装的hooks
+if [ -d "$HOME/.codereview-cli" ]; then
+    echo -e "\n${BLUE}检测到全局安装，进行额外验证...${NC}"
+    run_test "全局post-commit hook存在" "test -f $HOME/.codereview-cli/githooks/post-commit"
+    run_test "全局pre-push hook存在" "test -f $HOME/.codereview-cli/githooks/pre-push"
+    run_test "全局AI服务管理器存在" "test -f $HOME/.codereview-cli/lib/ai-service-manager.sh"
+
+    # 测试hooks路径解析逻辑
+    echo -e "\n${BLUE}测试hooks路径解析逻辑...${NC}"
+
+    # 创建临时测试脚本来模拟hooks路径解析
+    cat > test_hook_resolution.sh << 'EOF'
+#!/bin/bash
+# 模拟hooks路径解析逻辑
+REPO_ROOT=$(pwd)
+
+# 查找 post-commit 脚本
+POST_COMMIT_SCRIPT=""
+if [ -f "$REPO_ROOT/githooks/post-commit" ]; then
+    POST_COMMIT_SCRIPT="$REPO_ROOT/githooks/post-commit"
+elif [ -f "$HOME/.codereview-cli/githooks/post-commit" ]; then
+    POST_COMMIT_SCRIPT="$HOME/.codereview-cli/githooks/post-commit"
 fi
 
-if [ -n "$PRE_PUSH_PATH" ]; then
-    run_test "pre-push包含AI服务调用" "grep -q 'generate_mr_title_with_ai' \"$PRE_PUSH_PATH\""
-else
-    # 如果文件不存在，这个测试应该失败
-    run_test "pre-push包含AI服务调用" "false"
+# 查找 pre-push 脚本
+PRE_PUSH_SCRIPT=""
+if [ -f "$REPO_ROOT/githooks/pre-push" ]; then
+    PRE_PUSH_SCRIPT="$REPO_ROOT/githooks/pre-push"
+elif [ -f "$HOME/.codereview-cli/githooks/pre-push" ]; then
+    PRE_PUSH_SCRIPT="$HOME/.codereview-cli/githooks/pre-push"
 fi
 
+# 验证找到的脚本
+if [ ! -z "$POST_COMMIT_SCRIPT" ] && [ -f "$POST_COMMIT_SCRIPT" ] && \
+   [ ! -z "$PRE_PUSH_SCRIPT" ] && [ -f "$PRE_PUSH_SCRIPT" ]; then
+    echo "SUCCESS: 找到hooks脚本"
+    echo "POST_COMMIT: $POST_COMMIT_SCRIPT"
+    echo "PRE_PUSH: $PRE_PUSH_SCRIPT"
+    exit 0
+else
+    echo "FAILED: 未找到hooks脚本"
+    exit 1
+fi
+EOF
+
+    chmod +x test_hook_resolution.sh
+    run_test "hooks路径解析逻辑" "./test_hook_resolution.sh"
+    rm -f test_hook_resolution.sh
+fi
 
 # 9. 测试文档
 echo -e "\n${YELLOW}=== 测试文档 ===${NC}"
