@@ -14,11 +14,16 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/ai-config.sh"
 source "$SCRIPT_DIR/mr-generator.sh"
+source "$SCRIPT_DIR/api-versions.sh"
 
 # OpenCode 默认配置
-DEFAULT_OPENCODE_API_URL="https://api.opencode.com/v1"
 DEFAULT_OPENCODE_MODEL="opencode-pro"
 DEFAULT_TIMEOUT=30
+
+# 获取OpenCode API URL（使用api-versions.sh中的配置）
+get_default_opencode_api_url() {
+    get_opencode_api_url
+}
 
 # 获取OpenCode配置
 get_opencode_config() {
@@ -69,7 +74,7 @@ install_opencode_cli() {
 # 配置OpenCode API
 configure_opencode_api() {
     local api_key=$(get_opencode_config "OPENCODE_API_KEY")
-    local api_url=$(get_opencode_config "OPENCODE_API_URL" "$DEFAULT_OPENCODE_API_URL")
+    local api_url=$(get_opencode_config "OPENCODE_API_URL" "$(get_default_opencode_api_url)")
     
     if [ -z "$api_key" ]; then
         echo -e "${RED}❌ 未设置 OPENCODE_API_KEY${NC}"
@@ -97,7 +102,7 @@ call_opencode_api() {
     local timeout=${2:-$DEFAULT_TIMEOUT}
     local model=$(get_opencode_config "OPENCODE_MODEL" "$DEFAULT_OPENCODE_MODEL")
     local api_key=$(get_opencode_config "OPENCODE_API_KEY")
-    local api_url=$(get_opencode_config "OPENCODE_API_URL" "$DEFAULT_OPENCODE_API_URL")
+    local api_url=$(get_opencode_config "OPENCODE_API_URL" "$(get_default_opencode_api_url)")
     
     if [ -z "$api_key" ]; then
         echo -e "${RED}❌ 未设置 OPENCODE_API_KEY${NC}" >&2

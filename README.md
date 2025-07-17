@@ -223,6 +223,8 @@ codereview-cli setup
 # 更新到最新版本
 codereview-cli update
 
+# 如果更新失败，会显示详细的错误信息和解决方案
+
 # 配置 Gemini API 密钥
 codereview-cli config
 

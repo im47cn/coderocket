@@ -172,9 +172,47 @@ case "\$1" in
         ;;
     "update")
         echo "🔄 更新 CodeReview CLI..."
-        cd "\$INSTALL_DIR"
-        git pull origin main
-        echo "✅ 更新完成"
+
+        # 检查安装目录是否存在
+        if [ ! -d "\$INSTALL_DIR" ]; then
+            echo "❌ 错误：CodeReview CLI 未安装"
+            echo "请先运行安装脚本："
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
+            exit 1
+        fi
+
+        # 检查是否为Git仓库
+        if [ ! -d "\$INSTALL_DIR/.git" ]; then
+            echo "❌ 错误：安装目录不是Git仓库"
+            echo "请重新安装 CodeReview CLI："
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
+            exit 1
+        fi
+
+        # 进入安装目录并更新
+        cd "\$INSTALL_DIR" || {
+            echo "❌ 错误：无法进入安装目录"
+            exit 1
+        }
+
+        # 检查网络连接和Git状态
+        if ! git fetch origin main 2>/dev/null; then
+            echo "❌ 错误：无法连接到远程仓库"
+            echo "请检查网络连接或手动更新："
+            echo "cd \$INSTALL_DIR && git pull origin main"
+            exit 1
+        fi
+
+        # 执行更新
+        if git pull origin main; then
+            echo "✅ 更新完成"
+            echo "📋 当前版本: \$(cat VERSION 2>/dev/null || echo '未知')"
+        else
+            echo "❌ 更新失败"
+            echo "请尝试手动更新："
+            echo "cd \$INSTALL_DIR && git pull origin main"
+            exit 1
+        fi
         ;;
     "config")
         echo "⚙️ 配置AI服务..."
@@ -232,9 +270,47 @@ case "\$1" in
         ;;
     "update")
         echo "🔄 更新 CodeReview CLI..."
-        cd "\$INSTALL_DIR"
-        git pull origin main
-        echo "✅ 更新完成"
+
+        # 检查安装目录是否存在
+        if [ ! -d "\$INSTALL_DIR" ]; then
+            echo "❌ 错误：CodeReview CLI 未安装"
+            echo "请先运行安装脚本："
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
+            exit 1
+        fi
+
+        # 检查是否为Git仓库
+        if [ ! -d "\$INSTALL_DIR/.git" ]; then
+            echo "❌ 错误：安装目录不是Git仓库"
+            echo "请重新安装 CodeReview CLI："
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
+            exit 1
+        fi
+
+        # 进入安装目录并更新
+        cd "\$INSTALL_DIR" || {
+            echo "❌ 错误：无法进入安装目录"
+            exit 1
+        }
+
+        # 检查网络连接和Git状态
+        if ! git fetch origin main 2>/dev/null; then
+            echo "❌ 错误：无法连接到远程仓库"
+            echo "请检查网络连接或手动更新："
+            echo "cd \$INSTALL_DIR && git pull origin main"
+            exit 1
+        fi
+
+        # 执行更新
+        if git pull origin main; then
+            echo "✅ 更新完成"
+            echo "📋 当前版本: \$(cat VERSION 2>/dev/null || echo '未知')"
+        else
+            echo "❌ 更新失败"
+            echo "请尝试手动更新："
+            echo "cd \$INSTALL_DIR && git pull origin main"
+            exit 1
+        fi
         ;;
     "config")
         echo "⚙️ 配置AI服务..."
@@ -404,8 +480,7 @@ setup_existing_repos() {
 
                 if [ -d "$repo_path/.git" ]; then
                     echo -e "${BLUE}  为 $repo_path 安装 hooks...${NC}"
-                    # 进入目标仓库目录并运行配置
-                    (cd "$repo_path" && setup_current_project)
+                    (cd "$repo_path" && "$INSTALL_DIR/install-hooks.sh")
                 else
                     echo -e "${RED}✗ $repo_path 不是有效的 Git 仓库${NC}"
                 fi
@@ -420,48 +495,17 @@ setup_existing_repos() {
     esac
 }
 
-# 询问并创建项目级提示词文档
-setup_project_prompts() {
-    # 询问是否需要创建项目级提示词文档
-    echo ""
-    echo "是否需要创建项目级的代码审查提示词文档？"
-    echo "  - 选择 'y': 在当前项目创建 prompts/git-commit-review-prompt.md，可自定义审查规则"
-    echo "  - 选择 'n': 使用全局默认提示词，无需在项目中创建文件"
-    echo ""
-    read -p "创建项目级提示词文档? (y/N): " create_prompts
-
-    if [[ "$create_prompts" =~ ^[Yy]$ ]]; then
-        echo -e "${YELLOW}→ 创建项目级提示词文档...${NC}"
-        # 创建prompts目录并复制提示词文档
-        mkdir -p ./prompts
-        if cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/; then
-            echo -e "${GREEN}✓ 提示词文档已创建: ./prompts/git-commit-review-prompt.md${NC}"
-            echo -e "${BLUE}  您可以编辑此文件来自定义代码审查规则${NC}"
-            return 0
-        else
-            echo -e "${YELLOW}⚠ 提示词文档创建失败，将使用全局默认提示词${NC}"
-            return 1
-        fi
-    else
-        echo -e "${BLUE}✓ 将使用全局默认提示词，无需创建项目文件${NC}"
-        return 0
-    fi
-}
-
 # 配置当前项目
 setup_current_project() {
-    echo -e "${BLUE}=== 项目配置 ===${NC}"
+    # 复制必要文件到当前项目
+    cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/ 2>/dev/null || {
+        mkdir -p ./prompts
+        cp "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ./prompts/
+    }
 
-    # 设置项目级提示词文档
-    setup_project_prompts
-
-    # 复制环境变量模板（总是复制，用户可能需要配置）
-    if cp "$INSTALL_DIR/.env.example" ./ 2>/dev/null; then
-        echo -e "${GREEN}✓ 环境变量模板已创建: ./.env.example${NC}"
-    fi
+    cp "$INSTALL_DIR/.env.example" ./ 2>/dev/null || true
 
     # 运行安装脚本
-    echo -e "${YELLOW}→ 安装Git hooks...${NC}"
     if "$INSTALL_DIR/install-hooks.sh"; then
         echo -e "${GREEN}✓ 项目配置完成${NC}"
     else

@@ -14,11 +14,16 @@ NC='\033[0m' # No Color
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/ai-config.sh"
 source "$SCRIPT_DIR/mr-generator.sh"
+source "$SCRIPT_DIR/api-versions.sh"
 
 # ClaudeCode 默认配置
-DEFAULT_CLAUDECODE_API_URL="https://api.claudecode.com/v1"
 DEFAULT_CLAUDECODE_MODEL="claude-3-sonnet"
 DEFAULT_TIMEOUT=30
+
+# 获取ClaudeCode API URL（使用api-versions.sh中的配置）
+get_default_claudecode_api_url() {
+    get_claudecode_api_url
+}
 
 # 获取ClaudeCode配置
 get_claudecode_config() {
@@ -69,7 +74,7 @@ install_claudecode_cli() {
 # 配置ClaudeCode API
 configure_claudecode_api() {
     local api_key=$(get_claudecode_config "CLAUDECODE_API_KEY")
-    local api_url=$(get_claudecode_config "CLAUDECODE_API_URL" "$DEFAULT_CLAUDECODE_API_URL")
+    local api_url=$(get_claudecode_config "CLAUDECODE_API_URL" "$(get_default_claudecode_api_url)")
     
     if [ -z "$api_key" ]; then
         echo -e "${RED}❌ 未设置 CLAUDECODE_API_KEY${NC}"
@@ -97,7 +102,7 @@ call_claudecode_api() {
     local timeout=${2:-$DEFAULT_TIMEOUT}
     local model=$(get_claudecode_config "CLAUDECODE_MODEL" "$DEFAULT_CLAUDECODE_MODEL")
     local api_key=$(get_claudecode_config "CLAUDECODE_API_KEY")
-    local api_url=$(get_claudecode_config "CLAUDECODE_API_URL" "$DEFAULT_CLAUDECODE_API_URL")
+    local api_url=$(get_claudecode_config "CLAUDECODE_API_URL" "$(get_default_claudecode_api_url)")
     
     if [ -z "$api_key" ]; then
         echo -e "${RED}❌ 未设置 CLAUDECODE_API_KEY${NC}" >&2
@@ -131,7 +136,7 @@ EOF
     local response=$(timeout "$timeout" curl -s \
         -H "Authorization: Bearer $api_key" \
         -H "Content-Type: application/json" \
-        -H "anthropic-version: 2023-06-01" \
+        -H "anthropic-version: $(get_anthropic_version)" \
         -d "$json_payload" \
         "$api_url/messages" 2>/dev/null)
     

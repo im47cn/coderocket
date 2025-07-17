@@ -8,12 +8,26 @@ All notable changes to this project will be documented in this file.
 - 可选的项目级提示词文档创建功能
 - 安装时询问用户是否需要创建项目级提示词文档
 - 支持使用全局默认提示词，避免项目目录污染
+- 版本管理系统 (lib/version.sh)
+- API版本配置系统 (lib/api-versions.sh)
+- VERSION文件作为单一版本来源
+- 智能版本获取，支持Git标签和提交哈希
+- 环境变量覆盖API版本配置功能
 
 ### Changed
 - 优化安装脚本，提示词文档创建变为可选
 - 改进用户体验，提供清晰的选择说明
 - 更新README文档，说明提示词配置选项
+- install.sh中的版本显示改为动态获取
+- API服务模块使用集中化的API版本配置
+- 所有硬编码版本号改为动态获取
 
 ### Fixed
 - 解决安装时无条件创建提示词文档的问题
 - 避免不需要自定义审查规则的项目产生不必要的文件
+- 修复install.sh中版本号硬编码问题
+- 修复API URL中版本号硬编码问题
+- 修复Anthropic API版本硬编码问题
+- 修复codereview-cli update命令的错误处理问题
+- 修复update命令在非Git仓库中显示误导性成功信息的问题
+- 增强update命令的错误检查和用户反馈
