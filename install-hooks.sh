@@ -20,15 +20,93 @@ fi
 REPO_ROOT=$(git rev-parse --show-toplevel)
 echo "仓库根目录: $REPO_ROOT"
 
+# 获取配置值的函数
+get_config_value() {
+    local key=$1
+    local default_value=$2
+    local value=""
+
+    # 优先级：环境变量 > 项目配置 > 全局配置 > 默认值
+    if [ ! -z "${!key}" ]; then
+        value="${!key}"
+    elif [ -f "$REPO_ROOT/.ai-config" ]; then
+        value=$(grep "^$key=" "$REPO_ROOT/.ai-config" 2>/dev/null | cut -d'=' -f2)
+    elif [ -f "$HOME/.codereview-cli/ai-config" ]; then
+        value=$(grep "^$key=" "$HOME/.codereview-cli/ai-config" 2>/dev/null | cut -d'=' -f2)
+    elif [ -f "$REPO_ROOT/.env" ]; then
+        value=$(grep "^$key=" "$REPO_ROOT/.env" 2>/dev/null | cut -d'=' -f2)
+    fi
+
+    if [ -z "$value" ]; then
+        value="$default_value"
+    fi
+
+    echo "$value"
+}
+
+# 获取代码审查时机配置
+REVIEW_TIMING=$(get_config_value "REVIEW_TIMING" "post-commit")
+echo "代码审查时机: $REVIEW_TIMING"
+
 # 创建 hooks 目录（如果不存在）
 HOOKS_DIR="$REPO_ROOT/.git/hooks"
 if [ ! -d "$HOOKS_DIR" ]; then
     mkdir -p "$HOOKS_DIR"
 fi
 
-# 安装 post-commit hook
-echo -e "${YELLOW}→ 安装 post-commit hook...${NC}"
-cat > "$HOOKS_DIR/post-commit" << 'EOF'
+# 根据配置安装相应的代码审查hook
+if [ "$REVIEW_TIMING" = "pre-commit" ]; then
+    echo -e "${YELLOW}→ 安装 pre-commit hook (提交前审查)...${NC}"
+    cat > "$HOOKS_DIR/pre-commit" << 'EOF'
+#!/bin/bash
+
+# 获取 Git 仓库根目录
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+
+# 如果不在 Git 仓库中，退出
+if [ -z "$REPO_ROOT" ]; then
+    echo "错误：不在 Git 仓库中"
+    exit 1
+fi
+
+# 加载环境变量（如果存在）
+if [ -f "$HOME/.bashrc" ]; then
+    source "$HOME/.bashrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.zshrc" ]; then
+    source "$HOME/.zshrc" 2>/dev/null
+fi
+
+if [ -f "$HOME/.profile" ]; then
+    source "$HOME/.profile" 2>/dev/null
+fi
+
+# 尝试从项目环境文件加载
+if [ -f "$REPO_ROOT/.env" ]; then
+    source "$REPO_ROOT/.env" 2>/dev/null
+fi
+
+# 查找 pre-commit 脚本
+PRE_COMMIT_SCRIPT=""
+if [ -f "$REPO_ROOT/githooks/pre-commit" ]; then
+    PRE_COMMIT_SCRIPT="$REPO_ROOT/githooks/pre-commit"
+elif [ -f "$HOME/.codereview-cli/githooks/pre-commit" ]; then
+    PRE_COMMIT_SCRIPT="$HOME/.codereview-cli/githooks/pre-commit"
+else
+    echo "错误：pre-commit 脚本不存在"
+    echo "请确保 CodeReview CLI 已正确安装"
+    exit 1
+fi
+
+# 执行 pre-commit hook
+"$PRE_COMMIT_SCRIPT"
+EOF
+    chmod +x "$HOOKS_DIR/pre-commit"
+    echo -e "${GREEN}✓ pre-commit hook 安装完成${NC}"
+else
+    echo -e "${YELLOW}→ 安装 post-commit hook (提交后审查)...${NC}"
+    cat > "$HOOKS_DIR/post-commit" << 'EOF'
 #!/bin/bash
 
 # 获取 Git 仓库根目录
@@ -73,6 +151,9 @@ fi
 # 执行 post-commit hook
 "$POST_COMMIT_SCRIPT"
 EOF
+    chmod +x "$HOOKS_DIR/post-commit"
+    echo -e "${GREEN}✓ post-commit hook 安装完成${NC}"
+fi
 
 # 安装 pre-push hook
 echo -e "${YELLOW}→ 安装 pre-push hook...${NC}"
@@ -123,7 +204,6 @@ fi
 EOF
 
 # 设置执行权限
-chmod +x "$HOOKS_DIR/post-commit"
 chmod +x "$HOOKS_DIR/pre-push"
 
 echo -e "${GREEN}✓ Git hooks 安装完成${NC}"
@@ -178,6 +258,12 @@ fi
 
 echo -e "\n${GREEN}=== 安装完成 ===${NC}"
 echo "现在你可以："
-echo "1. 使用 git commit 触发自动代码审查"
+if [ "$REVIEW_TIMING" = "pre-commit" ]; then
+    echo "1. 使用 git commit 触发提交前代码审查（可能阻止有问题的提交）"
+else
+    echo "1. 使用 git commit 触发提交后代码审查"
+fi
 echo "2. 使用 git push 触发自动 MR 创建"
 echo "3. 在 VS Code 和终端中都能正常工作"
+echo ""
+echo "💡 提示：可以使用 './lib/ai-config.sh timing' 来更改代码审查时机"

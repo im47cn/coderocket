@@ -1,0 +1,137 @@
+#!/bin/bash
+
+# 获取 Git 仓库根目录
+REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
+
+# 如果不在 Git 仓库中，退出
+if [ -z "$REPO_ROOT" ]; then
+    echo "❌ 错误：不在 Git 仓库中"
+    exit 1
+fi
+
+# 安全地加载必要的环境变量
+# 只加载项目相关的环境变量，避免全局profile污染
+
+# 加载项目环境文件
+if [ -f "$REPO_ROOT/.env" ]; then
+    # 只加载以特定前缀开头的环境变量，避免污染
+    while IFS='=' read -r key value; do
+        # 跳过注释和空行
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z $key ]] && continue
+
+        # 只加载AI和GitLab相关的环境变量
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_|REVIEW_) ]]; then
+            export "$key=$value"
+        fi
+    done < "$REPO_ROOT/.env" 2>/dev/null
+fi
+
+# 加载全局CodeReview CLI配置
+if [ -f "$HOME/.codereview-cli/env" ]; then
+    while IFS='=' read -r key value; do
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z $key ]] && continue
+
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_|REVIEW_) ]]; then
+            export "$key=$value"
+        fi
+    done < "$HOME/.codereview-cli/env" 2>/dev/null
+fi
+
+# 导入AI服务管理器
+if [ -f "$REPO_ROOT/lib/ai-service-manager.sh" ]; then
+    source "$REPO_ROOT/lib/ai-service-manager.sh"
+elif [ -f "$HOME/.codereview-cli/lib/ai-service-manager.sh" ]; then
+    source "$HOME/.codereview-cli/lib/ai-service-manager.sh"
+else
+    echo "❌ 错误：AI服务管理器未找到"
+    exit 1
+fi
+
+# 检查提示词文件是否存在
+PROMPT_FILE="$REPO_ROOT/prompts/git-commit-review-prompt.md"
+if [ ! -f "$PROMPT_FILE" ]; then
+    echo "❌ 错误：提示词文件不存在: $PROMPT_FILE"
+    exit 1
+fi
+
+# 获取当前AI服务
+CURRENT_AI_SERVICE=$(get_ai_service)
+
+# 检查AI服务是否可用
+if ! check_ai_service_available "$CURRENT_AI_SERVICE"; then
+    echo "❌ 错误：AI服务 $CURRENT_AI_SERVICE 不可用"
+    echo "安装命令: $(get_install_command "$CURRENT_AI_SERVICE")"
+    echo "⚠️  跳过代码审查，允许提交继续"
+    exit 0
+fi
+
+# 创建 review_logs 目录（如果不存在）
+mkdir -p "$REPO_ROOT/review_logs"
+
+echo "🚀 正在执行 commit 前的代码审查..."
+echo "📡 使用AI服务: $CURRENT_AI_SERVICE"
+
+# 切换到仓库根目录执行
+cd "$REPO_ROOT"
+
+# 获取暂存区的变更内容
+STAGED_CHANGES=$(git diff --cached)
+
+if [ -z "$STAGED_CHANGES" ]; then
+    echo "⚠️  没有暂存的变更，跳过代码审查"
+    exit 0
+fi
+
+# 准备更明确的提示词
+PROMPT="请执行以下任务：
+1. 你是代码审查专家，需要对即将提交的代码变更进行审查
+2. 使用 git diff --cached 命令获取暂存区的变更内容
+3. 根据提示词文件中的指导进行全面代码审查
+4. 重点关注以下方面：
+   - 代码质量和潜在bug
+   - 安全漏洞
+   - 性能问题
+   - 代码规范
+5. 生成审查报告并保存到 review_logs 目录
+6. 如果发现严重问题，在报告中明确标注 [CRITICAL] 或 [BLOCKING]
+7. 不要询问用户，直接自主执行所有步骤
+8. 这是一个提交前自动化流程，请直接开始执行
+
+暂存区变更内容：
+$STAGED_CHANGES"
+
+# 执行代码审查
+REVIEW_OUTPUT=""
+if REVIEW_OUTPUT=$(call_ai_for_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"); then
+    echo "👌 代码审查完成"
+    echo "📝 审查报告已保存到 $REPO_ROOT/review_logs 目录"
+    
+    # 检查是否有严重问题
+    if echo "$REVIEW_OUTPUT" | grep -q -E "\[CRITICAL\]|\[BLOCKING\]"; then
+        echo ""
+        echo "⚠️  发现严重问题！"
+        echo "📋 审查摘要："
+        echo "$REVIEW_OUTPUT" | grep -E "\[CRITICAL\]|\[BLOCKING\]" | head -5
+        echo ""
+        
+        # 询问用户是否继续提交
+        read -p "是否仍要继续提交？(y/N): " -n 1 -r
+        echo
+        if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+            echo "❌ 提交已取消"
+            echo "💡 请修复上述问题后重新提交"
+            exit 1
+        else
+            echo "⚠️  用户选择继续提交，尽管存在严重问题"
+        fi
+    else
+        echo "✅ 未发现严重问题，允许提交"
+    fi
+else
+    echo "❌ 代码审查失败，但不阻止提交"
+    echo "💡 建议检查AI服务配置或网络连接"
+fi
+
+exit 0

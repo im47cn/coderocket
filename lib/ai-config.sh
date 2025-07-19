@@ -183,6 +183,7 @@ show_config() {
     # 显示当前有效配置 (按优先级解析后的最终值)
     echo -e "\n${YELLOW}当前有效配置:${NC}"
     echo "  AI_SERVICE = $(get_config_value "AI_SERVICE")"
+    echo "  REVIEW_TIMING = $(get_config_value "REVIEW_TIMING")"
     echo "  AI_TIMEOUT = $(get_config_value "AI_TIMEOUT")"
     echo "  AI_MAX_RETRIES = $(get_config_value "AI_MAX_RETRIES")"
 }
@@ -380,6 +381,53 @@ select_ai_service() {
     fi
 }
 
+# 选择代码审查时机
+#
+# 功能: 通过交互式菜单选择代码审查时机
+# 参数:
+#   $1 - scope: 配置范围 (可选, 默认: "project")
+#        - "project": 保存到项目配置
+#        - "global": 保存到全局配置
+# 返回: 0=选择成功, 1=无效选择
+# 复杂度: O(1) - 用户交互时间
+# 依赖: read命令, set_config_value()
+# 调用者: main()
+# 流程: 显示菜单 -> 用户选择 -> 保存选择
+# 示例:
+#   select_review_timing "project"
+select_review_timing() {
+    local scope=${1:-"project"}
+
+    echo -e "${BLUE}=== 选择代码审查时机 ===${NC}"
+    echo "支持的审查时机："
+    echo "  1. pre-commit  - 提交前审查（可阻止有问题的提交）"
+    echo "  2. post-commit - 提交后审查（不影响提交流程，当前默认）"
+    echo ""
+    echo -e "${YELLOW}说明：${NC}"
+    echo "  • pre-commit：在 git commit 之前进行代码审查，如果发现严重问题可以阻止提交"
+    echo "  • post-commit：在 git commit 之后进行代码审查，不会影响正常的提交流程"
+
+    read -p "请选择审查时机 (1-2): " choice
+
+    case "$choice" in
+        "1")
+            local selected_timing="pre-commit"
+            echo -e "${GREEN}✓ 已选择: $selected_timing (提交前审查)${NC}"
+            set_config_value "REVIEW_TIMING" "$selected_timing" "$scope"
+            echo -e "${YELLOW}注意：选择提交前审查后，需要重新运行安装脚本来更新Git hooks${NC}"
+            ;;
+        "2")
+            local selected_timing="post-commit"
+            echo -e "${GREEN}✓ 已选择: $selected_timing (提交后审查)${NC}"
+            set_config_value "REVIEW_TIMING" "$selected_timing" "$scope"
+            ;;
+        *)
+            echo -e "${RED}❌ 无效选择${NC}"
+            return 1
+            ;;
+    esac
+}
+
 # 主函数
 #
 # 功能: 命令行接口，解析参数并调用相应功能
@@ -429,6 +477,9 @@ main() {
         "select")
             select_ai_service "${2:-project}"
             ;;
+        "timing")
+            select_review_timing "${2:-project}"
+            ;;
         "validate")
             # 验证指定服务或当前配置的服务
             local service="${2:-$(get_config_value "AI_SERVICE")}"
@@ -445,6 +496,7 @@ main() {
             echo "  get <key> [scope]         - 获取配置项"
             echo "  configure <service> [scope] - 交互式配置服务"
             echo "  select [scope]            - 选择AI服务"
+            echo "  timing [scope]            - 选择代码审查时机"
             echo "  validate [service]        - 验证服务配置"
             echo "  help                      - 显示帮助信息"
             echo ""

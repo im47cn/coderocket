@@ -228,6 +228,9 @@ codereview-cli update
 # 配置 Gemini API 密钥
 codereview-cli config
 
+# 配置代码审查时机（提交前/提交后）
+codereview-cli timing
+
 # 查看版本信息
 codereview-cli version
 
@@ -395,6 +398,9 @@ cp .env.example .env
 
 **选填环境变量**：
 - `AI_SERVICE` - 选择AI服务（默认: gemini）
+- `REVIEW_TIMING` - 代码审查时机（默认: post-commit）
+  - `pre-commit`: 提交前审查，可阻止有问题的提交
+  - `post-commit`: 提交后审查，不影响提交流程
 - `AI_TIMEOUT` - API调用超时时间（默认: 30秒）
 - `AI_MAX_RETRIES` - 重试次数（默认: 3次）
 - `GITLAB_API_URL` - GitLab API地址（默认: https://gitlab.com/api/v4）
@@ -427,6 +433,9 @@ echo "AI_SERVICE=gemini" > ~/.codereview-cli/ai-config
 ```bash
 # 交互式选择AI服务
 ./lib/ai-config.sh select
+
+# 选择代码审查时机
+./lib/ai-config.sh timing
 
 # 配置特定服务
 ./lib/ai-config.sh configure gemini

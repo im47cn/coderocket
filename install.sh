@@ -254,6 +254,15 @@ case "\$1" in
             echo "3. ClaudeCode - claudecode config"
         fi
         ;;
+    "timing")
+        echo "⏰ 配置代码审查时机..."
+        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
+            "\$INSTALL_DIR/lib/ai-config.sh" timing
+        else
+            echo "请手动配置代码审查时机："
+            echo "在 .env 文件中设置 REVIEW_TIMING=pre-commit 或 REVIEW_TIMING=post-commit"
+        fi
+        ;;
     "version"|"-v"|"--version")
         echo "CodeReview CLI v1.0.0"
         echo "安装路径: \$INSTALL_DIR"
@@ -267,6 +276,7 @@ case "\$1" in
         echo "  setup    为当前项目设置 CodeReview CLI"
         echo "  update   更新到最新版本"
         echo "  config   配置AI服务"
+        echo "  timing   配置代码审查时机（提交前/提交后）"
         echo "  version  显示版本信息"
         echo "  help     显示此帮助信息"
         echo ""
@@ -349,6 +359,7 @@ case "\$1" in
             # 设置执行权限
             chmod +x "\$INSTALL_DIR/install-hooks.sh"
             chmod +x "\$INSTALL_DIR/githooks/post-commit"
+            chmod +x "$INSTALL_DIR/githooks/pre-commit"
             chmod +x "\$INSTALL_DIR/githooks/pre-push"
 
             echo "✅ 更新完成"
@@ -381,6 +392,15 @@ case "\$1" in
             echo "3. ClaudeCode - claudecode config"
         fi
         ;;
+    "timing")
+        echo "⏰ 配置代码审查时机..."
+        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
+            "\$INSTALL_DIR/lib/ai-config.sh" timing
+        else
+            echo "请手动配置代码审查时机："
+            echo "在 .env 文件中设置 REVIEW_TIMING=pre-commit 或 REVIEW_TIMING=post-commit"
+        fi
+        ;;
     "version"|"-v"|"--version")
         echo "CodeReview CLI v1.0.0"
         echo "安装路径: \$INSTALL_DIR"
@@ -394,6 +414,7 @@ case "\$1" in
         echo "  setup    为当前项目设置 CodeReview CLI"
         echo "  update   更新到最新版本"
         echo "  config   配置AI服务"
+        echo "  timing   配置代码审查时机（提交前/提交后）"
         echo "  version  显示版本信息"
         echo "  help     显示此帮助信息"
         echo ""
