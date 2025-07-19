@@ -133,8 +133,8 @@ install_to_directory() {
     # 创建安装目录
     mkdir -p "$INSTALL_DIR"
 
-    # 复制文件
-    cp -r "$TEMP_DIR"/* "$INSTALL_DIR/"
+    # 复制文件（排除.git目录）
+    rsync -av --exclude='.git' "$TEMP_DIR"/ "$INSTALL_DIR/"
 
     # 设置执行权限
     chmod +x "$INSTALL_DIR/install-hooks.sh"
@@ -181,38 +181,67 @@ case "\$1" in
             exit 1
         fi
 
-        # 检查是否为Git仓库
-        if [ ! -d "\$INSTALL_DIR/.git" ]; then
-            echo "❌ 错误：安装目录不是Git仓库"
-            echo "请重新安装 CodeReview CLI："
+        # 重新下载和安装最新版本
+        TEMP_DIR="/tmp/codereview-cli-update"
+        REPO_URL="https://github.com/im47cn/codereview-cli.git"
+
+        # 清理临时目录
+        rm -rf "\$TEMP_DIR"
+        mkdir -p "\$TEMP_DIR"
+
+        # 下载最新版本
+        if ! git clone "\$REPO_URL" "\$TEMP_DIR"; then
+            echo "❌ 错误：无法下载最新版本"
+            echo "请检查网络连接或手动更新："
             echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
             exit 1
         fi
 
-        # 进入安装目录并更新
-        cd "\$INSTALL_DIR" || {
-            echo "❌ 错误：无法进入安装目录"
-            exit 1
-        }
-
-        # 检查网络连接和Git状态
-        if ! git fetch origin main 2>/dev/null; then
-            echo "❌ 错误：无法连接到远程仓库"
-            echo "请检查网络连接或手动更新："
-            echo "cd \$INSTALL_DIR && git pull origin main"
-            exit 1
+        # 备份当前版本（如果存在VERSION文件）
+        OLD_VERSION=""
+        if [ -f "\$INSTALL_DIR/VERSION" ]; then
+            OLD_VERSION=\$(cat "\$INSTALL_DIR/VERSION")
         fi
 
-        # 执行更新
-        if git pull origin main; then
+        # 获取新版本
+        NEW_VERSION=""
+        if [ -f "\$TEMP_DIR/VERSION" ]; then
+            NEW_VERSION=\$(cat "\$TEMP_DIR/VERSION")
+        fi
+
+        # 检查是否需要更新
+        if [ "\$OLD_VERSION" = "\$NEW_VERSION" ] && [ ! -z "\$OLD_VERSION" ]; then
+            echo "✅ 已是最新版本"
+            echo "📋 当前版本: \$OLD_VERSION"
+            rm -rf "\$TEMP_DIR"
+            exit 0
+        fi
+
+        # 复制新文件到安装目录（排除.git目录）
+        if rsync -av --exclude='.git' "\$TEMP_DIR"/ "\$INSTALL_DIR/"; then
+            # 设置执行权限
+            chmod +x "\$INSTALL_DIR/install-hooks.sh"
+            chmod +x "\$INSTALL_DIR/githooks/post-commit"
+            chmod +x "\$INSTALL_DIR/githooks/pre-push"
+
             echo "✅ 更新完成"
-            echo "📋 当前版本: \$(cat VERSION 2>/dev/null || echo '未知')"
+            if [ ! -z "\$NEW_VERSION" ]; then
+                echo "📋 当前版本: \$NEW_VERSION"
+                if [ ! -z "\$OLD_VERSION" ]; then
+                    echo "📋 从版本 \$OLD_VERSION 更新到 \$NEW_VERSION"
+                fi
+            else
+                echo "📋 当前版本: \$(cat "\$INSTALL_DIR/VERSION" 2>/dev/null || echo '未知')"
+            fi
         else
             echo "❌ 更新失败"
-            echo "请尝试手动更新："
-            echo "cd \$INSTALL_DIR && git pull origin main"
+            echo "请尝试重新安装："
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
             exit 1
         fi
+
+        # 清理临时目录
+        rm -rf "\$TEMP_DIR"
         ;;
     "config")
         echo "⚙️ 配置AI服务..."
@@ -279,38 +308,67 @@ case "\$1" in
             exit 1
         fi
 
-        # 检查是否为Git仓库
-        if [ ! -d "\$INSTALL_DIR/.git" ]; then
-            echo "❌ 错误：安装目录不是Git仓库"
-            echo "请重新安装 CodeReview CLI："
+        # 重新下载和安装最新版本
+        TEMP_DIR="/tmp/codereview-cli-update"
+        REPO_URL="https://github.com/im47cn/codereview-cli.git"
+
+        # 清理临时目录
+        rm -rf "\$TEMP_DIR"
+        mkdir -p "\$TEMP_DIR"
+
+        # 下载最新版本
+        if ! git clone "\$REPO_URL" "\$TEMP_DIR"; then
+            echo "❌ 错误：无法下载最新版本"
+            echo "请检查网络连接或手动更新："
             echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
             exit 1
         fi
 
-        # 进入安装目录并更新
-        cd "\$INSTALL_DIR" || {
-            echo "❌ 错误：无法进入安装目录"
-            exit 1
-        }
-
-        # 检查网络连接和Git状态
-        if ! git fetch origin main 2>/dev/null; then
-            echo "❌ 错误：无法连接到远程仓库"
-            echo "请检查网络连接或手动更新："
-            echo "cd \$INSTALL_DIR && git pull origin main"
-            exit 1
+        # 备份当前版本（如果存在VERSION文件）
+        OLD_VERSION=""
+        if [ -f "\$INSTALL_DIR/VERSION" ]; then
+            OLD_VERSION=\$(cat "\$INSTALL_DIR/VERSION")
         fi
 
-        # 执行更新
-        if git pull origin main; then
+        # 获取新版本
+        NEW_VERSION=""
+        if [ -f "\$TEMP_DIR/VERSION" ]; then
+            NEW_VERSION=\$(cat "\$TEMP_DIR/VERSION")
+        fi
+
+        # 检查是否需要更新
+        if [ "\$OLD_VERSION" = "\$NEW_VERSION" ] && [ ! -z "\$OLD_VERSION" ]; then
+            echo "✅ 已是最新版本"
+            echo "📋 当前版本: \$OLD_VERSION"
+            rm -rf "\$TEMP_DIR"
+            exit 0
+        fi
+
+        # 复制新文件到安装目录（排除.git目录）
+        if rsync -av --exclude='.git' "\$TEMP_DIR"/ "\$INSTALL_DIR/"; then
+            # 设置执行权限
+            chmod +x "\$INSTALL_DIR/install-hooks.sh"
+            chmod +x "\$INSTALL_DIR/githooks/post-commit"
+            chmod +x "\$INSTALL_DIR/githooks/pre-push"
+
             echo "✅ 更新完成"
-            echo "📋 当前版本: \$(cat VERSION 2>/dev/null || echo '未知')"
+            if [ ! -z "\$NEW_VERSION" ]; then
+                echo "📋 当前版本: \$NEW_VERSION"
+                if [ ! -z "\$OLD_VERSION" ]; then
+                    echo "📋 从版本 \$OLD_VERSION 更新到 \$NEW_VERSION"
+                fi
+            else
+                echo "📋 当前版本: \$(cat "\$INSTALL_DIR/VERSION" 2>/dev/null || echo '未知')"
+            fi
         else
             echo "❌ 更新失败"
-            echo "请尝试手动更新："
-            echo "cd \$INSTALL_DIR && git pull origin main"
+            echo "请尝试重新安装："
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
             exit 1
         fi
+
+        # 清理临时目录
+        rm -rf "\$TEMP_DIR"
         ;;
     "config")
         echo "⚙️ 配置AI服务..."

@@ -31,3 +31,8 @@ All notable changes to this project will be documented in this file.
 - 修复codereview-cli update命令的错误处理问题
 - 修复update命令在非Git仓库中显示误导性成功信息的问题
 - 增强update命令的错误检查和用户反馈
+- 重新设计update命令逻辑，不再依赖Git仓库，改为重新下载和安装最新版本
+- 修复安装过程中.git目录被意外包含的问题，使用rsync排除.git目录
+- 改进版本比较逻辑，避免不必要的重复更新
+- 优化update命令的用户体验和错误处理
+- 确保安装目录保持干净，不包含Git仓库相关文件
