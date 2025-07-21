@@ -5,6 +5,18 @@ All notable changes to this project will be documented in this file.
 ## [Unreleased]
 
 ### Added
+- 🚀 **自动版本检查和升级机制**
+  - 每天首次使用时自动检查更新
+  - 静默下载和安装，不中断工作流
+  - 智能版本比较和多源版本获取
+  - 自动备份和回滚机制
+  - 完整的配置管理和用户控制
+- 新增自动更新模块 (lib/auto-updater.sh)
+- 新增版本比较工具 (lib/version-compare.sh)
+- 自动更新配置集成到 AI 配置系统
+- 全局命令支持自动更新相关操作
+- Git hooks 集成自动更新检查
+- 完整的自动更新文档和故障排除指南
 - 可选的项目级提示词文档创建功能
 - 安装时询问用户是否需要创建项目级提示词文档
 - 支持使用全局默认提示词，避免项目目录污染

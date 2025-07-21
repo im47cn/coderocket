@@ -428,6 +428,102 @@ select_review_timing() {
     esac
 }
 
+# 配置自动更新选项
+#
+# 功能: 交互式配置自动更新相关选项
+# 参数:
+#   $1 - scope: 配置范围 (可选, 默认: "global")
+# 返回: 0=成功, 1=失败
+# 复杂度: O(1) - 用户交互
+# 依赖: set_config_value()
+# 调用者: main()
+configure_auto_update() {
+    local scope=${1:-"global"}
+
+    echo -e "${BLUE}=== 配置自动更新 ===${NC}"
+    echo ""
+
+    # 显示当前配置
+    local current_enabled=$(get_config_value "AUTO_UPDATE_ENABLED" "$scope")
+    local current_interval=$(get_config_value "UPDATE_CHECK_INTERVAL" "$scope")
+    local current_channel=$(get_config_value "UPDATE_CHANNEL" "$scope")
+
+    current_enabled=${current_enabled:-"true"}
+    current_interval=${current_interval:-"daily"}
+    current_channel=${current_channel:-"stable"}
+
+    echo -e "${YELLOW}当前配置:${NC}"
+    echo "  自动更新: $current_enabled"
+    echo "  检查间隔: $current_interval"
+    echo "  更新渠道: $current_channel"
+    echo ""
+
+    # 配置是否启用自动更新
+    echo "1. 是否启用自动更新?"
+    echo "   a) true  - 启用 (推荐)"
+    echo "   b) false - 禁用"
+    read -p "请选择 [a/b] (当前: $current_enabled): " update_enabled
+
+    case "$update_enabled" in
+        "a"|"true"|"")
+            set_config_value "AUTO_UPDATE_ENABLED" "true" "$scope"
+            ;;
+        "b"|"false")
+            set_config_value "AUTO_UPDATE_ENABLED" "false" "$scope"
+            echo -e "${YELLOW}⚠️  自动更新已禁用${NC}"
+            return 0  # 如果禁用，不需要配置其他选项
+            ;;
+        *)
+            echo -e "${RED}❌ 无效选择，保持当前设置${NC}"
+            ;;
+    esac
+
+    # 配置检查间隔
+    echo ""
+    echo "2. 更新检查间隔:"
+    echo "   1. daily  - 每天检查"
+    echo "   2. weekly - 每周检查"
+    echo "   3. never  - 从不检查"
+    read -p "请选择 [1-3] (当前: $current_interval): " interval_choice
+
+    case "$interval_choice" in
+        "1"|"")
+            set_config_value "UPDATE_CHECK_INTERVAL" "daily" "$scope"
+            ;;
+        "2")
+            set_config_value "UPDATE_CHECK_INTERVAL" "weekly" "$scope"
+            ;;
+        "3")
+            set_config_value "UPDATE_CHECK_INTERVAL" "never" "$scope"
+            ;;
+        *)
+            echo -e "${RED}❌ 无效选择，保持当前设置${NC}"
+            ;;
+    esac
+
+    # 配置更新渠道
+    echo ""
+    echo "3. 更新渠道:"
+    echo "   1. stable - 稳定版 (推荐)"
+    echo "   2. beta   - 测试版"
+    read -p "请选择 [1-2] (当前: $current_channel): " channel_choice
+
+    case "$channel_choice" in
+        "1"|"")
+            set_config_value "UPDATE_CHANNEL" "stable" "$scope"
+            ;;
+        "2")
+            set_config_value "UPDATE_CHANNEL" "beta" "$scope"
+            ;;
+        *)
+            echo -e "${RED}❌ 无效选择，保持当前设置${NC}"
+            ;;
+    esac
+
+    echo ""
+    echo -e "${GREEN}✓ 自动更新配置完成${NC}"
+}
+
 # 主函数
 #
 # 功能: 命令行接口，解析参数并调用相应功能
@@ -480,6 +576,9 @@ main() {
         "timing")
             select_review_timing "${2:-project}"
             ;;
+        "update")
+            configure_auto_update "${2:-global}"
+            ;;
         "validate")
             # 验证指定服务或当前配置的服务
             local service="${2:-$(get_config_value "AI_SERVICE")}"
@@ -497,6 +596,7 @@ main() {
             echo "  configure <service> [scope] - 交互式配置服务"
             echo "  select [scope]            - 选择AI服务"
             echo "  timing [scope]            - 选择代码审查时机"
+            echo "  update [scope]            - 配置自动更新选项"
             echo "  validate [service]        - 验证服务配置"
             echo "  help                      - 显示帮助信息"
             echo ""
