@@ -395,7 +395,7 @@ $INSTALL_DIR/install-hooks.sh
         echo "  $CURRENT_CMD review    # 直接审查最新提交"
         echo ""
         echo "兼容命令："
-        echo "  coderocket, coderocket, cr 都可以使用"
+        echo "  coderocket, codereview-cli, cr 都可以使用"
         echo ""
         echo "全局安装后，新创建的 Git 仓库会自动包含 CodeRocket"
         echo "对于现有仓库，请在仓库目录中运行: $CURRENT_CMD setup"
