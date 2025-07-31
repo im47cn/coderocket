@@ -32,7 +32,7 @@ curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.
 ```bash
 # 克隆项目
 git clone https://github.com/im47cn/coderocket-cli.git
-cd coderocket
+cd coderocket-cli
 
 # 运行安装脚本
 ./install.sh
