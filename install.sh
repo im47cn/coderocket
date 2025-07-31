@@ -267,21 +267,110 @@ case "\$1" in
         echo "CodeReview CLI v1.0.0"
         echo "安装路径: \$INSTALL_DIR"
         ;;
-    "help"|"-h"|"--help"|"")
+    "review")
+        # 检查是否在 Git 仓库中
+        if ! git rev-parse --git-dir > /dev/null 2>&1; then
+            echo "❌ 错误：当前目录不是 Git 仓库"
+            echo "请在 Git 仓库目录中运行此命令"
+            exit 1
+        fi
+
+        echo "🚀 正在执行代码审查..."
+
+        # 获取 Git 仓库根目录
+        REPO_ROOT=\$(git rev-parse --show-toplevel 2>/dev/null)
+
+        # 检查提示词文件是否存在（优先使用项目级配置）
+        PROMPT_FILE=""
+        if [ -f "\$REPO_ROOT/prompts/git-commit-review-prompt.md" ]; then
+            PROMPT_FILE="\$REPO_ROOT/prompts/git-commit-review-prompt.md"
+        elif [ -f "\$INSTALL_DIR/prompts/git-commit-review-prompt.md" ]; then
+            PROMPT_FILE="\$INSTALL_DIR/prompts/git-commit-review-prompt.md"
+        else
+            echo "❌ 错误：提示词文件不存在"
+            echo "请运行: codereview-cli setup 来配置项目"
+            exit 1
+        fi
+
+        # 检查 Gemini CLI 是否可用
+        if ! command -v gemini &> /dev/null; then
+            echo "❌ 错误：Gemini CLI 未安装"
+            echo "安装命令: npm install -g @google/generative-ai-cli"
+            exit 1
+        fi
+
+        # 创建 review_logs 目录（如果不存在）
+        mkdir -p "\$REPO_ROOT/review_logs"
+
+        # 切换到仓库根目录执行
+        cd "\$REPO_ROOT"
+
+        # 准备更明确的提示词
+        PROMPT="请执行以下任务：
+1. 你是代码审查专家，需要对最新的 git commit 进行审查
+2. 使用 git --no-pager show 命令获取最新提交的详细信息
+3. 根据提示词文件中的指导进行全面代码审查
+4. 生成审查报告并保存到 review_logs 目录
+5. 不要询问用户，直接自主执行所有步骤
+6. 这是一个自动化流程，请直接开始执行"
+
+        if cat "\$PROMPT_FILE" | gemini -p "\$PROMPT" -y; then
+            echo "👌 代码审查完成"
+            echo "📝 审查报告已保存到 \$REPO_ROOT/review_logs 目录"
+
+            # 显示最新的审查报告
+            LATEST_REPORT=\$(ls -t "\$REPO_ROOT/review_logs"/*.md 2>/dev/null | head -1)
+            if [ -n "\$LATEST_REPORT" ]; then
+                echo "📄 最新审查报告: \$(basename "\$LATEST_REPORT")"
+            fi
+        else
+            echo "❌ 代码审查失败"
+            exit 1
+        fi
+        ;;
+    "help"|"-h"|"--help")
         echo "CodeReview CLI - AI 驱动的代码审查工具"
         echo ""
         echo "用法: codereview-cli <命令>"
         echo ""
         echo "命令:"
-        echo "  setup    为当前项目设置 CodeReview CLI"
+        echo "  review   对当前 Git 仓库的最新提交进行代码审查"
+        echo "  setup    为当前项目设置 CodeReview CLI hooks"
         echo "  update   更新到最新版本"
         echo "  config   配置AI服务"
         echo "  timing   配置代码审查时机（提交前/提交后）"
         echo "  version  显示版本信息"
         echo "  help     显示此帮助信息"
         echo ""
+        echo "快速使用："
+        echo "  cd your-git-project"
+        echo "  codereview-cli review    # 直接审查最新提交"
+        echo ""
         echo "全局安装后，新创建的 Git 仓库会自动包含 CodeReview CLI"
         echo "对于现有仓库，请在仓库目录中运行: codereview-cli setup"
+        ;;
+    "")
+        # 无参数时的默认行为
+        if git rev-parse --git-dir > /dev/null 2>&1; then
+            echo "🔍 检测到 Git 仓库，开始代码审查..."
+            # 重用 review 命令的逻辑
+            "\$0" review
+        else
+            echo "📋 CodeReview CLI - AI 驱动的代码审查工具"
+            echo ""
+            echo "当前目录不是 Git 仓库。"
+            echo ""
+            echo "使用方法："
+            echo "1. 在 Git 仓库中直接运行 'codereview-cli' 进行代码审查"
+            echo "2. 运行 'codereview-cli help' 查看所有可用命令"
+            echo ""
+            echo "如需在当前目录创建 Git 仓库："
+            echo "  git init"
+            echo "  # 添加文件并提交"
+            echo "  git add ."
+            echo "  git commit -m 'Initial commit'"
+            echo "  codereview-cli  # 然后运行代码审查"
+        fi
         ;;
     *)
         echo "❌ 未知命令: \$1"
@@ -405,21 +494,110 @@ case "\$1" in
         echo "CodeReview CLI v1.0.0"
         echo "安装路径: \$INSTALL_DIR"
         ;;
-    "help"|"-h"|"--help"|"")
+    "review")
+        # 检查是否在 Git 仓库中
+        if ! git rev-parse --git-dir > /dev/null 2>&1; then
+            echo "❌ 错误：当前目录不是 Git 仓库"
+            echo "请在 Git 仓库目录中运行此命令"
+            exit 1
+        fi
+
+        echo "🚀 正在执行代码审查..."
+
+        # 获取 Git 仓库根目录
+        REPO_ROOT=\$(git rev-parse --show-toplevel 2>/dev/null)
+
+        # 检查提示词文件是否存在（优先使用项目级配置）
+        PROMPT_FILE=""
+        if [ -f "\$REPO_ROOT/prompts/git-commit-review-prompt.md" ]; then
+            PROMPT_FILE="\$REPO_ROOT/prompts/git-commit-review-prompt.md"
+        elif [ -f "\$INSTALL_DIR/prompts/git-commit-review-prompt.md" ]; then
+            PROMPT_FILE="\$INSTALL_DIR/prompts/git-commit-review-prompt.md"
+        else
+            echo "❌ 错误：提示词文件不存在"
+            echo "请运行: codereview-cli setup 来配置项目"
+            exit 1
+        fi
+
+        # 检查 Gemini CLI 是否可用
+        if ! command -v gemini &> /dev/null; then
+            echo "❌ 错误：Gemini CLI 未安装"
+            echo "安装命令: npm install -g @google/generative-ai-cli"
+            exit 1
+        fi
+
+        # 创建 review_logs 目录（如果不存在）
+        mkdir -p "\$REPO_ROOT/review_logs"
+
+        # 切换到仓库根目录执行
+        cd "\$REPO_ROOT"
+
+        # 准备更明确的提示词
+        PROMPT="请执行以下任务：
+1. 你是代码审查专家，需要对最新的 git commit 进行审查
+2. 使用 git --no-pager show 命令获取最新提交的详细信息
+3. 根据提示词文件中的指导进行全面代码审查
+4. 生成审查报告并保存到 review_logs 目录
+5. 不要询问用户，直接自主执行所有步骤
+6. 这是一个自动化流程，请直接开始执行"
+
+        if cat "\$PROMPT_FILE" | gemini -p "\$PROMPT" -y; then
+            echo "👌 代码审查完成"
+            echo "📝 审查报告已保存到 \$REPO_ROOT/review_logs 目录"
+
+            # 显示最新的审查报告
+            LATEST_REPORT=\$(ls -t "\$REPO_ROOT/review_logs"/*.md 2>/dev/null | head -1)
+            if [ -n "\$LATEST_REPORT" ]; then
+                echo "📄 最新审查报告: \$(basename "\$LATEST_REPORT")"
+            fi
+        else
+            echo "❌ 代码审查失败"
+            exit 1
+        fi
+        ;;
+    "help"|"-h"|"--help")
         echo "CodeReview CLI - AI 驱动的代码审查工具"
         echo ""
         echo "用法: codereview-cli <命令>"
         echo ""
         echo "命令:"
-        echo "  setup    为当前项目设置 CodeReview CLI"
+        echo "  review   对当前 Git 仓库的最新提交进行代码审查"
+        echo "  setup    为当前项目设置 CodeReview CLI hooks"
         echo "  update   更新到最新版本"
         echo "  config   配置AI服务"
         echo "  timing   配置代码审查时机（提交前/提交后）"
         echo "  version  显示版本信息"
         echo "  help     显示此帮助信息"
         echo ""
+        echo "快速使用："
+        echo "  cd your-git-project"
+        echo "  codereview-cli review    # 直接审查最新提交"
+        echo ""
         echo "全局安装后，新创建的 Git 仓库会自动包含 CodeReview CLI"
         echo "对于现有仓库，请在仓库目录中运行: codereview-cli setup"
+        ;;
+    "")
+        # 无参数时的默认行为
+        if git rev-parse --git-dir > /dev/null 2>&1; then
+            echo "🔍 检测到 Git 仓库，开始代码审查..."
+            # 重用 review 命令的逻辑
+            "\$0" review
+        else
+            echo "📋 CodeReview CLI - AI 驱动的代码审查工具"
+            echo ""
+            echo "当前目录不是 Git 仓库。"
+            echo ""
+            echo "使用方法："
+            echo "1. 在 Git 仓库中直接运行 'codereview-cli' 进行代码审查"
+            echo "2. 运行 'codereview-cli help' 查看所有可用命令"
+            echo ""
+            echo "如需在当前目录创建 Git 仓库："
+            echo "  git init"
+            echo "  # 添加文件并提交"
+            echo "  git add ."
+            echo "  git commit -m 'Initial commit'"
+            echo "  codereview-cli  # 然后运行代码审查"
+        fi
         ;;
     *)
         echo "❌ 未知命令: \$1"

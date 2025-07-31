@@ -217,16 +217,31 @@ echo $GITLAB_PERSONAL_ACCESS_TOKEN
 
 全局安装后，可以使用 `codereview-cli` 命令：
 
+### 🚀 直接代码审查
+
 ```bash
-# 为现有项目设置 CodeReview CLI
+# 在 Git 仓库中直接运行（推荐）
+cd your-git-project
+codereview-cli              # 自动检测并审查最新提交
+
+# 或者明确指定审查命令
+codereview-cli review        # 审查最新提交
+```
+
+**智能检测**：
+- ✅ 如果在 Git 仓库中：自动执行代码审查
+- ⚠️ 如果不在 Git 仓库中：显示使用指南
+
+### 🛠️ 项目管理
+
+```bash
+# 为现有项目设置 CodeReview CLI hooks
 codereview-cli setup
 
 # 更新到最新版本
 codereview-cli update
 
-# 如果更新失败，会显示详细的错误信息和解决方案
-
-# 配置 Gemini API 密钥
+# 配置 AI 服务
 codereview-cli config
 
 # 配置代码审查时机（提交前/提交后）
