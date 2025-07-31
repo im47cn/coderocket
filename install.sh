@@ -240,13 +240,13 @@ case "\$1" in
         # 备份当前版本（如果存在VERSION文件）
         OLD_VERSION=""
         if [ -f "\$INSTALL_DIR/VERSION" ]; then
-            OLD_VERSION=\$(cat "\$INSTALL_DIR/VERSION")
+            OLD_VERSION=$(cat "\$INSTALL_DIR/VERSION")
         fi
 
         # 获取新版本
         NEW_VERSION=""
         if [ -f "\$TEMP_DIR/VERSION" ]; then
-            NEW_VERSION=\$(cat "\$TEMP_DIR/VERSION")
+            NEW_VERSION=$(cat "\$TEMP_DIR/VERSION")
         fi
 
         # 检查是否需要更新
@@ -271,7 +271,7 @@ case "\$1" in
                     echo "📋 从版本 \$OLD_VERSION 更新到 \$NEW_VERSION"
                 fi
             else
-                echo "📋 当前版本: \$(cat "\$INSTALL_DIR/VERSION" 2>/dev/null || echo '未知')"
+                echo "📋 当前版本: $(cat "\$INSTALL_DIR/VERSION" 2>/dev/null || echo '未知')"
             fi
         else
             echo "❌ 更新失败"
