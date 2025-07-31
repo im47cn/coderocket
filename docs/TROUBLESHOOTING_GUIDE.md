@@ -19,16 +19,16 @@ curl: (7) Failed to connect to raw.githubusercontent.com
 ```bash
 # 方案A：使用代理
 export https_proxy=http://your-proxy:port
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 方案B：手动下载
-wget https://github.com/im47cn/coderocket/archive/main.zip
+wget https://github.com/im47cn/coderocket-cli/archive/main.zip
 unzip main.zip
 cd coderocket-main
 ./install.sh
 
 # 方案C：使用镜像源
-curl -fsSL https://gitee.com/im47cn/coderocket/raw/main/install.sh | bash
+curl -fsSL https://gitee.com/im47cn/coderocket-cli/raw/main/install.sh | bash
 ```
 
 #### 问题2：权限不足
@@ -41,10 +41,10 @@ Permission denied: /usr/local/bin/coderocket
 **解决方案**：
 ```bash
 # 方案A：使用sudo安装全局命令
-sudo curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+sudo curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 方案B：使用用户命令（推荐，无需sudo）
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 # 安装脚本会自动创建用户命令并配置PATH
 
 # 方案C：手动设置PATH（如果自动配置失败）
@@ -85,7 +85,7 @@ echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
 source ~/.zshrc
 
 # 方案D：重新安装（自动配置PATH）
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 ```
 
 **验证修复**：
@@ -245,7 +245,7 @@ Error: /path/to/lib/ai-service-manager.sh not found
 **解决方案**：
 ```bash
 # 1. 使用快速修复脚本
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/fix-hooks.sh -o fix-hooks.sh
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/fix-hooks.sh -o fix-hooks.sh
 chmod +x fix-hooks.sh
 ./fix-hooks.sh
 
@@ -492,8 +492,8 @@ cat .env.example
 
 ### 社区支持
 
-1. **GitHub Issues**: [提交问题](https://github.com/im47cn/coderocket/issues)
-2. **讨论区**: [GitHub Discussions](https://github.com/im47cn/coderocket/discussions)
+1. **GitHub Issues**: [提交问题](https://github.com/im47cn/coderocket-cli/issues)
+2. **讨论区**: [GitHub Discussions](https://github.com/im47cn/coderocket-cli/discussions)
 3. **文档**: [完整文档](README.md)
 
 ### 报告Bug

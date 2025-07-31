@@ -1,6 +1,6 @@
 # 贡献指南
 
-感谢您对 CodeRocket 项目的关注！我们欢迎各种形式的贡献。
+感谢您对 CodeRocket CLI 项目的关注！我们欢迎各种形式的贡献。
 
 ## 🤝 如何贡献
 
@@ -8,7 +8,7 @@
 
 如果您发现了 bug 或有功能建议，请：
 
-1. 检查 [Issues](https://github.com/im47cn/coderocket/issues) 确认问题未被报告
+1. 检查 [Issues](https://github.com/im47cn/coderocket-cli/issues) 确认问题未被报告
 2. 创建新的 Issue，包含：
    - 详细的问题描述
    - 复现步骤
@@ -217,9 +217,9 @@ A: 使用POSIX兼容的命令，避免GNU特定的选项。
 
 ## 📞 联系方式
 
-- GitHub Issues: [项目Issues页面](https://github.com/im47cn/coderocket/issues)
+- GitHub Issues: [项目Issues页面](https://github.com/im47cn/coderocket-cli/issues)
 - 邮件: [项目维护者邮箱]
-- 讨论: [GitHub Discussions](https://github.com/im47cn/coderocket/discussions)
+- 讨论: [GitHub Discussions](https://github.com/im47cn/coderocket-cli/discussions)
 
 ## 📄 许可证
 

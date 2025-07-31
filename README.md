@@ -53,10 +53,10 @@
 
 ```bash
 # 方式1：直接安装（默认全局安装）
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 方式2：交互式安装（可选择安装模式）
-wget https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh
+wget https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -130,7 +130,7 @@ claudecode config
 #### 3. 克隆项目
 
 ```bash
-git clone https://github.com/im47cn/coderocket.git
+git clone https://github.com/im47cn/coderocket-cli.git
 cd coderocket
 ```
 
@@ -523,11 +523,11 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 
 ## 🔗 相关链接
 
-- [Google Gemini CLI 文档](https://github.com/google/generative-ai-js)
+- [Google Gemini CLI 文档](https://github.com/google-gemini/gemini-cli)
 - [Git Hooks 官方文档](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 - [GitLab API 文档](https://docs.gitlab.com/ee/api/)
-- [项目问题反馈](https://github.com/im47cn/coderocket/issues)
-- [功能请求](https://github.com/im47cn/coderocket/issues/new?template=feature_request.md)
+- [项目问题反馈](https://github.com/im47cn/coderocket-cli/issues)
+- [功能请求](https://github.com/im47cn/coderocket-cli/issues/new?template=feature_request.md)
 
 ## 📚 文档
 
@@ -539,8 +539,8 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 如果您在使用过程中遇到问题或有改进建议，请：
 
 1. 查看 [故障排除](#-故障排除) 部分
-2. 搜索 [现有问题](https://github.com/im47cn/coderocket/issues)
-3. 创建 [新问题](https://github.com/im47cn/coderocket/issues/new)
+2. 搜索 [现有问题](https://github.com/im47cn/coderocket-cli/issues)
+3. 创建 [新问题](https://github.com/im47cn/coderocket-cli/issues/new)
 
 ## 🌟 特性亮点
 
@@ -574,7 +574,7 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 
 ```bash
 # 快速修复（推荐）
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/fix-hooks.sh -o fix-hooks.sh
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/fix-hooks.sh -o fix-hooks.sh
 chmod +x fix-hooks.sh
 ./fix-hooks.sh
 
@@ -652,7 +652,7 @@ export DEBUG=1
 
 ```bash
 # 重新运行安装脚本获取最新版本
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 或者手动更新
 cd ~/.coderocket

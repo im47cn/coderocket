@@ -11,7 +11,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置常量
-GITHUB_API_URL="https://api.github.com/repos/im47cn/coderocket/releases/latest"
+GITHUB_API_URL="https://api.github.com/repos/im47cn/coderocket-cli/releases/latest"
 UPDATE_TIMEOUT=5
 CACHE_DIR="$HOME/.coderocket"
 CACHE_FILE="$CACHE_DIR/update_cache"
@@ -165,7 +165,7 @@ get_latest_version_from_git() {
     # 创建临时目录
     if mkdir -p "$temp_dir" 2>/dev/null; then
         # 克隆仓库（只获取 tags）
-        if git clone --depth 1 --tags "https://github.com/im47cn/coderocket.git" "$temp_dir" 2>/dev/null; then
+        if git clone --depth 1 --tags "https://github.com/im47cn/coderocket-cli.git" "$temp_dir" 2>/dev/null; then
             cd "$temp_dir"
             # 获取最新的 tag
             latest_version=$(git describe --tags --abbrev=0 2>/dev/null)
@@ -426,7 +426,7 @@ download_latest_version() {
     local download_success=false
 
     # 方式1: 从 GitHub releases 下载
-    local download_url="https://github.com/im47cn/coderocket/archive/refs/tags/v${version}.tar.gz"
+    local download_url="https://github.com/im47cn/coderocket-cli/archive/refs/tags/v${version}.tar.gz"
     log_message "INFO" "尝试从 releases 下载: $download_url"
 
     if curl -L --connect-timeout $UPDATE_TIMEOUT -o "$temp_dir/update.tar.gz" "$download_url" 2>/dev/null; then
@@ -443,7 +443,7 @@ download_latest_version() {
 
     # 方式2: 从 main 分支下载
     if [ "$download_success" = false ]; then
-        local main_url="https://github.com/im47cn/coderocket/archive/refs/heads/main.tar.gz"
+        local main_url="https://github.com/im47cn/coderocket-cli/archive/refs/heads/main.tar.gz"
         log_message "INFO" "尝试从 main 分支下载: $main_url"
 
         if curl -L --connect-timeout $UPDATE_TIMEOUT -o "$temp_dir/update.tar.gz" "$main_url" 2>/dev/null; then
@@ -463,7 +463,7 @@ download_latest_version() {
     if [ "$download_success" = false ]; then
         log_message "INFO" "尝试使用 git clone"
 
-        if git clone --depth 1 "https://github.com/im47cn/coderocket.git" "$temp_dir" 2>/dev/null; then
+        if git clone --depth 1 "https://github.com/im47cn/coderocket-cli.git" "$temp_dir" 2>/dev/null; then
             download_success=true
             log_message "INFO" "git clone 成功"
         else

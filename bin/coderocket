@@ -195,7 +195,7 @@ update_coderocket() {
         echo "✅ 更新完成"
     else
         echo "⚠️  建议重新运行安装脚本获取最新版本："
-        echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
+        echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash"
     fi
 }
 

@@ -221,5 +221,5 @@ chmod 644 .ai-config
 
 1. 查看本指南的故障排除部分
 2. 运行 `./lib/ai-service-manager.sh status` 检查状态
-3. 查看 [GitHub Issues](https://github.com/im47cn/coderocket/issues)
+3. 查看 [GitHub Issues](https://github.com/im47cn/coderocket-cli/issues)
 4. 创建新的 Issue 报告问题

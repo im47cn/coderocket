@@ -58,7 +58,7 @@ if [ ! -d "$INSTALL_DIR/.git" ]; then
     
     # 在安装目录中初始化Git仓库
     git init
-    git remote add origin https://github.com/im47cn/coderocket.git
+    git remote add origin https://github.com/im47cn/coderocket-cli.git
     git fetch origin main
     git reset --hard origin/main
     

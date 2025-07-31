@@ -23,7 +23,7 @@
 
 ```bash
 # 一键安装（v1.0.4+ 支持自动化配置）
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 验证安装
 coderocket --version  # 或 cr --version
@@ -57,7 +57,7 @@ coderocket setup
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/im47cn/coderocket.git
+git clone https://github.com/im47cn/coderocket-cli.git
 cd coderocket
 
 # 2. 项目级安装
@@ -227,7 +227,7 @@ jobs:
     
     - name: Setup CodeRocket
       run: |
-        curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+        curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
         
     - name: Configure AI Service
       env:
@@ -255,7 +255,7 @@ code_review:
   image: node:18-alpine
   before_script:
     - apk add --no-cache git bash curl
-    - curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+    - curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
   script:
     - echo "AI_SERVICE=gemini" > .ai-config
     - ./githooks/post-commit
@@ -283,7 +283,7 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                sh 'curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash'
+                sh 'curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash'
             }
         }
         
@@ -451,7 +451,7 @@ echo "0 2 * * 0 /usr/local/bin/coderocket update" | crontab -
 cp -r ~/.coderocket ~/.coderocket.backup
 
 # 升级到最新版本
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 验证升级
 coderocket --version
@@ -483,7 +483,7 @@ tar -czf config_backup_$(date +%Y%m%d).tar.gz ~/.coderocket/
 
 如需部署支持，请：
 1. 查看 [故障排除文档](../README.md#故障排除)
-2. 提交 [GitHub Issue](https://github.com/im47cn/coderocket/issues)
+2. 提交 [GitHub Issue](https://github.com/im47cn/coderocket-cli/issues)
 3. 联系技术支持团队
 
 ### 企业级支持

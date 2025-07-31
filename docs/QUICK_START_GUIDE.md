@@ -19,7 +19,7 @@
 
 ```bash
 # 一键安装脚本
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 ```
 
 安装过程中会提示选择安装模式，**建议选择"全局安装"**：
@@ -31,7 +31,7 @@ curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh |
 
 ```bash
 # 克隆项目
-git clone https://github.com/im47cn/coderocket.git
+git clone https://github.com/im47cn/coderocket-cli.git
 cd coderocket
 
 # 运行安装脚本
@@ -196,7 +196,7 @@ DEBUG=false
 
 ```bash
 # 1. 全局安装
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 2. 配置Gemini
 gemini config
@@ -211,7 +211,7 @@ git commit -m "feat: 新功能"
 
 ```bash
 # 1. 项目级安装
-git clone https://github.com/im47cn/coderocket.git
+git clone https://github.com/im47cn/coderocket-cli.git
 ./install.sh
 
 # 2. 团队配置
@@ -231,7 +231,7 @@ git push origin feature/team-feature
 # GitHub Actions 示例
 - name: Setup CodeRocket
   run: |
-    curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
     echo "AI_SERVICE=gemini" > .ai-config
 
 - name: Run Code Review
@@ -352,4 +352,4 @@ git add .env.example
 
 ---
 
-如有问题，请查看 [故障排除文档](README.md#故障排除) 或 [提交Issue](https://github.com/im47cn/coderocket/issues)。
+如有问题，请查看 [故障排除文档](README.md#故障排除) 或 [提交Issue](https://github.com/im47cn/coderocket-cli/issues)。

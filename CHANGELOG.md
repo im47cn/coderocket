@@ -1,4 +1,4 @@
-# CodeRocket 更新日志
+# CodeRocket CLI 更新日志
 
 ## [v1.0.4] - 2025-01-31
 
@@ -90,10 +90,10 @@
 
 ## [v1.0.1] - 2025-01-31
 
-### 🎉 重大更新：项目重命名为 CodeRocket
+### 🎉 重大更新：项目重命名为 CodeRocket CLI
 
 #### ✨ 新功能
-- **项目重命名**：CodeReview CLI 正式更名为 **CodeRocket**
+- **项目重命名**：CodeReview CLI 正式更名为 **CodeRocket CLI**
 - **多命令兼容性**：支持 `coderocket`、`codereview-cli`、`cr` 三个命令别名
 - **精美 Banner**：添加了好看的 ASCII art banner，提升用户体验
 - **智能命令检测**：根据当前使用的命令名称显示相应的帮助信息
@@ -117,7 +117,7 @@
 
 #### 📦 安装更新
 - 安装目录更改为 `~/.coderocket`
-- 仓库地址更新为 `https://github.com/im47cn/coderocket`
+- 仓库地址更新为 `https://github.com/im47cn/coderocket-cli`
 - 保持一键安装脚本的便利性
 
 ### 🔧 使用说明
@@ -125,7 +125,7 @@
 #### 新用户
 ```bash
 # 一键安装
-curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 使用任意命令
 coderocket help

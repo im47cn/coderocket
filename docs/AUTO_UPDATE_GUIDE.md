@@ -202,7 +202,7 @@ sudo ./lib/auto-updater.sh check
 **Q4: 网络连接问题**
 ```bash
 # 测试网络连接
-curl -s https://api.github.com/repos/im47cn/coderocket/releases/latest
+curl -s https://api.github.com/repos/im47cn/coderocket-cli/releases/latest
 
 # 使用代理
 export HTTP_PROXY=http://proxy.example.com:8080

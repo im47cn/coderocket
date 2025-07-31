@@ -421,5 +421,5 @@ show_config "project"
 
 如需API支持或有疑问，请：
 1. 查看 [故障排除文档](../README.md#故障排除)
-2. 提交 [GitHub Issue](https://github.com/im47cn/coderocket/issues)
+2. 提交 [GitHub Issue](https://github.com/im47cn/coderocket-cli/issues)
 3. 参考 [贡献指南](../CONTRIBUTING.md)

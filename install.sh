@@ -1,7 +1,13 @@
 #!/bin/bash
 
 # CodeRocket 一键安装脚本
-# 使用方法: curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+# 使用方法: curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
+
+# 检查特殊参数
+if [ "$1" = "--fix-global-commands-only" ]; then
+    # 只修复全局命令，不执行完整安装
+    FIX_GLOBAL_COMMANDS_ONLY=true
+fi
 
 # 渐变色定义（模仿 Gemini CLI 的蓝绿渐变）
 GRAD_1='\033[38;5;39m'   # 亮蓝色
@@ -53,7 +59,7 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置
-REPO_URL="https://github.com/im47cn/coderocket.git"
+REPO_URL="https://github.com/im47cn/coderocket-cli.git"
 INSTALL_DIR="$HOME/.coderocket"
 TEMP_DIR="/tmp/coderocket-install"
 
@@ -217,13 +223,13 @@ case "\$1" in
         if [ ! -d "\$INSTALL_DIR" ]; then
             echo "❌ 错误：CodeRocket 未安装"
             echo "请先运行安装脚本："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash"
             exit 1
         fi
 
         # 重新下载和安装最新版本
         TEMP_DIR="/tmp/coderocket-update"
-        REPO_URL="https://github.com/im47cn/coderocket.git"
+        REPO_URL="https://github.com/im47cn/coderocket-cli.git"
 
         # 清理临时目录
         rm -rf "\$TEMP_DIR"
@@ -233,7 +239,7 @@ case "\$1" in
         if ! git clone "\$REPO_URL" "\$TEMP_DIR"; then
             echo "❌ 错误：无法下载最新版本"
             echo "请检查网络连接或手动更新："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash"
             exit 1
         fi
 
@@ -276,7 +282,7 @@ case "\$1" in
         else
             echo "❌ 更新失败"
             echo "请尝试重新安装："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash"
             exit 1
         fi
 
@@ -318,7 +324,7 @@ case "\$1" in
         echo "🚀 正在执行代码审查..."
 
         # 获取 Git 仓库根目录
-        REPO_ROOT=\$(git rev-parse --show-toplevel 2>/dev/null)
+        REPO_ROOT=$(git rev-parse --show-toplevel 2>/dev/null)
 
         # 检查提示词文件是否存在（优先使用项目级配置）
         PROMPT_FILE=""
@@ -335,7 +341,7 @@ case "\$1" in
         # 检查 Gemini CLI 是否可用
         if ! command -v gemini &> /dev/null; then
             echo "❌ 错误：Gemini CLI 未安装"
-            echo "安装命令: npm install -g @google/generative-ai-cli"
+            echo "安装命令: npm install -g @google/gemini-cli"
             exit 1
         fi
 
@@ -359,9 +365,9 @@ case "\$1" in
             echo "📝 审查报告已保存到 \$REPO_ROOT/review_logs 目录"
 
             # 显示最新的审查报告
-            LATEST_REPORT=\$(ls -t "\$REPO_ROOT/review_logs"/*.md 2>/dev/null | head -1)
+            LATEST_REPORT=$(ls -t "\$REPO_ROOT/review_logs"/*.md 2>/dev/null | head -1)
             if [ -n "\$LATEST_REPORT" ]; then
-                echo "📄 最新审查报告: \$(basename "\$LATEST_REPORT")"
+                echo "📄 最新审查报告: $(basename "\$LATEST_REPORT")"
             fi
         else
             echo "❌ 代码审查失败"
@@ -370,7 +376,7 @@ case "\$1" in
         ;;
     "help"|"-h"|"--help")
         # 检测当前命令名称
-        CURRENT_CMD=\$(basename "\$0")
+        CURRENT_CMD=$(basename "\$0")
         echo "CodeRocket - AI 驱动的代码审查工具"
         echo ""
         echo "用法: \$CURRENT_CMD <命令>"
@@ -401,7 +407,7 @@ case "\$1" in
             # 重用 review 命令的逻辑
             "\$0" review
         else
-            CURRENT_CMD=\$(basename "\$0")
+            CURRENT_CMD=$(basename "\$0")
             echo "📋 CodeRocket - AI 驱动的代码审查工具"
             echo ""
             echo "当前目录不是 Git 仓库。"
@@ -422,7 +428,7 @@ case "\$1" in
         fi
         ;;
     *)
-        CURRENT_CMD=\$(basename "\$0")
+        CURRENT_CMD=$(basename "\$0")
         echo "❌ 未知命令: \$1"
         echo "运行 '\$CURRENT_CMD help' 查看可用命令"
         exit 1
@@ -912,7 +918,7 @@ show_next_steps() {
     echo ""
 
     echo -e "${BLUE}文档链接：${NC}"
-    echo "- 项目主页: https://github.com/im47cn/coderocket"
+    echo "- 项目主页: https://github.com/im47cn/coderocket-cli"
     echo "- VS Code 设置: $INSTALL_DIR/docs/VSCODE_SETUP.md"
     echo "- 测试指南: $INSTALL_DIR/docs/VSCODE_TEST_GUIDE.md"
     echo ""
@@ -965,7 +971,7 @@ choose_install_mode() {
         # 没有终端输入（如通过 curl | bash），使用默认选择
         echo -e "${YELLOW}检测到非交互式环境，使用默认的全局安装模式${NC}"
         echo -e "${BLUE}如需选择安装模式，请下载脚本后本地执行：${NC}"
-        echo -e "${BLUE}  wget https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh${NC}"
+        echo -e "${BLUE}  wget https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh${NC}"
         echo -e "${BLUE}  chmod +x install.sh${NC}"
         echo -e "${BLUE}  ./install.sh${NC}"
         echo ""
@@ -977,6 +983,14 @@ choose_install_mode() {
 
 # 主函数
 main() {
+    # 如果是只修复全局命令模式
+    if [ "$FIX_GLOBAL_COMMANDS_ONLY" = "true" ]; then
+        echo "🔧 只修复全局命令模式"
+        create_global_command
+        echo "✅ 全局命令修复完成"
+        return 0
+    fi
+
     check_requirements
     install_ai_services
     download_project
