@@ -27,12 +27,20 @@ if [ -f "$REPO_ROOT/.env" ]; then
     done < "$REPO_ROOT/.env" 2>/dev/null
 fi
 
-# 加载全局CodeReview CLI配置
-if [ -f "$HOME/.codereview-cli/env" ]; then
+# 加载全局CodeRocket配置
+if [ -f "$HOME/.coderocket/env" ]; then
     while IFS='=' read -r key value; do
         [[ $key =~ ^[[:space:]]*# ]] && continue
         [[ -z $key ]] && continue
 
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_) ]]; then
+            export "$key=$value"
+        fi
+    done < "$HOME/.coderocket/env" 2>/dev/null
+elif [ -f "$HOME/.codereview-cli/env" ]; then   # backward-compat (remove in next major)
+    while IFS='=' read -r key value; do
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z $key ]] && continue
         if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_) ]]; then
             export "$key=$value"
         fi
@@ -42,7 +50,9 @@ fi
 # 导入AI服务管理器
 if [ -f "$REPO_ROOT/lib/ai-service-manager.sh" ]; then
     source "$REPO_ROOT/lib/ai-service-manager.sh"
-elif [ -f "$HOME/.codereview-cli/lib/ai-service-manager.sh" ]; then
+elif [ -f "$HOME/.coderocket/lib/ai-service-manager.sh" ]; then
+    source "$HOME/.coderocket/lib/ai-service-manager.sh"
+elif [ -f "$HOME/.codereview-cli/lib/ai-service-manager.sh" ]; then   # backward-compat
     source "$HOME/.codereview-cli/lib/ai-service-manager.sh"
 else
     echo "❌ 错误：AI服务管理器未找到"
@@ -84,7 +94,7 @@ PROMPT="请执行以下任务：
 5. 不要询问用户，直接自主执行所有步骤
 6. 这是一个自动化流程，请直接开始执行"
 
-if call_ai_for_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"; then
+if intelligent_ai_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"; then
     echo "👌 代码审查完成"
     echo "📝 审查报告已保存到 $REPO_ROOT/review_logs 目录"
 else

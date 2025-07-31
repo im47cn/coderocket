@@ -1,8 +1,8 @@
-# CodeReview CLI 部署指南
+# CodeRocket 部署指南
 
 ## 📋 概述
 
-本指南详细介绍了 CodeReview CLI 在不同环境下的部署方案，包括开发环境、生产环境、CI/CD 集成等场景的最佳实践。
+本指南详细介绍了 CodeRocket 在不同环境下的部署方案，包括开发环境、生产环境、CI/CD 集成等场景的最佳实践。
 
 ## 🎯 部署架构
 
@@ -22,13 +22,19 @@
 **适用场景**: 个人开发环境，多项目使用
 
 ```bash
-# 一键安装
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+# 一键安装（v1.0.4+ 支持自动化配置）
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 验证安装
-codereview-cli --version
-codereview-cli status
+coderocket --version  # 或 cr --version
+coderocket status
 ```
+
+**自动化特性** (v1.0.4+):
+- ✅ **智能PATH配置**: 自动检测shell类型并配置环境变量
+- ✅ **用户命令创建**: 自动在 `~/.local/bin/` 创建命令别名
+- ✅ **多重保障**: 即使全局命令失败，用户命令仍可用
+- ✅ **零配置使用**: 安装完成后立即可用，无需手动配置
 
 **配置步骤**:
 ```bash
@@ -42,7 +48,7 @@ gemini config
 
 # 3. 为现有项目启用
 cd your-project
-codereview-cli setup
+coderocket setup
 ```
 
 ### 2. 项目级部署
@@ -51,8 +57,8 @@ codereview-cli setup
 
 ```bash
 # 1. 克隆项目
-git clone https://github.com/im47cn/codereview-cli.git
-cd codereview-cli
+git clone https://github.com/im47cn/coderocket-cli.git
+cd coderocket
 
 # 2. 项目级安装
 ./install.sh
@@ -91,7 +97,7 @@ RUN chmod +x install.sh install-hooks.sh
 RUN chmod +x lib/*.sh
 RUN chmod +x githooks/*
 
-# 安装CodeReview CLI
+# 安装CodeRocket
 RUN ./install.sh --non-interactive --mode=project
 
 # 设置入口点
@@ -103,7 +109,7 @@ ENTRYPOINT ["./docker-entrypoint.sh"]
 version: '3.8'
 
 services:
-  codereview-cli:
+  coderocket:
     build: .
     environment:
       - GITLAB_PERSONAL_ACCESS_TOKEN=${GITLAB_TOKEN}
@@ -119,15 +125,15 @@ services:
 **部署命令**:
 ```bash
 # 构建镜像
-docker build -t codereview-cli:latest .
+docker build -t coderocket:latest .
 
 # 运行容器
 docker run -d \
-  --name codereview-cli \
+  --name coderocket \
   -e GITLAB_PERSONAL_ACCESS_TOKEN="your-token" \
   -e GEMINI_API_KEY="your-key" \
   -v $(pwd):/workspace \
-  codereview-cli:latest
+  coderocket:latest
 ```
 
 ## ☁️ 云端部署
@@ -137,7 +143,7 @@ docker run -d \
 **使用 AWS Lambda**:
 ```yaml
 # serverless.yml
-service: codereview-cli
+service: coderocket
 
 provider:
   name: aws
@@ -176,8 +182,8 @@ az group create --name codereview-rg --location eastus
 # 部署容器
 az container create \
   --resource-group codereview-rg \
-  --name codereview-cli \
-  --image codereview-cli:latest \
+  --name coderocket \
+  --image coderocket:latest \
   --environment-variables \
     GITLAB_PERSONAL_ACCESS_TOKEN="your-token" \
     GEMINI_API_KEY="your-key"
@@ -188,11 +194,11 @@ az container create \
 **使用 Cloud Run**:
 ```bash
 # 构建并推送镜像
-gcloud builds submit --tag gcr.io/PROJECT-ID/codereview-cli
+gcloud builds submit --tag gcr.io/PROJECT-ID/coderocket
 
 # 部署到Cloud Run
-gcloud run deploy codereview-cli \
-  --image gcr.io/PROJECT-ID/codereview-cli \
+gcloud run deploy coderocket \
+  --image gcr.io/PROJECT-ID/coderocket \
   --platform managed \
   --region us-central1 \
   --set-env-vars GITLAB_PERSONAL_ACCESS_TOKEN="your-token",GEMINI_API_KEY="your-key"
@@ -219,9 +225,9 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Setup CodeReview CLI
+    - name: Setup CodeRocket
       run: |
-        curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+        curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
         
     - name: Configure AI Service
       env:
@@ -249,7 +255,7 @@ code_review:
   image: node:18-alpine
   before_script:
     - apk add --no-cache git bash curl
-    - curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+    - curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
   script:
     - echo "AI_SERVICE=gemini" > .ai-config
     - ./githooks/post-commit
@@ -277,7 +283,7 @@ pipeline {
     stages {
         stage('Setup') {
             steps {
-                sh 'curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash'
+                sh 'curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash'
             }
         }
         
@@ -405,14 +411,14 @@ export LOG_FILE="/var/log/codereview/app.log"
 
 # 检查服务状态
 check_service_health() {
-    if codereview-cli status > /dev/null 2>&1; then
+    if coderocket status > /dev/null 2>&1; then
         echo "Service: OK"
     else
         echo "Service: ERROR"
         # 发送告警
         curl -X POST "https://hooks.slack.com/services/YOUR/SLACK/WEBHOOK" \
              -H 'Content-type: application/json' \
-             --data '{"text":"CodeReview CLI service is down!"}'
+             --data '{"text":"CodeRocket service is down!"}'
     fi
 }
 
@@ -436,19 +442,19 @@ check_api_connectivity
 **自动升级**:
 ```bash
 # 设置定时任务
-echo "0 2 * * 0 /usr/local/bin/codereview-cli update" | crontab -
+echo "0 2 * * 0 /usr/local/bin/coderocket update" | crontab -
 ```
 
 **手动升级**:
 ```bash
 # 备份当前配置
-cp -r ~/.codereview-cli ~/.codereview-cli.backup
+cp -r ~/.coderocket ~/.coderocket.backup
 
 # 升级到最新版本
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 验证升级
-codereview-cli --version
+coderocket --version
 ```
 
 ### 故障恢复
@@ -456,10 +462,10 @@ codereview-cli --version
 **配置恢复**:
 ```bash
 # 恢复配置
-cp -r ~/.codereview-cli.backup ~/.codereview-cli
+cp -r ~/.coderocket.backup ~/.coderocket
 
 # 重新安装hooks
-codereview-cli setup
+coderocket setup
 ```
 
 **数据备份**:
@@ -468,7 +474,7 @@ codereview-cli setup
 tar -czf review_logs_backup_$(date +%Y%m%d).tar.gz review_logs/
 
 # 备份配置文件
-tar -czf config_backup_$(date +%Y%m%d).tar.gz ~/.codereview-cli/
+tar -czf config_backup_$(date +%Y%m%d).tar.gz ~/.coderocket/
 ```
 
 ## 📞 技术支持
@@ -477,7 +483,7 @@ tar -czf config_backup_$(date +%Y%m%d).tar.gz ~/.codereview-cli/
 
 如需部署支持，请：
 1. 查看 [故障排除文档](../README.md#故障排除)
-2. 提交 [GitHub Issue](https://github.com/im47cn/codereview-cli/issues)
+2. 提交 [GitHub Issue](https://github.com/im47cn/coderocket-cli/issues)
 3. 联系技术支持团队
 
 ### 企业级支持

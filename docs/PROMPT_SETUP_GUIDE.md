@@ -2,7 +2,7 @@
 
 ## 🎯 概述
 
-CodeReview CLI 支持两种提示词配置方式：
+CodeRocket 支持两种提示词配置方式：
 
 1. **全局默认提示词**：使用系统内置的通用代码审查规则
 2. **项目级自定义提示词**：为特定项目创建定制化的审查规则
@@ -79,7 +79,7 @@ my-project/
 mkdir -p prompts
 
 # 2. 复制默认提示词模板
-cp ~/.codereview-cli/prompts/git-commit-review-prompt.md prompts/
+cp ~/.coderocket/prompts/git-commit-review-prompt.md prompts/
 
 # 3. 编辑自定义规则
 vim prompts/git-commit-review-prompt.md
@@ -104,7 +104,7 @@ rm -rf prompts/
    - `./prompts/git-commit-review-prompt.md`
 
 2. **全局默认提示词** (备用)
-   - `~/.codereview-cli/prompts/git-commit-review-prompt.md`
+   - `~/.coderocket/prompts/git-commit-review-prompt.md`
 
 ## 🎨 自定义提示词示例
 
@@ -151,10 +151,10 @@ rm -rf prompts/
 ```bash
 # 检查文件是否存在
 ls -la prompts/git-commit-review-prompt.md
-ls -la ~/.codereview-cli/prompts/git-commit-review-prompt.md
+ls -la ~/.coderocket/prompts/git-commit-review-prompt.md
 
 # 重新运行项目设置
-codereview-cli setup
+coderocket setup
 ```
 
 ### 切换提示词模式
@@ -165,5 +165,5 @@ rm -rf prompts/
 
 # 从全局默认切换到项目级
 mkdir -p prompts
-cp ~/.codereview-cli/prompts/git-commit-review-prompt.md prompts/
+cp ~/.coderocket/prompts/git-commit-review-prompt.md prompts/
 ```

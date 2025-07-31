@@ -28,7 +28,7 @@
 
 1. **检查调试日志**：
    ```bash
-   cat ~/.codereview-cli-debug.log
+   cat ~/.coderocket-debug.log
    ```
 
 2. **检查审查报告**：
@@ -95,7 +95,7 @@
 
 如果测试失败，请提供：
 
-1. 调试日志内容：`cat ~/.codereview-cli-debug.log`
+1. 调试日志内容：`cat ~/.coderocket-debug.log`
 2. VS Code 版本：Help > About
 3. Git 版本：`git --version`
 4. 操作系统版本

@@ -1,8 +1,8 @@
-# CodeReview CLI API 参考文档
+# CodeRocket API 参考文档
 
 ## 📋 概述
 
-本文档详细描述了 CodeReview CLI 的核心 API 接口和函数，包括 AI 服务管理、配置管理、Git Hook 集成等模块的接口规范。
+本文档详细描述了 CodeRocket 的核心 API 接口和函数，包括 AI 服务管理、配置管理、Git Hook 集成等模块的接口规范。
 
 ## 🔧 AI 服务管理 API
 
@@ -421,5 +421,5 @@ show_config "project"
 
 如需API支持或有疑问，请：
 1. 查看 [故障排除文档](../README.md#故障排除)
-2. 提交 [GitHub Issue](https://github.com/im47cn/codereview-cli/issues)
+2. 提交 [GitHub Issue](https://github.com/im47cn/coderocket-cli/issues)
 3. 参考 [贡献指南](../CONTRIBUTING.md)

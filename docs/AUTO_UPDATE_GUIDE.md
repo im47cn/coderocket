@@ -1,8 +1,8 @@
-# CodeReview CLI 自动更新功能指南
+# CodeRocket 自动更新功能指南
 
 ## 🚀 功能概述
 
-CodeReview CLI 现在支持智能的自动版本检查和升级机制，确保您始终使用最新版本的工具，享受最新功能和安全修复。
+CodeRocket 现在支持智能的自动版本检查和升级机制，确保您始终使用最新版本的工具，享受最新功能和安全修复。
 
 ## ✨ 核心特性
 
@@ -49,43 +49,43 @@ UPDATE_CHANNEL=stable
 
 ```bash
 # 配置自动更新选项
-codereview-cli auto-update
+coderocket auto-update
 
 # 或者使用 AI 配置工具
 ./lib/ai-config.sh update
 
 # 显示更新状态
-codereview-cli update-status
+coderocket update-status
 
 # 手动检查更新
-codereview-cli update
+coderocket update
 ```
 
 ## 📋 使用指南
 
 ### 基本使用
 
-自动更新功能默认启用，无需额外配置。每天首次使用 CodeReview CLI 时会自动检查更新：
+自动更新功能默认启用，无需额外配置。每天首次使用 CodeRocket 时会自动检查更新：
 
 ```bash
 # 正常使用，会自动触发版本检查
 git commit -m "feat: 新功能"
 
-# 或者使用任何 codereview-cli 命令
-codereview-cli setup
+# 或者使用任何 coderocket 命令
+coderocket setup
 ```
 
 ### 手动操作
 
 ```bash
 # 手动检查并安装更新
-codereview-cli update
+coderocket update
 
 # 查看更新状态
-codereview-cli update-status
+coderocket update-status
 
 # 配置自动更新选项
-codereview-cli auto-update
+coderocket auto-update
 
 # 启用自动更新
 ./lib/auto-updater.sh enable
@@ -183,7 +183,7 @@ graph TD
 **Q2: 更新失败**
 ```bash
 # 查看日志
-cat ~/.codereview-cli/update.log
+cat ~/.coderocket/update.log
 
 # 清理缓存重试
 ./lib/auto-updater.sh clean
@@ -193,7 +193,7 @@ cat ~/.codereview-cli/update.log
 **Q3: 权限问题**
 ```bash
 # 检查安装目录权限
-ls -la ~/.codereview-cli/
+ls -la ~/.coderocket/
 
 # 全局安装权限问题
 sudo ./lib/auto-updater.sh check
@@ -202,7 +202,7 @@ sudo ./lib/auto-updater.sh check
 **Q4: 网络连接问题**
 ```bash
 # 测试网络连接
-curl -s https://api.github.com/repos/im47cn/codereview-cli/releases/latest
+curl -s https://api.github.com/repos/im47cn/coderocket-cli/releases/latest
 
 # 使用代理
 export HTTP_PROXY=http://proxy.example.com:8080
@@ -221,17 +221,17 @@ export DEBUG=true
 ./lib/auto-updater.sh check
 
 # 查看详细日志
-tail -f ~/.codereview-cli/update.log
+tail -f ~/.coderocket/update.log
 ```
 
 ## 📊 监控和日志
 
 ### 日志文件
 
-- **更新日志**: `~/.codereview-cli/update.log`
-- **缓存文件**: `~/.codereview-cli/update_cache`
-- **锁文件**: `~/.codereview-cli/update.lock`
-- **备份目录**: `~/.codereview-cli/backup/`
+- **更新日志**: `~/.coderocket/update.log`
+- **缓存文件**: `~/.coderocket/update_cache`
+- **锁文件**: `~/.coderocket/update.lock`
+- **备份目录**: `~/.coderocket/backup/`
 
 ### 日志格式
 
@@ -239,9 +239,9 @@ tail -f ~/.codereview-cli/update.log
 [2025-07-21 10:52:13] [INFO] 开始检查更新
 [2025-07-21 10:52:14] [INFO] 检查更新: 当前版本=1.0.1, 最新版本=1.0.2
 [2025-07-21 10:52:14] [INFO] 发现新版本: 1.0.2
-[2025-07-21 10:52:15] [INFO] 下载版本 1.0.2 到 /tmp/codereview-cli-update-12345
+[2025-07-21 10:52:15] [INFO] 下载版本 1.0.2 到 /tmp/coderocket-update-12345
 [2025-07-21 10:52:16] [INFO] 创建备份: backup-20250721-105216
-[2025-07-21 10:52:17] [INFO] 安装更新到: /Users/user/.codereview-cli
+[2025-07-21 10:52:17] [INFO] 安装更新到: /Users/user/.coderocket
 [2025-07-21 10:52:18] [INFO] 静默更新成功: 1.0.2
 ```
 

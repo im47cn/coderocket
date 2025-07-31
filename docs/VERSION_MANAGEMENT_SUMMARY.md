@@ -6,7 +6,7 @@
 
 1. **install.sh 中的版本号硬编码** ❌
    - 位置：第191行和第251行
-   - 问题：`echo "CodeReview CLI v1.0.0"` 写死版本号
+   - 问题：`echo "CodeRocket v1.0.0"` 写死版本号
    - 影响：版本更新时需要手动修改多处
 
 2. **API URL 中的版本号硬编码** ⚠️
@@ -59,10 +59,10 @@
 #### install.sh 修复
 ```bash
 # 修复前
-echo "CodeReview CLI v1.0.0"
+echo "CodeRocket v1.0.0"
 
 # 修复后
-echo "CodeReview CLI v$(get_version)"
+echo "CodeRocket v$(get_version)"
 ```
 
 #### 服务模块修复

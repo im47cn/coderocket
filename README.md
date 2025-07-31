@@ -1,11 +1,13 @@
-# CodeReview CLI
+# CodeRocket
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![GitHub stars](https://img.shields.io/github/stars/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/issues)
+[![GitHub stars](https://img.shields.io/github/stars/im47cn/coderocket-cli.svg)](https://github.com/im47cn/coderocket-cli/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/im47cn/coderocket-cli.svg)](https://github.com/im47cn/coderocket-cli/issues)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W71IFTGX)
 
 一个基于多种 AI 服务（Gemini、OpenCode、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
+
+> **项目重命名通知**：CodeRocket 现已更名为 **CodeRocket**！为保持兼容性，原有的 `codereview-cli` 和 `cr` 命令仍可正常使用。
 
 ## 🚀 核心功能
 
@@ -52,10 +54,10 @@
 
 ```bash
 # 方式1：直接安装（默认全局安装）
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 方式2：交互式安装（可选择安装模式）
-wget https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh
+wget https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -63,9 +65,9 @@ chmod +x install.sh
 **安装模式选择：**
 
 1. **全局安装（推荐）**：
-   - ✅ 新创建的 Git 仓库自动包含 CodeReview CLI
-   - ✅ 提供 `codereview-cli` 全局命令
-   - ✅ 现有仓库只需运行 `codereview-cli setup`
+   - ✅ 新创建的 Git 仓库自动包含 CodeRocket
+   - ✅ 提供 `coderocket` 全局命令（兼容 `coderocket`, `cr`）
+   - ✅ 现有仓库只需运行 `coderocket setup`
    - ✅ 一次安装，终身受益
    - ✅ 避免每个项目都要安装的麻烦
 
@@ -101,7 +103,7 @@ npm install -g @opencode/cli
 
 **ClaudeCode (可选)**
 ```bash
-npm install -g @claudecode/cli
+npm install -g @anthropic-ai/claude-code
 ```
 
 #### 2. 配置 AI 服务
@@ -129,8 +131,8 @@ claudecode config
 #### 3. 克隆项目
 
 ```bash
-git clone https://github.com/im47cn/codereview-cli.git
-cd codereview-cli
+git clone https://github.com/im47cn/coderocket-cli.git
+cd coderocket-cli
 ```
 
 #### 4. 运行安装脚本
@@ -194,7 +196,7 @@ export GITLAB_API_URL="https://gitlab.com/api/v4"
 
 ```bash
 # 检查全局命令是否可用
-codereview-cli --version
+coderocket --version
 
 # 检查 Git 模板是否配置
 git config --global init.templateDir
@@ -215,28 +217,51 @@ echo $GITLAB_PERSONAL_ACCESS_TOKEN
 
 ## 🔧 全局命令使用
 
-全局安装后，可以使用 `codereview-cli` 命令：
+全局安装后，可以使用 `coderocket` 命令（兼容 `coderocket` 和 `cr`）：
+
+### 🚀 直接代码审查
 
 ```bash
-# 为现有项目设置 CodeReview CLI
-codereview-cli setup
+# 在 Git 仓库中直接运行（推荐）
+cd your-git-project
+coderocket                   # 自动检测并审查最新提交
+
+# 或者明确指定审查命令
+coderocket review            # 审查最新提交
+
+# 兼容命令（老用户）
+coderocket               # 完全兼容
+cr                          # 简短别名
+```
+
+**智能检测**：
+- ✅ 如果在 Git 仓库中：自动执行代码审查
+- ⚠️ 如果不在 Git 仓库中：显示使用指南
+
+### 🛠️ 项目管理
+
+```bash
+# 为现有项目设置 CodeRocket hooks
+coderocket setup
 
 # 更新到最新版本
-codereview-cli update
+coderocket update
 
-# 如果更新失败，会显示详细的错误信息和解决方案
-
-# 配置 Gemini API 密钥
-codereview-cli config
+# 配置 AI 服务
+coderocket config
 
 # 配置代码审查时机（提交前/提交后）
-codereview-cli timing
+coderocket timing
 
 # 查看版本信息
-codereview-cli version
+coderocket version
 
 # 查看帮助信息
-codereview-cli help
+coderocket help
+
+# 兼容命令（所有功能完全相同）
+coderocket setup         # 兼容老用户
+cr help                     # 简短别名
 ```
 
 ## 📖 使用说明
@@ -266,8 +291,8 @@ codereview-cli help
 #### 全局安装用户
 
 1. **一次性全局安装**：运行一键安装脚本，选择全局安装
-2. **新项目自动启用**：创建新 Git 仓库时自动包含 CodeReview CLI
-3. **现有项目设置**：在现有仓库中运行 `codereview-cli setup`
+2. **新项目自动启用**：创建新 Git 仓库时自动包含 CodeRocket
+3. **现有项目设置**：在现有仓库中运行 `coderocket setup`
 4. **正常开发提交**：像往常一样进行代码开发和 Git 提交
 5. **自动触发审查**：每次 `git commit` 后会自动触发代码审查
 6. **查看审查报告**：审查完成后在 `review_logs/` 目录查看详细报告
@@ -286,7 +311,7 @@ codereview-cli help
 #### 全局安装 - 新项目
 
 ```bash
-# 1. 创建新项目（自动包含 CodeReview CLI）
+# 1. 创建新项目（自动包含 CodeRocket）
 git init my-project
 cd my-project
 
@@ -313,8 +338,8 @@ git push origin feature/user-auth
 # 1. 进入现有项目
 cd existing-project
 
-# 2. 设置 CodeReview CLI
-codereview-cli setup
+# 2. 设置 CodeRocket
+coderocket setup
 
 # 3. 正常开发流程（同上）
 git add .
@@ -426,8 +451,8 @@ export AI_SERVICE=gemini  # 或 opencode, claudecode
 echo "AI_SERVICE=gemini" > .ai-config
 
 # 全局配置
-mkdir -p ~/.codereview-cli
-echo "AI_SERVICE=gemini" > ~/.codereview-cli/ai-config
+mkdir -p ~/.coderocket
+echo "AI_SERVICE=gemini" > ~/.coderocket/ai-config
 ```
 
 **方式三：使用配置工具**
@@ -499,11 +524,11 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 
 ## 🔗 相关链接
 
-- [Google Gemini CLI 文档](https://github.com/google/generative-ai-js)
+- [Google Gemini CLI 文档](https://github.com/google-gemini/gemini-cli)
 - [Git Hooks 官方文档](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 - [GitLab API 文档](https://docs.gitlab.com/ee/api/)
-- [项目问题反馈](https://github.com/im47cn/codereview-cli/issues)
-- [功能请求](https://github.com/im47cn/codereview-cli/issues/new?template=feature_request.md)
+- [项目问题反馈](https://github.com/im47cn/coderocket-cli/issues)
+- [功能请求](https://github.com/im47cn/coderocket-cli/issues/new?template=feature_request.md)
 
 ## 📚 文档
 
@@ -515,18 +540,19 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 如果您在使用过程中遇到问题或有改进建议，请：
 
 1. 查看 [故障排除](#-故障排除) 部分
-2. 搜索 [现有问题](https://github.com/im47cn/codereview-cli/issues)
-3. 创建 [新问题](https://github.com/im47cn/codereview-cli/issues/new)
+2. 搜索 [现有问题](https://github.com/im47cn/coderocket-cli/issues)
+3. 创建 [新问题](https://github.com/im47cn/coderocket-cli/issues/new)
 
 ## 🌟 特性亮点
 
 ### AI 驱动的智能分析
 
 - **多AI服务支持**：支持 Gemini、OpenCode、ClaudeCode 等多种AI服务
+- **智能故障转移**：🆕 当AI服务遇到429限流等错误时，自动切换到其他可用服务
 - **深度代码理解**：基于先进 AI 模型的代码分析能力
 - **上下文感知**：理解代码变更的业务逻辑和技术影响
 - **多维度评估**：从功能、质量、性能、安全等角度全面分析
-- **智能备用方案**：AI服务不可用时自动使用备用方案
+- **智能错误处理**：自动识别和处理不同类型的AI服务错误
 
 ### 无缝集成体验
 
@@ -550,12 +576,12 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 
 ```bash
 # 快速修复（推荐）
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/fix-hooks.sh -o fix-hooks.sh
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/fix-hooks.sh -o fix-hooks.sh
 chmod +x fix-hooks.sh
 ./fix-hooks.sh
 
 # 或重新设置项目
-codereview-cli setup
+coderocket setup
 ```
 
 详细解决方案请参考：[快速修复指南](QUICK_FIX.md)
@@ -628,10 +654,10 @@ export DEBUG=1
 
 ```bash
 # 重新运行安装脚本获取最新版本
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash
 
 # 或者手动更新
-cd ~/.codereview-cli
+cd ~/.coderocket
 git pull origin main
 ```
 

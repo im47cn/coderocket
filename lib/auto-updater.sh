@@ -11,9 +11,9 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置常量
-GITHUB_API_URL="https://api.github.com/repos/im47cn/codereview-cli/releases/latest"
+GITHUB_API_URL="https://api.github.com/repos/im47cn/coderocket-cli/releases/latest"
 UPDATE_TIMEOUT=5
-CACHE_DIR="$HOME/.codereview-cli"
+CACHE_DIR="$HOME/.coderocket"
 CACHE_FILE="$CACHE_DIR/update_cache"
 LOCK_FILE="$CACHE_DIR/update.lock"
 LOG_FILE="$CACHE_DIR/update.log"
@@ -160,12 +160,12 @@ get_latest_version() {
 # 依赖: git
 get_latest_version_from_git() {
     local latest_version=""
-    local temp_dir="/tmp/codereview-cli-version-check-$$"
+    local temp_dir="/tmp/coderocket-version-check-$$"
 
     # 创建临时目录
     if mkdir -p "$temp_dir" 2>/dev/null; then
         # 克隆仓库（只获取 tags）
-        if git clone --depth 1 --tags "https://github.com/im47cn/codereview-cli.git" "$temp_dir" 2>/dev/null; then
+        if git clone --depth 1 --tags "https://github.com/im47cn/coderocket-cli.git" "$temp_dir" 2>/dev/null; then
             cd "$temp_dir"
             # 获取最新的 tag
             latest_version=$(git describe --tags --abbrev=0 2>/dev/null)
@@ -340,7 +340,7 @@ release_update_lock() {
 detect_install_mode() {
     local script_path="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-    if [[ "$script_path" == "$HOME/.codereview-cli"* ]]; then
+    if [[ "$script_path" == "$HOME/.coderocket"* ]]; then
         echo "global"
     else
         echo "project"
@@ -357,7 +357,7 @@ get_install_dir() {
     local install_mode=$(detect_install_mode)
 
     if [ "$install_mode" = "global" ]; then
-        echo "$HOME/.codereview-cli"
+        echo "$HOME/.coderocket"
     else
         # 项目级安装，返回项目根目录
         echo "$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -406,7 +406,7 @@ create_backup() {
 # 复杂度: O(1) - 网络下载
 download_latest_version() {
     local version="$1"
-    local temp_dir="/tmp/codereview-cli-update-$$"
+    local temp_dir="/tmp/coderocket-update-$$"
 
     log_message "INFO" "下载版本 $version 到 $temp_dir"
 
@@ -426,7 +426,7 @@ download_latest_version() {
     local download_success=false
 
     # 方式1: 从 GitHub releases 下载
-    local download_url="https://github.com/im47cn/codereview-cli/archive/refs/tags/v${version}.tar.gz"
+    local download_url="https://github.com/im47cn/coderocket-cli/archive/refs/tags/v${version}.tar.gz"
     log_message "INFO" "尝试从 releases 下载: $download_url"
 
     if curl -L --connect-timeout $UPDATE_TIMEOUT -o "$temp_dir/update.tar.gz" "$download_url" 2>/dev/null; then
@@ -443,7 +443,7 @@ download_latest_version() {
 
     # 方式2: 从 main 分支下载
     if [ "$download_success" = false ]; then
-        local main_url="https://github.com/im47cn/codereview-cli/archive/refs/heads/main.tar.gz"
+        local main_url="https://github.com/im47cn/coderocket-cli/archive/refs/heads/main.tar.gz"
         log_message "INFO" "尝试从 main 分支下载: $main_url"
 
         if curl -L --connect-timeout $UPDATE_TIMEOUT -o "$temp_dir/update.tar.gz" "$main_url" 2>/dev/null; then
@@ -463,7 +463,7 @@ download_latest_version() {
     if [ "$download_success" = false ]; then
         log_message "INFO" "尝试使用 git clone"
 
-        if git clone --depth 1 "https://github.com/im47cn/codereview-cli.git" "$temp_dir" 2>/dev/null; then
+        if git clone --depth 1 "https://github.com/im47cn/coderocket-cli.git" "$temp_dir" 2>/dev/null; then
             download_success=true
             log_message "INFO" "git clone 成功"
         else
@@ -556,7 +556,7 @@ install_update() {
 
 # 更新全局命令
 #
-# 功能: 更新全局 codereview-cli 命令
+# 功能: 更新全局 coderocket 命令
 # 参数: 无
 # 返回: 0=成功, 1=失败
 # 复杂度: O(1) - 文件操作
@@ -566,9 +566,9 @@ update_global_command() {
 
     # 检测全局命令位置
     if [ -w "/usr/local/bin" ]; then
-        cmd_file="/usr/local/bin/codereview-cli"
+        cmd_file="/usr/local/bin/coderocket"
     elif [ -w "/usr/bin" ]; then
-        cmd_file="/usr/bin/codereview-cli"
+        cmd_file="/usr/bin/coderocket"
     else
         log_message "WARN" "无法更新全局命令，权限不足"
         return 1
@@ -577,7 +577,7 @@ update_global_command() {
     # 更新命令文件
     cat > "$cmd_file" << EOF
 #!/bin/bash
-# CodeReview CLI 全局命令 (自动更新版本)
+# CodeRocket 全局命令 (自动更新版本)
 INSTALL_DIR="$install_dir"
 exec "\$INSTALL_DIR/install.sh" "\$@"
 EOF
@@ -717,7 +717,7 @@ show_update_status() {
     local install_mode=$(detect_install_mode)
     local install_dir=$(get_install_dir)
 
-    echo -e "${BLUE}=== CodeReview CLI 自动更新状态 ===${NC}"
+    echo -e "${BLUE}=== CodeRocket 自动更新状态 ===${NC}"
     echo -e "${YELLOW}当前版本:${NC} $current_version"
     echo -e "${YELLOW}安装模式:${NC} $install_mode"
     echo -e "${YELLOW}安装目录:${NC} $install_dir"
@@ -763,8 +763,8 @@ check_and_show_update_notification() {
     if [ "$update_success" = "true" ] && [ "$notification_shown" != "true" ]; then
         local updated_version=$(grep "^updated_version=" "$CACHE_FILE" 2>/dev/null | cut -d'=' -f2)
 
-        echo -e "${GREEN}🎉 CodeReview CLI 已自动更新到版本 $updated_version${NC}"
-        echo -e "${BLUE}💡 运行 'codereview-cli version' 查看详细信息${NC}"
+        echo -e "${GREEN}🎉 CodeRocket 已自动更新到版本 $updated_version${NC}"
+        echo -e "${BLUE}💡 运行 'coderocket version' 查看详细信息${NC}"
 
         # 标记通知已显示
         echo "notification_shown=true" >> "$CACHE_FILE"
@@ -812,7 +812,7 @@ manual_check_update() {
             fi
         else
             echo -e "${YELLOW}💡 自动更新已禁用，请手动更新：${NC}"
-            echo -e "${BLUE}   codereview-cli update${NC}"
+            echo -e "${BLUE}   coderocket update${NC}"
             return 0
         fi
     else
@@ -851,7 +851,7 @@ configure_auto_update() {
         2)
             set_config_value "AUTO_UPDATE_ENABLED" "false" "global"
             echo -e "${YELLOW}⚠️  自动更新已禁用${NC}"
-            echo -e "${BLUE}💡 您仍可以使用 'codereview-cli update' 手动更新${NC}"
+            echo -e "${BLUE}💡 您仍可以使用 'coderocket update' 手动更新${NC}"
             ;;
         3)
             echo -e "${BLUE}取消配置${NC}"
@@ -922,7 +922,7 @@ main() {
             echo -e "${YELLOW}⚠️  自动更新已禁用${NC}"
             ;;
         "help"|"-h"|"--help")
-            echo "CodeReview CLI 自动更新管理工具"
+            echo "CodeRocket 自动更新管理工具"
             echo ""
             echo "用法: $0 <命令>"
             echo ""

@@ -1,8 +1,8 @@
-# CodeReview CLI 性能优化指南
+# CodeRocket 性能优化指南
 
 ## 🚀 概述
 
-本指南提供了优化 CodeReview CLI 性能的最佳实践和技巧，帮助您获得更快的代码审查体验和更高的工作效率。
+本指南提供了优化 CodeRocket 性能的最佳实践和技巧，帮助您获得更快的代码审查体验和更高的工作效率。
 
 ## 📊 性能基准
 
@@ -93,18 +93,18 @@ echo "AI_API_ENDPOINT=https://your-cdn.com/api" >> .env
 **使用SSD存储**：
 ```bash
 # 将审查日志存储到SSD
-echo "REVIEW_LOGS_DIR=/ssd/codereview-logs" >> .env
-mkdir -p /ssd/codereview-logs
+echo "REVIEW_LOGS_DIR=/ssd/coderocket-logs" >> .env
+mkdir -p /ssd/coderocket-logs
 ```
 
 **优化临时文件**：
 ```bash
 # 使用内存文件系统
-echo "TEMP_DIR=/tmp/codereview-temp" >> .env
-mkdir -p /tmp/codereview-temp
+echo "TEMP_DIR=/tmp/coderocket-temp" >> .env
+mkdir -p /tmp/coderocket-temp
 
 # 或使用RAM磁盘
-sudo mount -t tmpfs -o size=100M tmpfs /tmp/codereview-temp
+sudo mount -t tmpfs -o size=100M tmpfs /tmp/coderocket-temp
 ```
 
 ### 2. 内存优化
@@ -199,7 +199,7 @@ echo "PROMPT_PY=prompts/python-prompt.md" >> .env
 **智能触发**：
 ```bash
 # 只对重要文件执行审查
-cat > .codereview-ignore << 'EOF'
+cat > .coderocket-ignore << 'EOF'
 *.md
 *.txt
 *.json
@@ -260,7 +260,7 @@ echo "AI服务平均响应时间："
 
 # 系统资源使用
 echo "系统资源使用："
-ps aux | grep codereview
+ps aux | grep coderocket
 EOF
 
 chmod +x monitor-performance.sh
@@ -269,7 +269,7 @@ chmod +x monitor-performance.sh
 **自动化监控**：
 ```bash
 # 添加到crontab
-echo "0 */6 * * * /path/to/monitor-performance.sh >> /var/log/codereview-perf.log" | crontab -
+echo "0 */6 * * * /path/to/monitor-performance.sh >> /var/log/coderocket-perf.log" | crontab -
 ```
 
 ### 2. 性能分析
@@ -283,7 +283,7 @@ time ./githooks/post-commit
 strace -c -f ./githooks/post-commit
 
 # 使用htop监控资源使用
-htop -p $(pgrep -f codereview)
+htop -p $(pgrep -f coderocket)
 ```
 
 ## 🔄 高级优化技巧
@@ -346,7 +346,7 @@ batch-review() {
 #!/bin/bash
 # benchmark.sh - 性能基准测试
 
-echo "=== CodeReview CLI 性能基准测试 ==="
+echo "=== CodeRocket 性能基准测试 ==="
 
 # 测试1：配置加载时间
 echo "1. 配置加载测试："

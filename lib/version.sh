@@ -77,7 +77,7 @@ get_detailed_version() {
     local script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
     local project_root="$(dirname "$script_dir")"
     
-    echo "CodeReview CLI v$version"
+    echo "CodeRocket v$version"
     
     # 添加Git信息（如果可用）
     if command -v git &> /dev/null && [ -d "$project_root/.git" ]; then
