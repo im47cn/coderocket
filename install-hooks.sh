@@ -31,8 +31,8 @@ get_config_value() {
         value="${!key}"
     elif [ -f "$REPO_ROOT/.ai-config" ]; then
         value=$(grep "^$key=" "$REPO_ROOT/.ai-config" 2>/dev/null | cut -d'=' -f2)
-    elif [ -f "$HOME/.codereview-cli/ai-config" ]; then
-        value=$(grep "^$key=" "$HOME/.codereview-cli/ai-config" 2>/dev/null | cut -d'=' -f2)
+    elif [ -f "$HOME/.coderocket/ai-config" ]; then
+        value=$(grep "^$key=" "$HOME/.coderocket/ai-config" 2>/dev/null | cut -d'=' -f2)
     elif [ -f "$REPO_ROOT/.env" ]; then
         value=$(grep "^$key=" "$REPO_ROOT/.env" 2>/dev/null | cut -d'=' -f2)
     fi
@@ -91,11 +91,11 @@ fi
 PRE_COMMIT_SCRIPT=""
 if [ -f "$REPO_ROOT/githooks/pre-commit" ]; then
     PRE_COMMIT_SCRIPT="$REPO_ROOT/githooks/pre-commit"
-elif [ -f "$HOME/.codereview-cli/githooks/pre-commit" ]; then
-    PRE_COMMIT_SCRIPT="$HOME/.codereview-cli/githooks/pre-commit"
+elif [ -f "$HOME/.coderocket/githooks/pre-commit" ]; then
+    PRE_COMMIT_SCRIPT="$HOME/.coderocket/githooks/pre-commit"
 else
     echo "错误：pre-commit 脚本不存在"
-    echo "请确保 CodeReview CLI 已正确安装"
+    echo "请确保 CodeRocket 已正确安装"
     exit 1
 fi
 
@@ -140,11 +140,11 @@ fi
 POST_COMMIT_SCRIPT=""
 if [ -f "$REPO_ROOT/githooks/post-commit" ]; then
     POST_COMMIT_SCRIPT="$REPO_ROOT/githooks/post-commit"
-elif [ -f "$HOME/.codereview-cli/githooks/post-commit" ]; then
-    POST_COMMIT_SCRIPT="$HOME/.codereview-cli/githooks/post-commit"
+elif [ -f "$HOME/.coderocket/githooks/post-commit" ]; then
+    POST_COMMIT_SCRIPT="$HOME/.coderocket/githooks/post-commit"
 else
     echo "错误：post-commit 脚本不存在"
-    echo "请确保 CodeReview CLI 已正确安装"
+    echo "请确保 CodeRocket 已正确安装"
     exit 1
 fi
 
@@ -191,11 +191,11 @@ fi
 PRE_PUSH_SCRIPT=""
 if [ -f "$REPO_ROOT/githooks/pre-push" ]; then
     PRE_PUSH_SCRIPT="$REPO_ROOT/githooks/pre-push"
-elif [ -f "$HOME/.codereview-cli/githooks/pre-push" ]; then
-    PRE_PUSH_SCRIPT="$HOME/.codereview-cli/githooks/pre-push"
+elif [ -f "$HOME/.coderocket/githooks/pre-push" ]; then
+    PRE_PUSH_SCRIPT="$HOME/.coderocket/githooks/pre-push"
 else
     echo "错误：pre-push 脚本不存在"
-    echo "请确保 CodeReview CLI 已正确安装"
+    echo "请确保 CodeRocket 已正确安装"
     exit 1
 fi
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-# CodeReview CLI 一键安装脚本
-# 使用方法: curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+# CodeRocket 一键安装脚本
+# 使用方法: curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
 set -e
 
@@ -13,11 +13,11 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 配置
-REPO_URL="https://github.com/im47cn/codereview-cli.git"
-INSTALL_DIR="$HOME/.codereview-cli"
-TEMP_DIR="/tmp/codereview-cli-install"
+REPO_URL="https://github.com/im47cn/coderocket.git"
+INSTALL_DIR="$HOME/.coderocket"
+TEMP_DIR="/tmp/coderocket-install"
 
-echo -e "${BLUE}=== CodeReview CLI 一键安装 ===${NC}"
+echo -e "${BLUE}=== CodeRocket 一键安装 ===${NC}"
 echo ""
 
 # 检查系统要求
@@ -148,22 +148,19 @@ install_to_directory() {
 create_global_command() {
     echo -e "${YELLOW}→ 创建全局命令...${NC}"
 
-    # 创建 codereview-cli 命令脚本
     local bin_dir="/usr/local/bin"
-    local cmd_file="$bin_dir/codereview-cli"
 
-    # 检查是否有写入权限
-    if [ ! -w "$bin_dir" ]; then
-        echo -e "${YELLOW}  需要管理员权限来创建全局命令${NC}"
-        sudo tee "$cmd_file" > /dev/null << EOF
+    # 创建主命令脚本内容
+    read -r -d '' cmd_content << 'EOF' || true
 #!/bin/bash
 
-# CodeReview CLI 全局命令
-INSTALL_DIR="$INSTALL_DIR"
+# CodeRocket 全局命令
+# 兼容 CodeReview CLI 老用户使用习惯
+INSTALL_DIR="INSTALL_DIR_PLACEHOLDER"
 
 case "\$1" in
     "setup")
-        echo "🔧 为当前项目设置 CodeReview CLI..."
+        echo "🔧 为当前项目设置 CodeRocket..."
         if [ ! -d ".git" ]; then
             echo "❌ 错误：当前目录不是 Git 仓库"
             exit 1
@@ -171,19 +168,19 @@ case "\$1" in
         "\$INSTALL_DIR/install-hooks.sh"
         ;;
     "update")
-        echo "🔄 更新 CodeReview CLI..."
+        echo "🔄 更新 CodeRocket..."
 
         # 检查安装目录是否存在
         if [ ! -d "\$INSTALL_DIR" ]; then
-            echo "❌ 错误：CodeReview CLI 未安装"
+            echo "❌ 错误：CodeRocket 未安装"
             echo "请先运行安装脚本："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
             exit 1
         fi
 
         # 重新下载和安装最新版本
-        TEMP_DIR="/tmp/codereview-cli-update"
-        REPO_URL="https://github.com/im47cn/codereview-cli.git"
+        TEMP_DIR="/tmp/coderocket-update"
+        REPO_URL="https://github.com/im47cn/coderocket.git"
 
         # 清理临时目录
         rm -rf "\$TEMP_DIR"
@@ -193,7 +190,7 @@ case "\$1" in
         if ! git clone "\$REPO_URL" "\$TEMP_DIR"; then
             echo "❌ 错误：无法下载最新版本"
             echo "请检查网络连接或手动更新："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
             exit 1
         fi
 
@@ -236,7 +233,7 @@ case "\$1" in
         else
             echo "❌ 更新失败"
             echo "请尝试重新安装："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
+            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
             exit 1
         fi
 
@@ -264,7 +261,7 @@ case "\$1" in
         fi
         ;;
     "version"|"-v"|"--version")
-        echo "CodeReview CLI v1.0.0"
+        echo "CodeRocket v1.0.0"
         echo "安装路径: \$INSTALL_DIR"
         ;;
     "review")
@@ -288,7 +285,7 @@ case "\$1" in
             PROMPT_FILE="\$INSTALL_DIR/prompts/git-commit-review-prompt.md"
         else
             echo "❌ 错误：提示词文件不存在"
-            echo "请运行: codereview-cli setup 来配置项目"
+            echo "请运行: coderocket setup 来配置项目"
             exit 1
         fi
 
@@ -329,13 +326,15 @@ case "\$1" in
         fi
         ;;
     "help"|"-h"|"--help")
-        echo "CodeReview CLI - AI 驱动的代码审查工具"
+        # 检测当前命令名称
+        CURRENT_CMD=\$(basename "\$0")
+        echo "CodeRocket - AI 驱动的代码审查工具"
         echo ""
-        echo "用法: codereview-cli <命令>"
+        echo "用法: \$CURRENT_CMD <命令>"
         echo ""
         echo "命令:"
         echo "  review   对当前 Git 仓库的最新提交进行代码审查"
-        echo "  setup    为当前项目设置 CodeReview CLI hooks"
+        echo "  setup    为当前项目设置 CodeRocket hooks"
         echo "  update   更新到最新版本"
         echo "  config   配置AI服务"
         echo "  timing   配置代码审查时机（提交前/提交后）"
@@ -344,10 +343,13 @@ case "\$1" in
         echo ""
         echo "快速使用："
         echo "  cd your-git-project"
-        echo "  codereview-cli review    # 直接审查最新提交"
+        echo "  \$CURRENT_CMD review    # 直接审查最新提交"
         echo ""
-        echo "全局安装后，新创建的 Git 仓库会自动包含 CodeReview CLI"
-        echo "对于现有仓库，请在仓库目录中运行: codereview-cli setup"
+        echo "兼容命令："
+        echo "  coderocket, codereview-cli, cr 都可以使用"
+        echo ""
+        echo "全局安装后，新创建的 Git 仓库会自动包含 CodeRocket"
+        echo "对于现有仓库，请在仓库目录中运行: \$CURRENT_CMD setup"
         ;;
     "")
         # 无参数时的默认行为
@@ -356,264 +358,64 @@ case "\$1" in
             # 重用 review 命令的逻辑
             "\$0" review
         else
-            echo "📋 CodeReview CLI - AI 驱动的代码审查工具"
+            CURRENT_CMD=\$(basename "\$0")
+            echo "📋 CodeRocket - AI 驱动的代码审查工具"
             echo ""
             echo "当前目录不是 Git 仓库。"
             echo ""
             echo "使用方法："
-            echo "1. 在 Git 仓库中直接运行 'codereview-cli' 进行代码审查"
-            echo "2. 运行 'codereview-cli help' 查看所有可用命令"
+            echo "1. 在 Git 仓库中直接运行 '\$CURRENT_CMD' 进行代码审查"
+            echo "2. 运行 '\$CURRENT_CMD help' 查看所有可用命令"
+            echo ""
+            echo "兼容命令："
+            echo "  coderocket, codereview-cli, cr 都可以使用"
             echo ""
             echo "如需在当前目录创建 Git 仓库："
             echo "  git init"
             echo "  # 添加文件并提交"
             echo "  git add ."
             echo "  git commit -m 'Initial commit'"
-            echo "  codereview-cli  # 然后运行代码审查"
+            echo "  \$CURRENT_CMD  # 然后运行代码审查"
         fi
         ;;
     *)
+        CURRENT_CMD=\$(basename "\$0")
         echo "❌ 未知命令: \$1"
-        echo "运行 'codereview-cli help' 查看可用命令"
+        echo "运行 '\$CURRENT_CMD help' 查看可用命令"
         exit 1
         ;;
 esac
 EOF
-        sudo chmod +x "$cmd_file"
-    else
-        tee "$cmd_file" > /dev/null << EOF
-#!/bin/bash
 
-# CodeReview CLI 全局命令
-INSTALL_DIR="$INSTALL_DIR"
+    # 替换安装目录占位符
+    cmd_content="${cmd_content//INSTALL_DIR_PLACEHOLDER/$INSTALL_DIR}"
 
-case "\$1" in
-    "setup")
-        echo "🔧 为当前项目设置 CodeReview CLI..."
-        if [ ! -d ".git" ]; then
-            echo "❌ 错误：当前目录不是 Git 仓库"
-            exit 1
-        fi
-        "\$INSTALL_DIR/install-hooks.sh"
-        ;;
-    "update")
-        echo "🔄 更新 CodeReview CLI..."
+    # 创建命令的函数
+    create_command() {
+        local cmd_name="$1"
+        local cmd_file="$bin_dir/$cmd_name"
 
-        # 检查安装目录是否存在
-        if [ ! -d "\$INSTALL_DIR" ]; then
-            echo "❌ 错误：CodeReview CLI 未安装"
-            echo "请先运行安装脚本："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
-            exit 1
-        fi
-
-        # 重新下载和安装最新版本
-        TEMP_DIR="/tmp/codereview-cli-update"
-        REPO_URL="https://github.com/im47cn/codereview-cli.git"
-
-        # 清理临时目录
-        rm -rf "\$TEMP_DIR"
-        mkdir -p "\$TEMP_DIR"
-
-        # 下载最新版本
-        if ! git clone "\$REPO_URL" "\$TEMP_DIR"; then
-            echo "❌ 错误：无法下载最新版本"
-            echo "请检查网络连接或手动更新："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
-            exit 1
-        fi
-
-        # 备份当前版本（如果存在VERSION文件）
-        OLD_VERSION=""
-        if [ -f "\$INSTALL_DIR/VERSION" ]; then
-            OLD_VERSION=\$(cat "\$INSTALL_DIR/VERSION")
-        fi
-
-        # 获取新版本
-        NEW_VERSION=""
-        if [ -f "\$TEMP_DIR/VERSION" ]; then
-            NEW_VERSION=\$(cat "\$TEMP_DIR/VERSION")
-        fi
-
-        # 检查是否需要更新
-        if [ "\$OLD_VERSION" = "\$NEW_VERSION" ] && [ ! -z "\$OLD_VERSION" ]; then
-            echo "✅ 已是最新版本"
-            echo "📋 当前版本: \$OLD_VERSION"
-            rm -rf "\$TEMP_DIR"
-            exit 0
-        fi
-
-        # 复制新文件到安装目录（排除.git目录）
-        if rsync -av --exclude='.git' "\$TEMP_DIR"/ "\$INSTALL_DIR/"; then
-            # 设置执行权限
-            chmod +x "\$INSTALL_DIR/install-hooks.sh"
-            chmod +x "\$INSTALL_DIR/githooks/post-commit"
-            chmod +x "$INSTALL_DIR/githooks/pre-commit"
-            chmod +x "\$INSTALL_DIR/githooks/pre-push"
-
-            echo "✅ 更新完成"
-            if [ ! -z "\$NEW_VERSION" ]; then
-                echo "📋 当前版本: \$NEW_VERSION"
-                if [ ! -z "\$OLD_VERSION" ]; then
-                    echo "📋 从版本 \$OLD_VERSION 更新到 \$NEW_VERSION"
-                fi
-            else
-                echo "📋 当前版本: \$(cat "\$INSTALL_DIR/VERSION" 2>/dev/null || echo '未知')"
-            fi
+        if [ ! -w "$bin_dir" ]; then
+            echo -e "${YELLOW}  创建 $cmd_name 命令（需要管理员权限）${NC}"
+            echo "$cmd_content" | sudo tee "$cmd_file" > /dev/null
+            sudo chmod +x "$cmd_file"
         else
-            echo "❌ 更新失败"
-            echo "请尝试重新安装："
-            echo "curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash"
-            exit 1
+            echo -e "${YELLOW}  创建 $cmd_name 命令${NC}"
+            echo "$cmd_content" > "$cmd_file"
+            chmod +x "$cmd_file"
         fi
+    }
 
-        # 清理临时目录
-        rm -rf "\$TEMP_DIR"
-        ;;
-    "config")
-        echo "⚙️ 配置AI服务..."
-        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
-            "\$INSTALL_DIR/lib/ai-config.sh" select
-        else
-            echo "请选择要配置的AI服务："
-            echo "1. Gemini - gemini config"
-            echo "2. OpenCode - opencode config"
-            echo "3. ClaudeCode - claudecode config"
-        fi
-        ;;
-    "timing")
-        echo "⏰ 配置代码审查时机..."
-        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
-            "\$INSTALL_DIR/lib/ai-config.sh" timing
-        else
-            echo "请手动配置代码审查时机："
-            echo "在 .env 文件中设置 REVIEW_TIMING=pre-commit 或 REVIEW_TIMING=post-commit"
-        fi
-        ;;
-    "version"|"-v"|"--version")
-        echo "CodeReview CLI v1.0.0"
-        echo "安装路径: \$INSTALL_DIR"
-        ;;
-    "review")
-        # 检查是否在 Git 仓库中
-        if ! git rev-parse --git-dir > /dev/null 2>&1; then
-            echo "❌ 错误：当前目录不是 Git 仓库"
-            echo "请在 Git 仓库目录中运行此命令"
-            exit 1
-        fi
-
-        echo "🚀 正在执行代码审查..."
-
-        # 获取 Git 仓库根目录
-        REPO_ROOT=\$(git rev-parse --show-toplevel 2>/dev/null)
-
-        # 检查提示词文件是否存在（优先使用项目级配置）
-        PROMPT_FILE=""
-        if [ -f "\$REPO_ROOT/prompts/git-commit-review-prompt.md" ]; then
-            PROMPT_FILE="\$REPO_ROOT/prompts/git-commit-review-prompt.md"
-        elif [ -f "\$INSTALL_DIR/prompts/git-commit-review-prompt.md" ]; then
-            PROMPT_FILE="\$INSTALL_DIR/prompts/git-commit-review-prompt.md"
-        else
-            echo "❌ 错误：提示词文件不存在"
-            echo "请运行: codereview-cli setup 来配置项目"
-            exit 1
-        fi
-
-        # 检查 Gemini CLI 是否可用
-        if ! command -v gemini &> /dev/null; then
-            echo "❌ 错误：Gemini CLI 未安装"
-            echo "安装命令: npm install -g @google/generative-ai-cli"
-            exit 1
-        fi
-
-        # 创建 review_logs 目录（如果不存在）
-        mkdir -p "\$REPO_ROOT/review_logs"
-
-        # 切换到仓库根目录执行
-        cd "\$REPO_ROOT"
-
-        # 准备更明确的提示词
-        PROMPT="请执行以下任务：
-1. 你是代码审查专家，需要对最新的 git commit 进行审查
-2. 使用 git --no-pager show 命令获取最新提交的详细信息
-3. 根据提示词文件中的指导进行全面代码审查
-4. 生成审查报告并保存到 review_logs 目录
-5. 不要询问用户，直接自主执行所有步骤
-6. 这是一个自动化流程，请直接开始执行"
-
-        if cat "\$PROMPT_FILE" | gemini -p "\$PROMPT" -y; then
-            echo "👌 代码审查完成"
-            echo "📝 审查报告已保存到 \$REPO_ROOT/review_logs 目录"
-
-            # 显示最新的审查报告
-            LATEST_REPORT=\$(ls -t "\$REPO_ROOT/review_logs"/*.md 2>/dev/null | head -1)
-            if [ -n "\$LATEST_REPORT" ]; then
-                echo "📄 最新审查报告: \$(basename "\$LATEST_REPORT")"
-            fi
-        else
-            echo "❌ 代码审查失败"
-            exit 1
-        fi
-        ;;
-    "help"|"-h"|"--help")
-        echo "CodeReview CLI - AI 驱动的代码审查工具"
-        echo ""
-        echo "用法: codereview-cli <命令>"
-        echo ""
-        echo "命令:"
-        echo "  review   对当前 Git 仓库的最新提交进行代码审查"
-        echo "  setup    为当前项目设置 CodeReview CLI hooks"
-        echo "  update   更新到最新版本"
-        echo "  config   配置AI服务"
-        echo "  timing   配置代码审查时机（提交前/提交后）"
-        echo "  version  显示版本信息"
-        echo "  help     显示此帮助信息"
-        echo ""
-        echo "快速使用："
-        echo "  cd your-git-project"
-        echo "  codereview-cli review    # 直接审查最新提交"
-        echo ""
-        echo "全局安装后，新创建的 Git 仓库会自动包含 CodeReview CLI"
-        echo "对于现有仓库，请在仓库目录中运行: codereview-cli setup"
-        ;;
-    "")
-        # 无参数时的默认行为
-        if git rev-parse --git-dir > /dev/null 2>&1; then
-            echo "🔍 检测到 Git 仓库，开始代码审查..."
-            # 重用 review 命令的逻辑
-            "\$0" review
-        else
-            echo "📋 CodeReview CLI - AI 驱动的代码审查工具"
-            echo ""
-            echo "当前目录不是 Git 仓库。"
-            echo ""
-            echo "使用方法："
-            echo "1. 在 Git 仓库中直接运行 'codereview-cli' 进行代码审查"
-            echo "2. 运行 'codereview-cli help' 查看所有可用命令"
-            echo ""
-            echo "如需在当前目录创建 Git 仓库："
-            echo "  git init"
-            echo "  # 添加文件并提交"
-            echo "  git add ."
-            echo "  git commit -m 'Initial commit'"
-            echo "  codereview-cli  # 然后运行代码审查"
-        fi
-        ;;
-    *)
-        echo "❌ 未知命令: \$1"
-        echo "运行 'codereview-cli help' 查看可用命令"
-        exit 1
-        ;;
-esac
-EOF
-        chmod +x "$cmd_file"
-    fi
+    # 创建主命令和兼容命令
+    create_command "coderocket"
+    create_command "codereview-cli"  # 兼容老用户
+    create_command "cr"              # 简短别名
 
     echo -e "${GREEN}✓ 全局命令创建完成${NC}"
-    echo -e "${BLUE}  现在可以使用 'codereview-cli' 命令${NC}"
+    echo -e "${BLUE}  可用命令: coderocket, codereview-cli, cr${NC}"
 }
 
-# 全局安装 Git hooks 模板
+
 setup_global_hooks() {
     echo -e "${YELLOW}→ 配置全局 Git hooks 模板...${NC}"
 
@@ -656,11 +458,11 @@ fi
 PROMPT_FILE=""
 if [ -f "$REPO_ROOT/prompts/git-commit-review-prompt.md" ]; then
     PROMPT_FILE="$REPO_ROOT/prompts/git-commit-review-prompt.md"
-elif [ -f "$HOME/.codereview-cli/prompts/git-commit-review-prompt.md" ]; then
-    PROMPT_FILE="$HOME/.codereview-cli/prompts/git-commit-review-prompt.md"
+elif [ -f "$HOME/.coderocket/prompts/git-commit-review-prompt.md" ]; then
+    PROMPT_FILE="$HOME/.coderocket/prompts/git-commit-review-prompt.md"
 else
     echo "❌ 错误：提示词文件不存在"
-    echo "请运行: codereview-cli setup 来配置项目"
+    echo "请运行: coderocket setup 来配置项目"
     exit 1
 fi
 
@@ -707,7 +509,7 @@ EOF
     git config --global init.templateDir "$HOME/.git-templates"
 
     echo -e "${GREEN}✓ 全局 Git hooks 模板配置完成${NC}"
-    echo -e "${BLUE}  新创建的 Git 仓库将自动包含 CodeReview CLI hooks${NC}"
+    echo -e "${BLUE}  新创建的 Git 仓库将自动包含 CodeRocket hooks${NC}"
 }
 
 # 为现有仓库安装 hooks
@@ -831,22 +633,25 @@ show_next_steps() {
     echo ""
     echo -e "${GREEN}=== 安装完成 ===${NC}"
     echo ""
-    echo "🎉 CodeReview CLI 已成功安装！"
+    echo "🎉 CodeRocket 已成功安装！"
     echo ""
 
     # 检查是否为全局安装
-    if command -v codereview-cli &> /dev/null; then
+    if command -v coderocket &> /dev/null; then
         echo -e "${BLUE}全局安装完成！${NC}"
         echo ""
         echo -e "${BLUE}常用命令：${NC}"
-        echo "• codereview-cli setup    - 为现有项目设置 CodeReview CLI"
-        echo "• codereview-cli update   - 更新到最新版本"
-        echo "• codereview-cli config   - 配置 Gemini API"
-        echo "• codereview-cli help     - 查看帮助信息"
+        echo "• coderocket setup        - 为现有项目设置 CodeRocket"
+        echo "• coderocket update       - 更新到最新版本"
+        echo "• coderocket config       - 配置 AI 服务"
+        echo "• coderocket help         - 查看帮助信息"
+        echo ""
+        echo -e "${BLUE}兼容命令：${NC}"
+        echo "• codereview-cli, cr      - 兼容老用户使用习惯"
         echo ""
         echo -e "${BLUE}使用说明：${NC}"
-        echo "1. 新创建的 Git 仓库会自动包含 CodeReview CLI"
-        echo "2. 对于现有仓库，请在仓库目录中运行: codereview-cli setup"
+        echo "1. 新创建的 Git 仓库会自动包含 CodeRocket"
+        echo "2. 对于现有仓库，请在仓库目录中运行: coderocket setup"
         echo "3. 配置环境变量（可选）："
         echo "   export GITLAB_PERSONAL_ACCESS_TOKEN='your_token_here'"
         echo ""
@@ -865,7 +670,7 @@ show_next_steps() {
     fi
 
     echo -e "${BLUE}文档链接：${NC}"
-    echo "- 项目主页: https://github.com/im47cn/codereview-cli"
+    echo "- 项目主页: https://github.com/im47cn/coderocket"
     echo "- VS Code 设置: $INSTALL_DIR/docs/VSCODE_SETUP.md"
     echo "- 测试指南: $INSTALL_DIR/docs/VSCODE_TEST_GUIDE.md"
     echo ""
@@ -884,9 +689,9 @@ choose_install_mode() {
     echo -e "${BLUE}=== 选择安装模式 ===${NC}"
     echo ""
     echo -e "${GREEN}1) 全局安装（推荐）${NC}"
-    echo "   ✅ 新创建的 Git 仓库自动包含 CodeReview CLI"
-    echo "   ✅ 提供 'codereview-cli' 全局命令"
-    echo "   ✅ 现有仓库只需运行 'codereview-cli setup'"
+    echo "   ✅ 新创建的 Git 仓库自动包含 CodeRocket"
+    echo "   ✅ 提供 'coderocket' 全局命令（兼容 codereview-cli, cr）"
+    echo "   ✅ 现有仓库只需运行 'coderocket setup'"
     echo "   ✅ 一次安装，终身受益"
     echo ""
     echo -e "${YELLOW}2) 仅当前项目${NC}"
@@ -918,7 +723,7 @@ choose_install_mode() {
         # 没有终端输入（如通过 curl | bash），使用默认选择
         echo -e "${YELLOW}检测到非交互式环境，使用默认的全局安装模式${NC}"
         echo -e "${BLUE}如需选择安装模式，请下载脚本后本地执行：${NC}"
-        echo -e "${BLUE}  wget https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh${NC}"
+        echo -e "${BLUE}  wget https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh${NC}"
         echo -e "${BLUE}  chmod +x install.sh${NC}"
         echo -e "${BLUE}  ./install.sh${NC}"
         echo ""

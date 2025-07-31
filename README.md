@@ -1,4 +1,4 @@
-# CodeReview CLI
+# CodeRocket
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub stars](https://img.shields.io/github/stars/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/stargazers)
@@ -6,6 +6,8 @@
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W71IFTGX)
 
 一个基于多种 AI 服务（Gemini、OpenCode、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
+
+> **项目重命名通知**：CodeReview CLI 现已更名为 **CodeRocket**！为保持兼容性，原有的 `codereview-cli` 和 `cr` 命令仍可正常使用。
 
 ## 🚀 核心功能
 
@@ -52,10 +54,10 @@
 
 ```bash
 # 方式1：直接安装（默认全局安装）
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
 # 方式2：交互式安装（可选择安装模式）
-wget https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh
+wget https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh
 chmod +x install.sh
 ./install.sh
 ```
@@ -63,9 +65,9 @@ chmod +x install.sh
 **安装模式选择：**
 
 1. **全局安装（推荐）**：
-   - ✅ 新创建的 Git 仓库自动包含 CodeReview CLI
-   - ✅ 提供 `codereview-cli` 全局命令
-   - ✅ 现有仓库只需运行 `codereview-cli setup`
+   - ✅ 新创建的 Git 仓库自动包含 CodeRocket
+   - ✅ 提供 `coderocket` 全局命令（兼容 `codereview-cli`, `cr`）
+   - ✅ 现有仓库只需运行 `coderocket setup`
    - ✅ 一次安装，终身受益
    - ✅ 避免每个项目都要安装的麻烦
 
@@ -215,17 +217,21 @@ echo $GITLAB_PERSONAL_ACCESS_TOKEN
 
 ## 🔧 全局命令使用
 
-全局安装后，可以使用 `codereview-cli` 命令：
+全局安装后，可以使用 `coderocket` 命令（兼容 `codereview-cli` 和 `cr`）：
 
 ### 🚀 直接代码审查
 
 ```bash
 # 在 Git 仓库中直接运行（推荐）
 cd your-git-project
-codereview-cli              # 自动检测并审查最新提交
+coderocket                   # 自动检测并审查最新提交
 
 # 或者明确指定审查命令
-codereview-cli review        # 审查最新提交
+coderocket review            # 审查最新提交
+
+# 兼容命令（老用户）
+codereview-cli               # 完全兼容
+cr                          # 简短别名
 ```
 
 **智能检测**：
@@ -235,23 +241,27 @@ codereview-cli review        # 审查最新提交
 ### 🛠️ 项目管理
 
 ```bash
-# 为现有项目设置 CodeReview CLI hooks
-codereview-cli setup
+# 为现有项目设置 CodeRocket hooks
+coderocket setup
 
 # 更新到最新版本
-codereview-cli update
+coderocket update
 
 # 配置 AI 服务
-codereview-cli config
+coderocket config
 
 # 配置代码审查时机（提交前/提交后）
-codereview-cli timing
+coderocket timing
 
 # 查看版本信息
-codereview-cli version
+coderocket version
 
 # 查看帮助信息
-codereview-cli help
+coderocket help
+
+# 兼容命令（所有功能完全相同）
+codereview-cli setup         # 兼容老用户
+cr help                     # 简短别名
 ```
 
 ## 📖 使用说明
@@ -281,8 +291,8 @@ codereview-cli help
 #### 全局安装用户
 
 1. **一次性全局安装**：运行一键安装脚本，选择全局安装
-2. **新项目自动启用**：创建新 Git 仓库时自动包含 CodeReview CLI
-3. **现有项目设置**：在现有仓库中运行 `codereview-cli setup`
+2. **新项目自动启用**：创建新 Git 仓库时自动包含 CodeRocket
+3. **现有项目设置**：在现有仓库中运行 `coderocket setup`
 4. **正常开发提交**：像往常一样进行代码开发和 Git 提交
 5. **自动触发审查**：每次 `git commit` 后会自动触发代码审查
 6. **查看审查报告**：审查完成后在 `review_logs/` 目录查看详细报告
@@ -328,8 +338,8 @@ git push origin feature/user-auth
 # 1. 进入现有项目
 cd existing-project
 
-# 2. 设置 CodeReview CLI
-codereview-cli setup
+# 2. 设置 CodeRocket
+coderocket setup
 
 # 3. 正常开发流程（同上）
 git add .
@@ -565,12 +575,12 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 
 ```bash
 # 快速修复（推荐）
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/fix-hooks.sh -o fix-hooks.sh
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/fix-hooks.sh -o fix-hooks.sh
 chmod +x fix-hooks.sh
 ./fix-hooks.sh
 
 # 或重新设置项目
-codereview-cli setup
+coderocket setup
 ```
 
 详细解决方案请参考：[快速修复指南](QUICK_FIX.md)
@@ -643,10 +653,10 @@ export DEBUG=1
 
 ```bash
 # 重新运行安装脚本获取最新版本
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
 # 或者手动更新
-cd ~/.codereview-cli
+cd ~/.coderocket
 git pull origin main
 ```
 
