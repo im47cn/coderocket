@@ -40,7 +40,7 @@ All notable changes to this project will be documented in this file.
 - 修复install.sh中版本号硬编码问题
 - 修复API URL中版本号硬编码问题
 - 修复Anthropic API版本硬编码问题
-- 修复codereview-cli update命令的错误处理问题
+- 修复coderocket update命令的错误处理问题
 - 修复update命令在非Git仓库中显示误导性成功信息的问题
 - 增强update命令的错误检查和用户反馈
 - 重新设计update命令逻辑，不再依赖Git仓库，改为重新下载和安装最新版本

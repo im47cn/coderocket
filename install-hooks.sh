@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# CodeReview CLI Git Hooks 安装脚本
+# CodeRocket Git Hooks 安装脚本
 
 # 颜色定义
 RED='\033[0;31m'
@@ -8,7 +8,7 @@ GREEN='\033[0;32m'
 YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
-echo -e "${GREEN}=== CodeReview CLI Git Hooks 安装 ===${NC}"
+echo -e "${GREEN}=== CodeRocket Git Hooks 安装 ===${NC}"
 
 # 检查是否在 Git 仓库中
 if ! git rev-parse --git-dir > /dev/null 2>&1; then

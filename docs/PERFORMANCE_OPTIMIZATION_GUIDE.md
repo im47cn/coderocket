@@ -1,8 +1,8 @@
-# CodeReview CLI 性能优化指南
+# CodeRocket 性能优化指南
 
 ## 🚀 概述
 
-本指南提供了优化 CodeReview CLI 性能的最佳实践和技巧，帮助您获得更快的代码审查体验和更高的工作效率。
+本指南提供了优化 CodeRocket 性能的最佳实践和技巧，帮助您获得更快的代码审查体验和更高的工作效率。
 
 ## 📊 性能基准
 
@@ -346,7 +346,7 @@ batch-review() {
 #!/bin/bash
 # benchmark.sh - 性能基准测试
 
-echo "=== CodeReview CLI 性能基准测试 ==="
+echo "=== CodeRocket 性能基准测试 ==="
 
 # 测试1：配置加载时间
 echo "1. 配置加载测试："

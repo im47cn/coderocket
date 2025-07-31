@@ -7,7 +7,7 @@
 
 一个基于多种 AI 服务（Gemini、OpenCode、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
 
-> **项目重命名通知**：CodeReview CLI 现已更名为 **CodeRocket**！为保持兼容性，原有的 `codereview-cli` 和 `cr` 命令仍可正常使用。
+> **项目重命名通知**：CodeRocket 现已更名为 **CodeRocket**！为保持兼容性，原有的 `coderocket` 和 `cr` 命令仍可正常使用。
 
 ## 🚀 核心功能
 
@@ -66,7 +66,7 @@ chmod +x install.sh
 
 1. **全局安装（推荐）**：
    - ✅ 新创建的 Git 仓库自动包含 CodeRocket
-   - ✅ 提供 `coderocket` 全局命令（兼容 `codereview-cli`, `cr`）
+   - ✅ 提供 `coderocket` 全局命令（兼容 `coderocket`, `cr`）
    - ✅ 现有仓库只需运行 `coderocket setup`
    - ✅ 一次安装，终身受益
    - ✅ 避免每个项目都要安装的麻烦
@@ -131,8 +131,8 @@ claudecode config
 #### 3. 克隆项目
 
 ```bash
-git clone https://github.com/im47cn/codereview-cli.git
-cd codereview-cli
+git clone https://github.com/im47cn/coderocket.git
+cd coderocket
 ```
 
 #### 4. 运行安装脚本
@@ -196,7 +196,7 @@ export GITLAB_API_URL="https://gitlab.com/api/v4"
 
 ```bash
 # 检查全局命令是否可用
-codereview-cli --version
+coderocket --version
 
 # 检查 Git 模板是否配置
 git config --global init.templateDir
@@ -217,7 +217,7 @@ echo $GITLAB_PERSONAL_ACCESS_TOKEN
 
 ## 🔧 全局命令使用
 
-全局安装后，可以使用 `coderocket` 命令（兼容 `codereview-cli` 和 `cr`）：
+全局安装后，可以使用 `coderocket` 命令（兼容 `coderocket` 和 `cr`）：
 
 ### 🚀 直接代码审查
 
@@ -230,7 +230,7 @@ coderocket                   # 自动检测并审查最新提交
 coderocket review            # 审查最新提交
 
 # 兼容命令（老用户）
-codereview-cli               # 完全兼容
+coderocket               # 完全兼容
 cr                          # 简短别名
 ```
 
@@ -260,7 +260,7 @@ coderocket version
 coderocket help
 
 # 兼容命令（所有功能完全相同）
-codereview-cli setup         # 兼容老用户
+coderocket setup         # 兼容老用户
 cr help                     # 简短别名
 ```
 
@@ -311,7 +311,7 @@ cr help                     # 简短别名
 #### 全局安装 - 新项目
 
 ```bash
-# 1. 创建新项目（自动包含 CodeReview CLI）
+# 1. 创建新项目（自动包含 CodeRocket）
 git init my-project
 cd my-project
 
@@ -451,8 +451,8 @@ export AI_SERVICE=gemini  # 或 opencode, claudecode
 echo "AI_SERVICE=gemini" > .ai-config
 
 # 全局配置
-mkdir -p ~/.codereview-cli
-echo "AI_SERVICE=gemini" > ~/.codereview-cli/ai-config
+mkdir -p ~/.coderocket
+echo "AI_SERVICE=gemini" > ~/.coderocket/ai-config
 ```
 
 **方式三：使用配置工具**
@@ -527,8 +527,8 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 - [Google Gemini CLI 文档](https://github.com/google/generative-ai-js)
 - [Git Hooks 官方文档](https://git-scm.com/book/en/v2/Customizing-Git-Git-Hooks)
 - [GitLab API 文档](https://docs.gitlab.com/ee/api/)
-- [项目问题反馈](https://github.com/im47cn/codereview-cli/issues)
-- [功能请求](https://github.com/im47cn/codereview-cli/issues/new?template=feature_request.md)
+- [项目问题反馈](https://github.com/im47cn/coderocket/issues)
+- [功能请求](https://github.com/im47cn/coderocket/issues/new?template=feature_request.md)
 
 ## 📚 文档
 
@@ -540,8 +540,8 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 如果您在使用过程中遇到问题或有改进建议，请：
 
 1. 查看 [故障排除](#-故障排除) 部分
-2. 搜索 [现有问题](https://github.com/im47cn/codereview-cli/issues)
-3. 创建 [新问题](https://github.com/im47cn/codereview-cli/issues/new)
+2. 搜索 [现有问题](https://github.com/im47cn/coderocket/issues)
+3. 创建 [新问题](https://github.com/im47cn/coderocket/issues/new)
 
 ## 🌟 特性亮点
 

@@ -42,8 +42,8 @@ get_ai_service() {
     elif [ -f ".ai-config" ]; then
         service=$(grep "^AI_SERVICE=" .ai-config 2>/dev/null | cut -d'=' -f2)
     # 3. 检查全局配置文件
-    elif [ -f "$HOME/.codereview-cli/ai-config" ]; then
-        service=$(grep "^AI_SERVICE=" "$HOME/.codereview-cli/ai-config" 2>/dev/null | cut -d'=' -f2)
+    elif [ -f "$HOME/.coderocket/ai-config" ]; then
+        service=$(grep "^AI_SERVICE=" "$HOME/.coderocket/ai-config" 2>/dev/null | cut -d'=' -f2)
     fi
 
     # 4. 使用默认值 (最低优先级)
@@ -383,7 +383,7 @@ show_ai_service_status() {
 # 复杂度: O(1) - 常数时间文件写入
 # 依赖: mkdir, echo命令
 # 调用者: main()
-# 配置文件: 项目级(.ai-config) 或 全局级(~/.codereview-cli/ai-config)
+# 配置文件: 项目级(.ai-config) 或 全局级(~/.coderocket/ai-config)
 # 示例:
 #   set_ai_service "gemini" "project"
 #   set_ai_service "opencode" "global"
@@ -405,8 +405,8 @@ set_ai_service() {
     # 设置配置
     if [ "$scope" = "global" ]; then
         # 全局配置：创建目录并写入配置文件
-        mkdir -p "$HOME/.codereview-cli"
-        echo "AI_SERVICE=$service" > "$HOME/.codereview-cli/ai-config"
+        mkdir -p "$HOME/.coderocket"
+        echo "AI_SERVICE=$service" > "$HOME/.coderocket/ai-config"
         echo -e "${GREEN}✓ 全局AI服务设置为: $service${NC}"
     else
         # 项目配置：写入当前目录的配置文件

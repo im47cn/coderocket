@@ -2,7 +2,7 @@
 
 ## 🎯 项目目标
 
-为 CodeReview CLI 工具增加对 OpenCode 和 ClaudeCode 的支持，实现多AI服务的统一管理和智能切换。
+为 CodeRocket 工具增加对 OpenCode 和 ClaudeCode 的支持，实现多AI服务的统一管理和智能切换。
 
 ## ✅ 完成的功能
 
@@ -202,7 +202,7 @@ CLAUDECODE_MODEL=claude-3-sonnet
 
 ## 📝 总结
 
-成功为 CodeReview CLI 工具实现了完整的多AI服务支持，包括：
+成功为 CodeRocket 工具实现了完整的多AI服务支持，包括：
 
 - 🎯 **3个AI服务**: Gemini、OpenCode、ClaudeCode
 - 🔧 **4个核心模块**: 服务管理、配置管理、服务集成、测试验证

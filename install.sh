@@ -155,7 +155,7 @@ create_global_command() {
 #!/bin/bash
 
 # CodeRocket 全局命令
-# 兼容 CodeReview CLI 老用户使用习惯
+# 兼容 CodeRocket 老用户使用习惯
 INSTALL_DIR="INSTALL_DIR_PLACEHOLDER"
 
 case "\$1" in
@@ -346,7 +346,7 @@ case "\$1" in
         echo "  \$CURRENT_CMD review    # 直接审查最新提交"
         echo ""
         echo "兼容命令："
-        echo "  coderocket, codereview-cli, cr 都可以使用"
+        echo "  coderocket, coderocket, cr 都可以使用"
         echo ""
         echo "全局安装后，新创建的 Git 仓库会自动包含 CodeRocket"
         echo "对于现有仓库，请在仓库目录中运行: \$CURRENT_CMD setup"
@@ -368,7 +368,7 @@ case "\$1" in
             echo "2. 运行 '\$CURRENT_CMD help' 查看所有可用命令"
             echo ""
             echo "兼容命令："
-            echo "  coderocket, codereview-cli, cr 都可以使用"
+            echo "  coderocket, coderocket, cr 都可以使用"
             echo ""
             echo "如需在当前目录创建 Git 仓库："
             echo "  git init"
@@ -408,11 +408,11 @@ EOF
 
     # 创建主命令和兼容命令
     create_command "coderocket"
-    create_command "codereview-cli"  # 兼容老用户
+    create_command "coderocket"  # 兼容老用户
     create_command "cr"              # 简短别名
 
     echo -e "${GREEN}✓ 全局命令创建完成${NC}"
-    echo -e "${BLUE}  可用命令: coderocket, codereview-cli, cr${NC}"
+    echo -e "${BLUE}  可用命令: coderocket, coderocket, cr${NC}"
 }
 
 
@@ -647,7 +647,7 @@ show_next_steps() {
         echo "• coderocket help         - 查看帮助信息"
         echo ""
         echo -e "${BLUE}兼容命令：${NC}"
-        echo "• codereview-cli, cr      - 兼容老用户使用习惯"
+        echo "• coderocket, cr      - 兼容老用户使用习惯"
         echo ""
         echo -e "${BLUE}使用说明：${NC}"
         echo "1. 新创建的 Git 仓库会自动包含 CodeRocket"
@@ -690,7 +690,7 @@ choose_install_mode() {
     echo ""
     echo -e "${GREEN}1) 全局安装（推荐）${NC}"
     echo "   ✅ 新创建的 Git 仓库自动包含 CodeRocket"
-    echo "   ✅ 提供 'coderocket' 全局命令（兼容 codereview-cli, cr）"
+    echo "   ✅ 提供 'coderocket' 全局命令（兼容 coderocket, cr）"
     echo "   ✅ 现有仓库只需运行 'coderocket setup'"
     echo "   ✅ 一次安装，终身受益"
     echo ""

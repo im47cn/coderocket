@@ -1,8 +1,8 @@
-# CodeReview CLI 架构概览
+# CodeRocket 架构概览
 
 ## 📋 项目概述
 
-CodeReview CLI 是一个基于多种 AI 服务的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
+CodeRocket 是一个基于多种 AI 服务的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
 
 ## 🏗️ 系统架构
 
@@ -108,7 +108,7 @@ CodeReview CLI 是一个基于多种 AI 服务的智能 Git 提交代码审查�
 - **配置层级**:
   1. 环境变量 (最高优先级)
   2. 项目配置 (`.ai-config`)
-  3. 全局配置 (`~/.codereview-cli/ai-config`)
+  3. 全局配置 (`~/.coderocket/ai-config`)
   4. 默认值 (最低优先级)
 
 - **配置项**:

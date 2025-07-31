@@ -1,8 +1,8 @@
-# CodeReview CLI Update 命令逻辑说明
+# CodeRocket Update 命令逻辑说明
 
 ## 问题背景
 
-用户执行 `codereview-cli update` 时遇到错误：
+用户执行 `coderocket update` 时遇到错误：
 ```
 ❌ 错误：安装目录不是Git仓库
 ```
@@ -14,17 +14,17 @@
 1. **当前工作目录**：用户执行命令的地方
    - 可能是任何项目目录
    - 不需要是Git仓库（对于update命令而言）
-   - 用户可以在任何地方执行 `codereview-cli update`
+   - 用户可以在任何地方执行 `coderocket update`
 
-2. **安装目录**：CodeReview CLI 工具的安装位置
-   - 通常是 `~/.codereview-cli`
+2. **安装目录**：CodeRocket 工具的安装位置
+   - 通常是 `~/.coderocket`
    - **必须**是Git仓库，这样才能通过 `git pull` 更新工具
    - 包含工具的所有文件和脚本
 
 ### Update 命令的工作原理
 
 ```bash
-codereview-cli update
+coderocket update
 ```
 
 这个命令的执行流程：
@@ -41,7 +41,7 @@ codereview-cli update
 # 检查是否为Git仓库
 if [ ! -d "$INSTALL_DIR/.git" ]; then
     echo "❌ 错误：安装目录不是Git仓库"
-    echo "请重新安装 CodeReview CLI"
+    echo "请重新安装 CodeRocket"
     exit 1  # 直接失败
 fi
 ```
@@ -58,7 +58,7 @@ if [ ! -d "$INSTALL_DIR/.git" ]; then
     
     # 在安装目录中初始化Git仓库
     git init
-    git remote add origin https://github.com/im47cn/codereview-cli.git
+    git remote add origin https://github.com/im47cn/coderocket.git
     git fetch origin main
     git reset --hard origin/main
     
@@ -73,7 +73,7 @@ fi
    - 用户的工作目录不受影响
 
 2. **只修复工具本身**
-   - 只修复 CodeReview CLI 工具的安装
+   - 只修复 CodeRocket 工具的安装
    - 不会在用户项目中创建Git仓库
 
 3. **符合预期行为**

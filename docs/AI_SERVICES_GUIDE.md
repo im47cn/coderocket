@@ -1,6 +1,6 @@
 # AI 服务使用指南
 
-本指南详细说明如何配置和使用 CodeReview CLI 支持的多种 AI 服务。
+本指南详细说明如何配置和使用 CodeRocket 支持的多种 AI 服务。
 
 ## 🤖 支持的 AI 服务
 
@@ -73,7 +73,7 @@ GEMINI_API_KEY=your_api_key
 GEMINI_MODEL=gemini-pro
 ```
 
-**全局配置** (`~/.codereview-cli/ai-config`)：
+**全局配置** (`~/.coderocket/ai-config`)：
 ```bash
 AI_SERVICE=gemini
 GEMINI_API_KEY=your_api_key
@@ -205,7 +205,7 @@ chmod 644 .ai-config
 - [Google AI Studio](https://aistudio.google.com/app/apikey)
 - [OpenCode API 文档](https://docs.opencode.com)
 - [ClaudeCode API 文档](https://docs.claudecode.com)
-- [CodeReview CLI 主文档](../README.md)
+- [CodeRocket 主文档](../README.md)
 
 ## 💡 最佳实践
 
@@ -221,5 +221,5 @@ chmod 644 .ai-config
 
 1. 查看本指南的故障排除部分
 2. 运行 `./lib/ai-service-manager.sh status` 检查状态
-3. 查看 [GitHub Issues](https://github.com/im47cn/codereview-cli/issues)
+3. 查看 [GitHub Issues](https://github.com/im47cn/coderocket/issues)
 4. 创建新的 Issue 报告问题

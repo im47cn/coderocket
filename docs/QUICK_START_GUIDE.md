@@ -1,8 +1,8 @@
-# CodeReview CLI 快速入门指南
+# CodeRocket 快速入门指南
 
 ## 🚀 5分钟快速上手
 
-本指南将帮助您在5分钟内完成 CodeReview CLI 的安装和配置，立即开始享受AI驱动的代码审查体验。
+本指南将帮助您在5分钟内完成 CodeRocket 的安装和配置，立即开始享受AI驱动的代码审查体验。
 
 ## 📋 前置要求
 
@@ -19,7 +19,7 @@
 
 ```bash
 # 一键安装脚本
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 ```
 
 安装过程中会提示选择安装模式，**建议选择"全局安装"**：
@@ -31,8 +31,8 @@ curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.
 
 ```bash
 # 克隆项目
-git clone https://github.com/im47cn/codereview-cli.git
-cd codereview-cli
+git clone https://github.com/im47cn/coderocket.git
+cd coderocket
 
 # 运行安装脚本
 ./install.sh
@@ -88,8 +88,8 @@ echo "GITLAB_PERSONAL_ACCESS_TOKEN=your-gitlab-token" > .env
 
 ```bash
 # 全局安装验证
-codereview-cli --version
-codereview-cli status
+coderocket --version
+coderocket status
 
 # 项目安装验证
 ls -la .git/hooks/
@@ -115,7 +115,7 @@ claudecode --version
 1. **修改代码**：
 ```bash
 # 在您的项目中修改任意文件
-echo "console.log('Hello CodeReview!');" >> test.js
+echo "console.log('Hello CodeRocket!');" >> test.js
 ```
 
 2. **提交代码**：
@@ -167,7 +167,7 @@ echo "AI_SERVICE=gemini" > .ai-config
 ```bash
 # 创建项目级提示词文件
 mkdir -p prompts
-cp ~/.codereview-cli/prompts/git-commit-review-prompt.md prompts/
+cp ~/.coderocket/prompts/git-commit-review-prompt.md prompts/
 
 # 编辑自定义规则
 vim prompts/git-commit-review-prompt.md
@@ -196,7 +196,7 @@ DEBUG=false
 
 ```bash
 # 1. 全局安装
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
 # 2. 配置Gemini
 gemini config
@@ -211,7 +211,7 @@ git commit -m "feat: 新功能"
 
 ```bash
 # 1. 项目级安装
-git clone https://github.com/im47cn/codereview-cli.git
+git clone https://github.com/im47cn/coderocket.git
 ./install.sh
 
 # 2. 团队配置
@@ -229,9 +229,9 @@ git push origin feature/team-feature
 
 ```bash
 # GitHub Actions 示例
-- name: Setup CodeReview CLI
+- name: Setup CodeRocket
   run: |
-    curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+    curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
     echo "AI_SERVICE=gemini" > .ai-config
 
 - name: Run Code Review
@@ -304,7 +304,7 @@ echo $GITLAB_PERSONAL_ACCESS_TOKEN
 
 ## 📚 下一步学习
 
-现在您已经成功安装并配置了 CodeReview CLI，建议继续学习：
+现在您已经成功安装并配置了 CodeRocket，建议继续学习：
 
 1. **[完整用户指南](README.md)** - 了解所有功能特性
 2. **[API参考文档](docs/API_REFERENCE.md)** - 深入了解技术细节
@@ -317,13 +317,13 @@ echo $GITLAB_PERSONAL_ACCESS_TOKEN
 1. **定期更新**：
 ```bash
 # 检查更新
-codereview-cli update
+coderocket update
 ```
 
 2. **备份配置**：
 ```bash
 # 备份重要配置
-cp -r ~/.codereview-cli ~/.codereview-cli.backup
+cp -r ~/.coderocket ~/.coderocket.backup
 ```
 
 3. **性能优化**：
@@ -341,7 +341,7 @@ git add .env.example
 
 ## 🎉 恭喜！
 
-您已经成功完成了 CodeReview CLI 的快速入门！现在您可以：
+您已经成功完成了 CodeRocket 的快速入门！现在您可以：
 
 - ✅ 享受AI驱动的自动代码审查
 - ✅ 获得详细的代码质量报告
@@ -352,4 +352,4 @@ git add .env.example
 
 ---
 
-如有问题，请查看 [故障排除文档](README.md#故障排除) 或 [提交Issue](https://github.com/im47cn/codereview-cli/issues)。
+如有问题，请查看 [故障排除文档](README.md#故障排除) 或 [提交Issue](https://github.com/im47cn/coderocket/issues)。

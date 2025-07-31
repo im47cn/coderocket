@@ -11,10 +11,10 @@ BLUE='\033[0;34m'
 NC='\033[0m' # No Color
 
 # 测试配置
-TEST_DIR="/tmp/codereview-cli-test"
+TEST_DIR="/tmp/coderocket-test"
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-echo -e "${BLUE}=== CodeReview CLI 自动更新功能测试 ===${NC}"
+echo -e "${BLUE}=== CodeRocket 自动更新功能测试 ===${NC}"
 echo ""
 
 # 清理测试环境
@@ -142,7 +142,7 @@ test_cache_mechanism() {
     source "$auto_updater"
     ensure_cache_dir
     
-    if [ -d "$TEST_DIR/.codereview-cli" ]; then
+    if [ -d "$TEST_DIR/.coderocket" ]; then
         echo -e "${GREEN}✅ 缓存目录创建成功${NC}"
     else
         echo -e "${RED}❌ 缓存目录创建失败${NC}"
@@ -151,7 +151,7 @@ test_cache_mechanism() {
     
     # 测试缓存文件写入
     update_cache "1.0.1"
-    local cache_file="$TEST_DIR/.codereview-cli/update_cache"
+    local cache_file="$TEST_DIR/.coderocket/update_cache"
     
     if [ -f "$cache_file" ]; then
         local cached_version=$(grep "^latest_version=" "$cache_file" | cut -d'=' -f2)

@@ -54,7 +54,7 @@ show_test_results() {
     fi
 }
 
-echo -e "${BLUE}=== CodeReview CLI 多AI服务测试 ===${NC}"
+echo -e "${BLUE}=== CodeRocket 多AI服务测试 ===${NC}"
 echo "开始测试多AI服务功能..."
 
 # 1. 测试AI服务管理器
@@ -131,7 +131,7 @@ test_hook_exists() {
         return 0
     fi
     # 检查全局安装路径
-    if [ -f "$HOME/.codereview-cli/githooks/$hook_name" ]; then
+    if [ -f "$HOME/.coderocket/githooks/$hook_name" ]; then
         return 0
     fi
     return 1
@@ -146,7 +146,7 @@ test_hook_content() {
         return 0
     fi
     # 检查全局安装路径
-    if [ -f "$HOME/.codereview-cli/githooks/$hook_name" ] && grep -q "$pattern" "$HOME/.codereview-cli/githooks/$hook_name"; then
+    if [ -f "$HOME/.coderocket/githooks/$hook_name" ] && grep -q "$pattern" "$HOME/.coderocket/githooks/$hook_name"; then
         return 0
     fi
     return 1
@@ -160,11 +160,11 @@ run_test "post-commit包含AI服务调用" "test_hook_content post-commit 'call_
 run_test "pre-push包含AI服务调用" "test_hook_content pre-push 'generate_mr_title_with_ai'"
 
 # 额外测试：验证全局安装的hooks
-if [ -d "$HOME/.codereview-cli" ]; then
+if [ -d "$HOME/.coderocket" ]; then
     echo -e "\n${BLUE}检测到全局安装，进行额外验证...${NC}"
-    run_test "全局post-commit hook存在" "test -f $HOME/.codereview-cli/githooks/post-commit"
-    run_test "全局pre-push hook存在" "test -f $HOME/.codereview-cli/githooks/pre-push"
-    run_test "全局AI服务管理器存在" "test -f $HOME/.codereview-cli/lib/ai-service-manager.sh"
+    run_test "全局post-commit hook存在" "test -f $HOME/.coderocket/githooks/post-commit"
+    run_test "全局pre-push hook存在" "test -f $HOME/.coderocket/githooks/pre-push"
+    run_test "全局AI服务管理器存在" "test -f $HOME/.coderocket/lib/ai-service-manager.sh"
 
     # 测试hooks路径解析逻辑
     echo -e "\n${BLUE}测试hooks路径解析逻辑...${NC}"
@@ -179,16 +179,16 @@ REPO_ROOT=$(pwd)
 POST_COMMIT_SCRIPT=""
 if [ -f "$REPO_ROOT/githooks/post-commit" ]; then
     POST_COMMIT_SCRIPT="$REPO_ROOT/githooks/post-commit"
-elif [ -f "$HOME/.codereview-cli/githooks/post-commit" ]; then
-    POST_COMMIT_SCRIPT="$HOME/.codereview-cli/githooks/post-commit"
+elif [ -f "$HOME/.coderocket/githooks/post-commit" ]; then
+    POST_COMMIT_SCRIPT="$HOME/.coderocket/githooks/post-commit"
 fi
 
 # 查找 pre-push 脚本
 PRE_PUSH_SCRIPT=""
 if [ -f "$REPO_ROOT/githooks/pre-push" ]; then
     PRE_PUSH_SCRIPT="$REPO_ROOT/githooks/pre-push"
-elif [ -f "$HOME/.codereview-cli/githooks/pre-push" ]; then
-    PRE_PUSH_SCRIPT="$HOME/.codereview-cli/githooks/pre-push"
+elif [ -f "$HOME/.coderocket/githooks/pre-push" ]; then
+    PRE_PUSH_SCRIPT="$HOME/.coderocket/githooks/pre-push"
 fi
 
 # 验证找到的脚本

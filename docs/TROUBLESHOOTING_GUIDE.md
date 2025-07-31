@@ -1,8 +1,8 @@
-# CodeReview CLI 故障排除指南
+# CodeRocket 故障排除指南
 
 ## 🔧 概述
 
-本指南提供了 CodeReview CLI 常见问题的诊断和解决方案，帮助您快速解决使用过程中遇到的问题。
+本指南提供了 CodeRocket 常见问题的诊断和解决方案，帮助您快速解决使用过程中遇到的问题。
 
 ## 🚨 常见问题分类
 
@@ -19,33 +19,33 @@ curl: (7) Failed to connect to raw.githubusercontent.com
 ```bash
 # 方案A：使用代理
 export https_proxy=http://your-proxy:port
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
 # 方案B：手动下载
-wget https://github.com/im47cn/codereview-cli/archive/main.zip
+wget https://github.com/im47cn/coderocket/archive/main.zip
 unzip main.zip
-cd codereview-cli-main
+cd coderocket-main
 ./install.sh
 
 # 方案C：使用镜像源
-curl -fsSL https://gitee.com/im47cn/codereview-cli/raw/main/install.sh | bash
+curl -fsSL https://gitee.com/im47cn/coderocket/raw/main/install.sh | bash
 ```
 
 #### 问题2：权限不足
 
 **症状**：
 ```bash
-Permission denied: /usr/local/bin/codereview-cli
+Permission denied: /usr/local/bin/coderocket
 ```
 
 **解决方案**：
 ```bash
 # 使用sudo安装
-sudo curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+sudo curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
 # 或选择用户目录安装
 export INSTALL_DIR="$HOME/.local/bin"
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 ```
 
 #### 问题3：Node.js版本过低
@@ -135,7 +135,7 @@ Error: Multiple AI services configured
 
 # 2. 清理配置
 rm -f .ai-config
-rm -f ~/.codereview-cli/ai-config
+rm -f ~/.coderocket/ai-config
 
 # 3. 重新配置单一服务
 ./lib/ai-config.sh select
@@ -180,7 +180,7 @@ chmod +x .git/hooks/pre-push
 head -10 .git/hooks/post-commit
 
 # 4. 全局安装用户重新设置
-codereview-cli setup
+coderocket setup
 ```
 
 #### 问题8：Hook路径错误
@@ -193,7 +193,7 @@ Error: /path/to/lib/ai-service-manager.sh not found
 **解决方案**：
 ```bash
 # 1. 使用快速修复脚本
-curl -fsSL https://raw.githubusercontent.com/im47cn/codereview-cli/main/fix-hooks.sh -o fix-hooks.sh
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/fix-hooks.sh -o fix-hooks.sh
 chmod +x fix-hooks.sh
 ./fix-hooks.sh
 
@@ -299,7 +299,7 @@ Warning: Multiple configuration files found
 ```bash
 # 1. 查看所有配置文件
 find . -name ".ai-config" -o -name ".env" -o -name "ai-config"
-find ~ -name ".codereview-cli" -type d
+find ~ -name ".coderocket" -type d
 
 # 2. 检查配置优先级
 ./lib/ai-config.sh show all
@@ -319,7 +319,7 @@ rm -f ./.env.backup
 创建诊断脚本 `diagnose.sh`：
 ```bash
 #!/bin/bash
-echo "=== CodeReview CLI 系统诊断 ==="
+echo "=== CodeRocket 系统诊断 ==="
 
 echo "1. 系统信息："
 uname -a
@@ -327,8 +327,8 @@ node --version
 git --version
 
 echo "2. 安装状态："
-which codereview-cli
-ls -la ~/.codereview-cli/
+which coderocket
+ls -la ~/.coderocket/
 
 echo "3. AI服务状态："
 ./lib/ai-service-manager.sh status
@@ -385,7 +385,7 @@ top -p $(pgrep -f codereview)
 echo "=== 每周维护检查 ==="
 
 # 1. 检查更新
-codereview-cli update --check
+coderocket update --check
 
 # 2. 清理旧日志
 find review_logs/ -name "*.md" -mtime +30 -delete
@@ -404,11 +404,11 @@ echo "=== 维护完成 ==="
 ```bash
 # 备份脚本
 #!/bin/bash
-BACKUP_DIR="$HOME/codereview-cli-backup-$(date +%Y%m%d)"
+BACKUP_DIR="$HOME/coderocket-backup-$(date +%Y%m%d)"
 mkdir -p "$BACKUP_DIR"
 
 # 备份配置
-cp -r ~/.codereview-cli "$BACKUP_DIR/"
+cp -r ~/.coderocket "$BACKUP_DIR/"
 cp .env "$BACKUP_DIR/" 2>/dev/null
 cp .ai-config "$BACKUP_DIR/" 2>/dev/null
 
@@ -424,7 +424,7 @@ echo "备份完成: $BACKUP_DIR"
 
 1. **查看帮助文档**：
 ```bash
-codereview-cli help
+coderocket help
 ./lib/ai-service-manager.sh help
 ```
 
@@ -440,8 +440,8 @@ cat .env.example
 
 ### 社区支持
 
-1. **GitHub Issues**: [提交问题](https://github.com/im47cn/codereview-cli/issues)
-2. **讨论区**: [GitHub Discussions](https://github.com/im47cn/codereview-cli/discussions)
+1. **GitHub Issues**: [提交问题](https://github.com/im47cn/coderocket/issues)
+2. **讨论区**: [GitHub Discussions](https://github.com/im47cn/coderocket/discussions)
 3. **文档**: [完整文档](README.md)
 
 ### 报告Bug

@@ -12,7 +12,7 @@ NC='\033[0m' # No Color
 
 # 配置文件路径
 PROJECT_CONFIG=".ai-config"
-GLOBAL_CONFIG="$HOME/.codereview-cli/ai-config"
+GLOBAL_CONFIG="$HOME/.coderocket/ai-config"
 ENV_FILE=".env"
 
 # 支持的AI服务列表
@@ -27,7 +27,7 @@ SUPPORTED_SERVICES=("gemini" "opencode" "claudecode")
 # 依赖: mkdir命令
 # 调用者: set_config_value(), configure_service_interactive()
 ensure_config_dir() {
-    mkdir -p "$HOME/.codereview-cli"
+    mkdir -p "$HOME/.coderocket"
 }
 
 # 读取配置值
