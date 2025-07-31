@@ -1,7 +1,7 @@
 # CodeRocket CLI
 
 <div align="center">
-  <img src="docs/assets/banner.png" alt="CodeRocket Banner" />
+  <img src="https://raw.githubusercontent.com/im47cn/coderocket-cli/refs/heads/develop/docs/assets/banner.png" alt="CodeRocket Banner" />
 </div>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
