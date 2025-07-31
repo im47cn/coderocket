@@ -207,20 +207,20 @@ create_global_command() {
 # 兼容 CodeRocket 老用户使用习惯
 INSTALL_DIR="INSTALL_DIR_PLACEHOLDER"
 
-case "\$1" in
+case "$1" in
     "setup")
         echo "🔧 为当前项目设置 CodeRocket..."
         if [ ! -d ".git" ]; then
             echo "❌ 错误：当前目录不是 Git 仓库"
             exit 1
         fi
-        "\$INSTALL_DIR/install-hooks.sh"
+$INSTALL_DIR/install-hooks.sh
         ;;
     "update")
         echo "🔄 更新 CodeRocket..."
 
         # 检查安装目录是否存在
-        if [ ! -d "\$INSTALL_DIR" ]; then
+        if [ ! -d "$INSTALL_DIR" ]; then
             echo "❌ 错误：CodeRocket 未安装"
             echo "请先运行安装脚本："
             echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash"
@@ -232,11 +232,11 @@ case "\$1" in
         REPO_URL="https://github.com/im47cn/coderocket-cli.git"
 
         # 清理临时目录
-        rm -rf "\$TEMP_DIR"
-        mkdir -p "\$TEMP_DIR"
+        rm -rf "$TEMP_DIR"
+        mkdir -p "$TEMP_DIR"
 
         # 下载最新版本
-        if ! git clone "\$REPO_URL" "\$TEMP_DIR"; then
+        if ! git clone "$REPO_URL" "$TEMP_DIR"; then
             echo "❌ 错误：无法下载最新版本"
             echo "请检查网络连接或手动更新："
             echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.sh | bash"
@@ -245,39 +245,39 @@ case "\$1" in
 
         # 备份当前版本（如果存在VERSION文件）
         OLD_VERSION=""
-        if [ -f "\$INSTALL_DIR/VERSION" ]; then
-            OLD_VERSION=$(cat "\$INSTALL_DIR/VERSION")
+        if [ -f "$INSTALL_DIR/VERSION" ]; then
+            OLD_VERSION=$(cat "$INSTALL_DIR/VERSION")
         fi
 
         # 获取新版本
         NEW_VERSION=""
-        if [ -f "\$TEMP_DIR/VERSION" ]; then
-            NEW_VERSION=$(cat "\$TEMP_DIR/VERSION")
+        if [ -f "$TEMP_DIR/VERSION" ]; then
+            NEW_VERSION=$(cat "$TEMP_DIR/VERSION")
         fi
 
         # 检查是否需要更新
-        if [ "\$OLD_VERSION" = "\$NEW_VERSION" ] && [ ! -z "\$OLD_VERSION" ]; then
+        if [ "$OLD_VERSION" = "$NEW_VERSION" ] && [ ! -z "$OLD_VERSION" ]; then
             echo "✅ 已是最新版本"
-            echo "📋 当前版本: \$OLD_VERSION"
-            rm -rf "\$TEMP_DIR"
+            echo "📋 当前版本: $OLD_VERSION"
+            rm -rf "$TEMP_DIR"
             exit 0
         fi
 
         # 复制新文件到安装目录（排除.git目录）
-        if rsync -av --exclude='.git' "\$TEMP_DIR"/ "\$INSTALL_DIR/"; then
+        if rsync -av --exclude='.git' "$TEMP_DIR"/ "$INSTALL_DIR/"; then
             # 设置执行权限
-            chmod +x "\$INSTALL_DIR/install-hooks.sh"
-            chmod +x "\$INSTALL_DIR/githooks/post-commit"
-            chmod +x "\$INSTALL_DIR/githooks/pre-push"
+            chmod +x "$INSTALL_DIR/install-hooks.sh"
+            chmod +x "$INSTALL_DIR/githooks/post-commit"
+            chmod +x "$INSTALL_DIR/githooks/pre-push"
 
             echo "✅ 更新完成"
-            if [ ! -z "\$NEW_VERSION" ]; then
-                echo "📋 当前版本: \$NEW_VERSION"
-                if [ ! -z "\$OLD_VERSION" ]; then
-                    echo "📋 从版本 \$OLD_VERSION 更新到 \$NEW_VERSION"
+            if [ ! -z "$NEW_VERSION" ]; then
+                echo "📋 当前版本: $NEW_VERSION"
+                if [ ! -z "$OLD_VERSION" ]; then
+                    echo "📋 从版本 $OLD_VERSION 更新到 $NEW_VERSION"
                 fi
             else
-                echo "📋 当前版本: $(cat "\$INSTALL_DIR/VERSION" 2>/dev/null || echo '未知')"
+                echo "📋 当前版本: $(cat "$INSTALL_DIR/VERSION" 2>/dev/null || echo '未知')"
             fi
         else
             echo "❌ 更新失败"
@@ -287,12 +287,12 @@ case "\$1" in
         fi
 
         # 清理临时目录
-        rm -rf "\$TEMP_DIR"
+        rm -rf "$TEMP_DIR"
         ;;
     "config")
         echo "⚙️ 配置AI服务..."
-        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
-            "\$INSTALL_DIR/lib/ai-config.sh" select
+        if [ -f "$INSTALL_DIR/lib/ai-config.sh" ]; then
+            "$INSTALL_DIR/lib/ai-config.sh" select
         else
             echo "请选择要配置的AI服务："
             echo "1. Gemini - gemini config"
@@ -302,8 +302,8 @@ case "\$1" in
         ;;
     "timing")
         echo "⏰ 配置代码审查时机..."
-        if [ -f "\$INSTALL_DIR/lib/ai-config.sh" ]; then
-            "\$INSTALL_DIR/lib/ai-config.sh" timing
+        if [ -f "$INSTALL_DIR/lib/ai-config.sh" ]; then
+            "$INSTALL_DIR/lib/ai-config.sh" timing
         else
             echo "请手动配置代码审查时机："
             echo "在 .env 文件中设置 REVIEW_TIMING=pre-commit 或 REVIEW_TIMING=post-commit"
@@ -311,7 +311,7 @@ case "\$1" in
         ;;
     "version"|"-v"|"--version")
         echo "CodeRocket v1.0.0"
-        echo "安装路径: \$INSTALL_DIR"
+        echo "安装路径: $INSTALL_DIR"
         ;;
     "review")
         # 检查是否在 Git 仓库中
@@ -328,10 +328,10 @@ case "\$1" in
 
         # 检查提示词文件是否存在（优先使用项目级配置）
         PROMPT_FILE=""
-        if [ -f "\$REPO_ROOT/prompts/git-commit-review-prompt.md" ]; then
-            PROMPT_FILE="\$REPO_ROOT/prompts/git-commit-review-prompt.md"
-        elif [ -f "\$INSTALL_DIR/prompts/git-commit-review-prompt.md" ]; then
-            PROMPT_FILE="\$INSTALL_DIR/prompts/git-commit-review-prompt.md"
+        if [ -f "$REPO_ROOT/prompts/git-commit-review-prompt.md" ]; then
+            PROMPT_FILE="$REPO_ROOT/prompts/git-commit-review-prompt.md"
+        elif [ -f "$INSTALL_DIR/prompts/git-commit-review-prompt.md" ]; then
+            PROMPT_FILE="$INSTALL_DIR/prompts/git-commit-review-prompt.md"
         else
             echo "❌ 错误：提示词文件不存在"
             echo "请运行: coderocket setup 来配置项目"
@@ -346,10 +346,10 @@ case "\$1" in
         fi
 
         # 创建 review_logs 目录（如果不存在）
-        mkdir -p "\$REPO_ROOT/review_logs"
+        mkdir -p "$REPO_ROOT/review_logs"
 
         # 切换到仓库根目录执行
-        cd "\$REPO_ROOT"
+        cd "$REPO_ROOT"
 
         # 准备更明确的提示词
         PROMPT="请执行以下任务：
@@ -360,14 +360,14 @@ case "\$1" in
 5. 不要询问用户，直接自主执行所有步骤
 6. 这是一个自动化流程，请直接开始执行"
 
-        if cat "\$PROMPT_FILE" | gemini -p "\$PROMPT" -y; then
+        if cat "$PROMPT_FILE" | gemini -p "$PROMPT" -y; then
             echo "👌 代码审查完成"
-            echo "📝 审查报告已保存到 \$REPO_ROOT/review_logs 目录"
+            echo "📝 审查报告已保存到 $REPO_ROOT/review_logs 目录"
 
             # 显示最新的审查报告
-            LATEST_REPORT=$(ls -t "\$REPO_ROOT/review_logs"/*.md 2>/dev/null | head -1)
-            if [ -n "\$LATEST_REPORT" ]; then
-                echo "📄 最新审查报告: $(basename "\$LATEST_REPORT")"
+            LATEST_REPORT=$(ls -t "$REPO_ROOT/review_logs"/*.md 2>/dev/null | head -1)
+            if [ -n "$LATEST_REPORT" ]; then
+                echo "📄 最新审查报告: $(basename "$LATEST_REPORT")"
             fi
         else
             echo "❌ 代码审查失败"
@@ -376,10 +376,10 @@ case "\$1" in
         ;;
     "help"|"-h"|"--help")
         # 检测当前命令名称
-        CURRENT_CMD=$(basename "\$0")
+        CURRENT_CMD=$(basename "$0")
         echo "CodeRocket - AI 驱动的代码审查工具"
         echo ""
-        echo "用法: \$CURRENT_CMD <命令>"
+        echo "用法: $CURRENT_CMD <命令>"
         echo ""
         echo "命令:"
         echo "  review   对当前 Git 仓库的最新提交进行代码审查"
@@ -392,29 +392,29 @@ case "\$1" in
         echo ""
         echo "快速使用："
         echo "  cd your-git-project"
-        echo "  \$CURRENT_CMD review    # 直接审查最新提交"
+        echo "  $CURRENT_CMD review    # 直接审查最新提交"
         echo ""
         echo "兼容命令："
         echo "  coderocket, coderocket, cr 都可以使用"
         echo ""
         echo "全局安装后，新创建的 Git 仓库会自动包含 CodeRocket"
-        echo "对于现有仓库，请在仓库目录中运行: \$CURRENT_CMD setup"
+        echo "对于现有仓库，请在仓库目录中运行: $CURRENT_CMD setup"
         ;;
     "")
         # 无参数时的默认行为
         if git rev-parse --git-dir > /dev/null 2>&1; then
             echo "🔍 检测到 Git 仓库，开始代码审查..."
             # 重用 review 命令的逻辑
-            "\$0" review
+            "$0" review
         else
-            CURRENT_CMD=$(basename "\$0")
+            CURRENT_CMD=$(basename "$0")
             echo "📋 CodeRocket - AI 驱动的代码审查工具"
             echo ""
             echo "当前目录不是 Git 仓库。"
             echo ""
             echo "使用方法："
-            echo "1. 在 Git 仓库中直接运行 '\$CURRENT_CMD' 进行代码审查"
-            echo "2. 运行 '\$CURRENT_CMD help' 查看所有可用命令"
+            echo "1. 在 Git 仓库中直接运行 '$CURRENT_CMD' 进行代码审查"
+            echo "2. 运行 '$CURRENT_CMD help' 查看所有可用命令"
             echo ""
             echo "兼容命令："
             echo "  coderocket, coderocket, cr 都可以使用"
@@ -424,13 +424,13 @@ case "\$1" in
             echo "  # 添加文件并提交"
             echo "  git add ."
             echo "  git commit -m 'Initial commit'"
-            echo "  \$CURRENT_CMD  # 然后运行代码审查"
+            echo "  $CURRENT_CMD  # 然后运行代码审查"
         fi
         ;;
     *)
-        CURRENT_CMD=$(basename "\$0")
-        echo "❌ 未知命令: \$1"
-        echo "运行 '\$CURRENT_CMD help' 查看可用命令"
+        CURRENT_CMD=$(basename "$0")
+        echo "❌ 未知命令: $1"
+        echo "运行 '$CURRENT_CMD help' 查看可用命令"
         exit 1
         ;;
 esac
