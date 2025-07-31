@@ -493,6 +493,106 @@ EOF
     echo -e "${BLUE}  可用命令: coderocket, codereview-cli, cr${NC}"
 }
 
+# 创建用户命令并配置 PATH
+setup_user_commands() {
+    echo -e "${YELLOW}→ 设置用户命令...${NC}"
+
+    local user_bin_dir="$HOME/.local/bin"
+    mkdir -p "$user_bin_dir"
+
+    # 创建用户命令
+    create_user_command() {
+        local cmd_name="$1"
+        local cmd_file="$user_bin_dir/$cmd_name"
+
+        cat > "$cmd_file" << 'EOF'
+#!/bin/bash
+# CodeRocket 用户命令
+exec bash "$HOME/.coderocket/bin/coderocket" "$@"
+EOF
+
+        chmod +x "$cmd_file"
+        echo -e "${GREEN}    ✓ 创建 $cmd_name 用户命令${NC}"
+    }
+
+    # 创建三个命令别名
+    create_user_command "coderocket"
+    create_user_command "codereview-cli"
+    create_user_command "cr"
+
+    # 配置 PATH
+    configure_user_path "$user_bin_dir"
+
+    echo -e "${GREEN}✓ 用户命令设置完成${NC}"
+    echo -e "${BLUE}  可用命令: cr, codereview-cli, coderocket${NC}"
+}
+
+# 配置用户 PATH
+configure_user_path() {
+    local user_bin_dir="$1"
+
+    echo -e "${YELLOW}→ 配置 PATH...${NC}"
+
+    # 检测用户的 shell
+    local user_shell=$(basename "$SHELL")
+    local rc_file=""
+
+    case "$user_shell" in
+        "bash")
+            rc_file="$HOME/.bashrc"
+            # 在 macOS 上，bash 通常使用 .bash_profile
+            if [[ "$OSTYPE" == "darwin"* ]] && [ -f "$HOME/.bash_profile" ]; then
+                rc_file="$HOME/.bash_profile"
+            fi
+            ;;
+        "zsh")
+            rc_file="$HOME/.zshrc"
+            ;;
+        "fish")
+            rc_file="$HOME/.config/fish/config.fish"
+            ;;
+        *)
+            rc_file="$HOME/.bashrc"
+            ;;
+    esac
+
+    echo -e "${BLUE}  检测到 shell: $user_shell${NC}"
+    echo -e "${BLUE}  配置文件: $rc_file${NC}"
+
+    # 检查 PATH 是否已经包含用户 bin 目录
+    if [[ ":$PATH:" != *":$user_bin_dir:"* ]]; then
+        echo -e "${YELLOW}  → 需要添加 $user_bin_dir 到 PATH${NC}"
+
+        # 备份原配置文件
+        if [ -f "$rc_file" ]; then
+            cp "$rc_file" "${rc_file}.backup.$(date +%Y%m%d_%H%M%S)" 2>/dev/null || true
+            echo -e "${GREEN}    ✓ 已备份配置文件${NC}"
+        fi
+
+        # 检查是否已经有 PATH 配置
+        if ! grep -q "HOME/.local/bin" "$rc_file" 2>/dev/null; then
+            echo "" >> "$rc_file"
+            echo "# CodeRocket PATH 配置 (添加于 $(date))" >> "$rc_file"
+
+            if [ "$user_shell" = "fish" ]; then
+                echo "set -gx PATH \$HOME/.local/bin \$PATH" >> "$rc_file"
+            else
+                echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$rc_file"
+            fi
+
+            echo -e "${GREEN}    ✓ PATH 配置已添加到 $rc_file${NC}"
+        else
+            echo -e "${GREEN}    ✓ PATH 配置已存在${NC}"
+        fi
+
+        # 在当前会话中设置 PATH
+        export PATH="$user_bin_dir:$PATH"
+        echo -e "${GREEN}    ✓ 当前会话 PATH 已设置${NC}"
+    else
+        echo -e "${GREEN}    ✓ PATH 已包含用户 bin 目录${NC}"
+    fi
+}
+
 
 setup_global_hooks() {
     echo -e "${YELLOW}→ 配置全局 Git hooks 模板...${NC}"
@@ -714,38 +814,44 @@ show_next_steps() {
     echo "🎉 CodeRocket 已成功安装！"
     echo ""
 
-    # 检查是否为全局安装
+    # 显示可用命令
+    echo -e "${BLUE}可用命令：${NC}"
+
+    # 检查全局命令是否可用
     if command -v coderocket &> /dev/null; then
-        echo -e "${BLUE}全局安装完成！${NC}"
-        echo ""
-        echo -e "${BLUE}常用命令：${NC}"
         echo "• coderocket setup        - 为现有项目设置 CodeRocket"
         echo "• coderocket update       - 更新到最新版本"
         echo "• coderocket config       - 配置 AI 服务"
         echo "• coderocket help         - 查看帮助信息"
         echo ""
         echo -e "${BLUE}兼容命令：${NC}"
-        echo "• coderocket, cr      - 兼容老用户使用习惯"
-        echo ""
-        echo -e "${BLUE}使用说明：${NC}"
-        echo "1. 新创建的 Git 仓库会自动包含 CodeRocket"
-        echo "2. 对于现有仓库，请在仓库目录中运行: coderocket setup"
-        echo "3. 配置环境变量（可选）："
-        echo "   export GITLAB_PERSONAL_ACCESS_TOKEN='your_token_here'"
-        echo ""
+        echo "• cr, codereview-cli      - 兼容老用户使用习惯"
     else
-        echo -e "${BLUE}项目安装完成！${NC}"
+        echo "• cr setup                - 为现有项目设置 CodeRocket"
+        echo "• cr update               - 更新到最新版本"
+        echo "• cr config               - 配置 AI 服务"
+        echo "• cr help                 - 查看帮助信息"
         echo ""
-        echo -e "${BLUE}后续步骤：${NC}"
-        echo "1. 配置环境变量："
-        echo "   cp .env.example .env"
-        echo "   # 编辑 .env 文件，设置你的 GitLab Token"
-        echo ""
-        echo "2. 在其他项目中使用："
-        echo "   cd /path/to/your/project"
-        echo "   $INSTALL_DIR/install-hooks.sh"
-        echo ""
+        echo -e "${BLUE}兼容命令：${NC}"
+        echo "• coderocket, codereview-cli - 都指向同一个程序"
     fi
+
+    echo ""
+    echo -e "${BLUE}使用说明：${NC}"
+    echo "1. 新创建的 Git 仓库会自动包含 CodeRocket"
+    echo "2. 对于现有仓库，请在仓库目录中运行: cr setup"
+    echo "3. 配置环境变量（可选）："
+    echo "   export GITLAB_PERSONAL_ACCESS_TOKEN='your_token_here'"
+    echo ""
+
+    # 检查 PATH 配置
+    if [[ ":$PATH:" == *":$HOME/.local/bin:"* ]]; then
+        echo -e "${GREEN}✓ PATH 已配置，可以直接使用命令${NC}"
+    else
+        echo -e "${YELLOW}⚠️  如果命令不可用，请重新打开终端或运行：${NC}"
+        echo "   source ~/.zshrc  # 或 source ~/.bashrc"
+    fi
+    echo ""
 
     echo -e "${BLUE}文档链接：${NC}"
     echo "- 项目主页: https://github.com/im47cn/coderocket"
@@ -828,6 +934,9 @@ main() {
         # 项目安装模式
         setup_current_project
     fi
+
+    # 无论哪种安装模式，都设置用户命令作为备选方案
+    setup_user_commands
 
     configure_ai_services
     cleanup
