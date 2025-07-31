@@ -652,13 +652,6 @@ EOF
     echo -e "${BLUE}  可用命令: cr, codereview-cli, coderocket${NC}"
 }
 
-
-    else
-        echo -e "${GREEN}    ✓ PATH 已包含用户 bin 目录${NC}"
-    fi
-}
-
-
 setup_global_hooks() {
     echo -e "${YELLOW}→ 配置全局 Git hooks 模板...${NC}"
 
