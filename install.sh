@@ -416,7 +416,7 @@ $INSTALL_DIR/install-hooks.sh
             echo "1. 在 Git 仓库中直接运行 '$CURRENT_CMD' 进行代码审查"
             echo "2. 运行 '$CURRENT_CMD help' 查看所有可用命令"
             echo ""
-            echo "兼容命令："
+            echo "  coderocket, codereview-cli, cr 都可以使用"
             echo "  coderocket, coderocket, cr 都可以使用"
             echo ""
             echo "如需在当前目录创建 Git 仓库："
