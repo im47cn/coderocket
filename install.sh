@@ -433,6 +433,30 @@ EOF
     # 替换安装目录占位符
     cmd_content="${cmd_content//INSTALL_DIR_PLACEHOLDER/$INSTALL_DIR}"
 
+    # 检查并修复有问题的全局命令
+    check_and_fix_commands() {
+        local commands=("coderocket" "codereview-cli" "cr")
+        local need_fix=false
+
+        for cmd in "${commands[@]}"; do
+            local cmd_file="$bin_dir/$cmd"
+            if [ -f "$cmd_file" ]; then
+                # 检查是否有语法错误
+                if ! bash -n "$cmd_file" 2>/dev/null; then
+                    echo -e "${YELLOW}  检测到 $cmd 命令有语法错误，将重新创建${NC}"
+                    need_fix=true
+                elif grep -q "OLD_VERSION=\\\\\\\\\\$" "$cmd_file" 2>/dev/null; then
+                    echo -e "${YELLOW}  检测到 $cmd 命令有转义字符错误，将重新创建${NC}"
+                    need_fix=true
+                fi
+            fi
+        done
+
+        if [ "$need_fix" = true ]; then
+            echo -e "${BLUE}→ 修复有问题的全局命令...${NC}"
+        fi
+    }
+
     # 创建命令的函数
     create_command() {
         local cmd_name="$1"
@@ -447,7 +471,18 @@ EOF
             echo "$cmd_content" > "$cmd_file"
             chmod +x "$cmd_file"
         fi
+
+        # 验证创建的命令
+        if bash -n "$cmd_file" 2>/dev/null; then
+            echo -e "${GREEN}    ✓ $cmd_name 命令创建成功${NC}"
+        else
+            echo -e "${RED}    ✗ $cmd_name 命令创建失败，存在语法错误${NC}"
+            return 1
+        fi
     }
+
+    # 检查现有命令是否有问题
+    check_and_fix_commands
 
     # 创建主命令和兼容命令
     create_command "coderocket"

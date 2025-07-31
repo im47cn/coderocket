@@ -35,7 +35,7 @@ get_version() {
     elif [ -f "./VERSION" ]; then
         cat "./VERSION" | tr -d '\n'
     else
-        echo "1.0.2"
+        echo "1.0.3"
     fi
 }
 
