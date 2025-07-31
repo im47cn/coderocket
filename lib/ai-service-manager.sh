@@ -114,7 +114,7 @@ get_install_command() {
             echo "npm install -g @opencode/cli"  # OpenCode CLI
             ;;
         "claudecode")
-            echo "npm install -g @claudecode/cli"  # ClaudeCode CLI
+            echo "npm install -g @anthropic-ai/claude-code"  # ClaudeCode CLI
             ;;
         *)
             echo "未知服务"  # 不支持的服务

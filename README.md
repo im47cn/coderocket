@@ -102,7 +102,7 @@ npm install -g @opencode/cli
 
 **ClaudeCode (可选)**
 ```bash
-npm install -g @claudecode/cli
+npm install -g @anthropic-ai/claude-code
 ```
 
 #### 2. 配置 AI 服务

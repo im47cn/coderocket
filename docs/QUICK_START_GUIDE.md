@@ -62,7 +62,7 @@ npm install -g @opencode/cli
 opencode config
 
 # ClaudeCode  
-npm install -g @claudecode/cli
+npm install -g @anthropic-ai/claude-code
 claudecode config
 ```
 

@@ -154,7 +154,7 @@ install_ai_services() {
         echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
     else
         echo -e "${YELLOW}→ ClaudeCode CLI 未安装 (可选)${NC}"
-        echo "  手动安装: npm install -g @claudecode/cli"
+        echo "  手动安装: npm install -g @anthropic-ai/claude-code"
     fi
 }
 

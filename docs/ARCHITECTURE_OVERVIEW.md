@@ -98,7 +98,7 @@ CodeRocket 是一个基于多种 AI 服务的智能 Git 提交代码审查工具
 - **模型支持**: opencode-pro
 
 #### ClaudeCode Service
-- **CLI集成**: 使用 `@claudecode/cli`
+- **CLI集成**: 使用 `@anthropic-ai/claude-code`
 - **API调用**: Claude API接口
 - **模型支持**: claude-3-sonnet, claude-3-opus
 

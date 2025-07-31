@@ -252,7 +252,7 @@ else
         echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
     else
         echo -e "${YELLOW}⚠ 未检测到 ClaudeCode CLI${NC}"
-        echo "安装 ClaudeCode CLI: npm install -g @claudecode/cli"
+        echo "安装 ClaudeCode CLI: npm install -g @anthropic-ai/claude-code"
     fi
 fi
 

@@ -22,7 +22,7 @@
 
 - **模型**: Claude 4 Sonnet
 - **特点**: 优秀的代码审查和建议能力
-- **安装**: `npm install -g @claudecode/cli`
+- **安装**: `npm install -g @anthropic-ai/claude-code`
 - **配置**: 需要 ClaudeCode API 密钥
 
 ## ⚙️ 配置方法
@@ -154,7 +154,7 @@ export DEBUG=true
 # 重新安装CLI工具
 npm install -g @google/gemini-cli
 npm install -g @opencode/cli
-npm install -g @claudecode/cli
+npm install -g @anthropic-ai/claude-code
 ```
 
 #### 2. API密钥配置错误

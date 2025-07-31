@@ -93,7 +93,7 @@
 ### 🎉 重大更新：项目重命名为 CodeRocket CLI
 
 #### ✨ 新功能
-- **项目重命名**：CodeReview CLI 正式更名为 **CodeRocket CLI**
+- **项目重命名**：CodeRocket CLI 正式更名为 **CodeRocket CLI**
 - **多命令兼容性**：支持 `coderocket`、`codereview-cli`、`cr` 三个命令别名
 - **精美 Banner**：添加了好看的 ASCII art banner，提升用户体验
 - **智能命令检测**：根据当前使用的命令名称显示相应的帮助信息

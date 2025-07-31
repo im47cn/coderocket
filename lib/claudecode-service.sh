@@ -58,7 +58,7 @@ install_claudecode_cli() {
     
     # 尝试通过npm安装
     if command -v npm &> /dev/null; then
-        if npm install -g @claudecode/cli; then
+        if npm install -g @anthropic-ai/claude-code; then
             echo -e "${GREEN}✓ ClaudeCode CLI 安装成功${NC}"
             return 0
         else
@@ -262,7 +262,7 @@ test_claudecode_service() {
         echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
     else
         echo -e "${YELLOW}⚠ ClaudeCode CLI 未安装${NC}"
-        echo "安装命令: npm install -g @claudecode/cli"
+        echo "安装命令: npm install -g @anthropic-ai/claude-code"
     fi
     
     # 检查配置
