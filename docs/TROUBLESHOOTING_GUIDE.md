@@ -40,15 +40,67 @@ Permission denied: /usr/local/bin/coderocket
 
 **解决方案**：
 ```bash
-# 使用sudo安装
+# 方案A：使用sudo安装全局命令
 sudo curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
-# 或选择用户目录安装
-export INSTALL_DIR="$HOME/.local/bin"
+# 方案B：使用用户命令（推荐，无需sudo）
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
+# 安装脚本会自动创建用户命令并配置PATH
+
+# 方案C：手动设置PATH（如果自动配置失败）
+export PATH="$HOME/.local/bin:$PATH"
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+```
+
+**说明**：
+- v1.0.4+ 版本的安装脚本会自动创建用户命令并配置PATH
+- 即使全局命令安装失败，用户命令也能正常工作
+- 用户命令位于 `~/.local/bin/` 目录，无需管理员权限
+
+#### 问题3：命令找不到
+
+**症状**：
+```bash
+❯ cr
+zsh: command not found: cr
+
+❯ coderocket
+command not found: coderocket
+```
+
+**解决方案**：
+```bash
+# 方案A：使用完整路径（立即可用）
+~/.local/bin/cr help
+~/.local/bin/cr version
+~/.local/bin/coderocket setup
+
+# 方案B：设置PATH（当前会话）
+export PATH="$HOME/.local/bin:$PATH"
+cr help
+
+# 方案C：永久设置PATH
+echo 'export PATH="$HOME/.local/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 方案D：重新安装（自动配置PATH）
 curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 ```
 
-#### 问题3：Node.js版本过低
+**验证修复**：
+```bash
+# 检查用户命令是否存在
+ls -la ~/.local/bin/cr
+
+# 检查PATH配置
+echo $PATH | grep -o "$HOME/.local/bin"
+
+# 测试命令
+cr version
+```
+
+#### 问题4：Node.js版本过低
 
 **症状**：
 ```bash

@@ -22,13 +22,19 @@
 **适用场景**: 个人开发环境，多项目使用
 
 ```bash
-# 一键安装
+# 一键安装（v1.0.4+ 支持自动化配置）
 curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash
 
 # 验证安装
-coderocket --version
+coderocket --version  # 或 cr --version
 coderocket status
 ```
+
+**自动化特性** (v1.0.4+):
+- ✅ **智能PATH配置**: 自动检测shell类型并配置环境变量
+- ✅ **用户命令创建**: 自动在 `~/.local/bin/` 创建命令别名
+- ✅ **多重保障**: 即使全局命令失败，用户命令仍可用
+- ✅ **零配置使用**: 安装完成后立即可用，无需手动配置
 
 **配置步骤**:
 ```bash

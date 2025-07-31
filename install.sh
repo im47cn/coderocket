@@ -527,6 +527,52 @@ EOF
     echo -e "${BLUE}  可用命令: cr, codereview-cli, coderocket${NC}"
 }
 
+# 检测用户的 shell 类型
+detect_user_shell() {
+    local shell_name=$(basename "$SHELL")
+    echo "$shell_name"
+}
+
+# 获取 shell 配置文件路径
+get_shell_config_file() {
+    local shell_name="$1"
+    local config_file=""
+
+    case "$shell_name" in
+        "bash")
+            config_file="$HOME/.bashrc"
+            # 在 macOS 上，bash 通常使用 .bash_profile
+            if [[ "$OSTYPE" == "darwin"* ]] && [ -f "$HOME/.bash_profile" ]; then
+                config_file="$HOME/.bash_profile"
+            fi
+            ;;
+        "zsh")
+            config_file="$HOME/.zshrc"
+            ;;
+        "fish")
+            config_file="$HOME/.config/fish/config.fish"
+            ;;
+        *)
+            # 默认使用 bash 配置
+            config_file="$HOME/.bashrc"
+            ;;
+    esac
+
+    echo "$config_file"
+}
+
+# 生成 PATH 配置语句
+generate_path_config() {
+    local shell_name="$1"
+    local bin_dir="$2"
+
+    if [ "$shell_name" = "fish" ]; then
+        echo "set -gx PATH \$HOME/.local/bin \$PATH"
+    else
+        echo 'export PATH="$HOME/.local/bin:$PATH"'
+    fi
+}
+
 # 配置用户 PATH
 configure_user_path() {
     local user_bin_dir="$1"
@@ -534,27 +580,8 @@ configure_user_path() {
     echo -e "${YELLOW}→ 配置 PATH...${NC}"
 
     # 检测用户的 shell
-    local user_shell=$(basename "$SHELL")
-    local rc_file=""
-
-    case "$user_shell" in
-        "bash")
-            rc_file="$HOME/.bashrc"
-            # 在 macOS 上，bash 通常使用 .bash_profile
-            if [[ "$OSTYPE" == "darwin"* ]] && [ -f "$HOME/.bash_profile" ]; then
-                rc_file="$HOME/.bash_profile"
-            fi
-            ;;
-        "zsh")
-            rc_file="$HOME/.zshrc"
-            ;;
-        "fish")
-            rc_file="$HOME/.config/fish/config.fish"
-            ;;
-        *)
-            rc_file="$HOME/.bashrc"
-            ;;
-    esac
+    local user_shell=$(detect_user_shell)
+    local rc_file=$(get_shell_config_file "$user_shell")
 
     echo -e "${BLUE}  检测到 shell: $user_shell${NC}"
     echo -e "${BLUE}  配置文件: $rc_file${NC}"
@@ -574,11 +601,9 @@ configure_user_path() {
             echo "" >> "$rc_file"
             echo "# CodeRocket PATH 配置 (添加于 $(date))" >> "$rc_file"
 
-            if [ "$user_shell" = "fish" ]; then
-                echo "set -gx PATH \$HOME/.local/bin \$PATH" >> "$rc_file"
-            else
-                echo 'export PATH="$HOME/.local/bin:$PATH"' >> "$rc_file"
-            fi
+            # 使用重构后的函数生成配置语句
+            local path_config=$(generate_path_config "$user_shell" "$user_bin_dir")
+            echo "$path_config" >> "$rc_file"
 
             echo -e "${GREEN}    ✓ PATH 配置已添加到 $rc_file${NC}"
         else
@@ -588,6 +613,46 @@ configure_user_path() {
         # 在当前会话中设置 PATH
         export PATH="$user_bin_dir:$PATH"
         echo -e "${GREEN}    ✓ 当前会话 PATH 已设置${NC}"
+    else
+        echo -e "${GREEN}    ✓ PATH 已包含用户 bin 目录${NC}"
+    fi
+}
+
+# 创建用户命令并配置 PATH
+setup_user_commands() {
+    echo -e "${YELLOW}→ 设置用户命令...${NC}"
+
+    local user_bin_dir="$HOME/.local/bin"
+    mkdir -p "$user_bin_dir"
+
+    # 创建用户命令
+    create_user_command() {
+        local cmd_name="$1"
+        local cmd_file="$user_bin_dir/$cmd_name"
+
+        cat > "$cmd_file" << 'EOF'
+#!/bin/bash
+# CodeRocket 用户命令
+exec bash "$HOME/.coderocket/bin/coderocket" "$@"
+EOF
+
+        chmod +x "$cmd_file"
+        echo -e "${GREEN}    ✓ 创建 $cmd_name 用户命令${NC}"
+    }
+
+    # 创建三个命令别名
+    create_user_command "coderocket"
+    create_user_command "codereview-cli"
+    create_user_command "cr"
+
+    # 配置 PATH
+    configure_user_path "$user_bin_dir"
+
+    echo -e "${GREEN}✓ 用户命令设置完成${NC}"
+    echo -e "${BLUE}  可用命令: cr, codereview-cli, coderocket${NC}"
+}
+
+
     else
         echo -e "${GREEN}    ✓ PATH 已包含用户 bin 目录${NC}"
     fi

@@ -76,6 +76,14 @@ show_version() {
 
 # 执行代码审查
 run_review() {
+    # 显示banner
+    if declare -f show_banner &> /dev/null; then
+        show_banner
+    elif declare -f show_mini_banner &> /dev/null; then
+        show_mini_banner
+    fi
+    echo ""
+
     if ! is_git_repo; then
         if command -v show_error_banner &> /dev/null; then
             show_error_banner "当前目录不是 Git 仓库"
@@ -100,6 +108,12 @@ run_review() {
 
 # 设置项目
 setup_project() {
+    # 显示banner
+    if declare -f show_mini_banner &> /dev/null; then
+        show_mini_banner
+    fi
+    echo ""
+
     if [ -f "$INSTALL_DIR/install-hooks.sh" ]; then
         echo "🔧 正在为当前项目设置 CodeRocket..."
         bash "$INSTALL_DIR/install-hooks.sh"
@@ -111,6 +125,12 @@ setup_project() {
 
 # 配置 AI 服务
 config_ai() {
+    # 显示banner
+    if declare -f show_mini_banner &> /dev/null; then
+        show_mini_banner
+    fi
+    echo ""
+
     echo "🤖 AI 服务配置"
     echo "请编辑配置文件: $INSTALL_DIR/env"
     echo "或设置环境变量："
