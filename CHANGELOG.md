@@ -1,5 +1,27 @@
 # CodeRocket CLI 更新日志
 
+## [v1.0.6] - 2025-01-31
+
+### 🔧 Bug修复和改进
+
+#### 🔄 向后兼容性增强
+- **Git Hooks向后兼容**：添加对旧配置路径的支持
+  - `post-commit` 和 `pre-commit` hooks 现在支持从 `~/.codereview-cli/env` 加载配置
+  - 自动检测并加载旧版本的 `ai-service-manager.sh` 脚本
+  - 确保现有用户无需立即重新安装即可正常使用
+
+#### 🛠️ 代码质量改进
+- **修复重复函数定义**：移除 `install.sh` 中重复的 `setup_user_commands()` 函数定义
+- **路径一致性修复**：
+  - 修复 README.md 中克隆后的目录名称（`cd coderocket-cli`）
+  - 修复 CONTRIBUTING.md 中的仓库URL一致性问题
+  - 更新性能优化指南中的所有路径引用（`codereview` → `coderocket`）
+
+#### 📚 文档完善
+- **统一品牌命名**：确保所有文档中的路径、命令和引用都使用新的 CodeRocket 品牌
+- **修复安装说明**：确保用户能够正确克隆和安装项目
+- **改进用户体验**：提供清晰的迁移路径和向后兼容性说明
+
 ## [v1.0.5] - 2025-01-31
 
 ### 🚀 重大新功能：智能AI服务故障转移

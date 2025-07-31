@@ -20,8 +20,8 @@
 
 1. **Fork 项目**
    ```bash
-   git clone https://github.com/your-username/coderocket.git
-   cd coderocket
+   git clone https://github.com/your-username/coderocket-cli.git
+   cd coderocket-cli
    ```
 
 2. **创建功能分支**

@@ -499,39 +499,7 @@ EOF
     echo -e "${BLUE}  可用命令: coderocket, codereview-cli, cr${NC}"
 }
 
-# 创建用户命令并配置 PATH
-setup_user_commands() {
-    echo -e "${YELLOW}→ 设置用户命令...${NC}"
 
-    local user_bin_dir="$HOME/.local/bin"
-    mkdir -p "$user_bin_dir"
-
-    # 创建用户命令
-    create_user_command() {
-        local cmd_name="$1"
-        local cmd_file="$user_bin_dir/$cmd_name"
-
-        cat > "$cmd_file" << 'EOF'
-#!/bin/bash
-# CodeRocket 用户命令
-exec bash "$HOME/.coderocket/bin/coderocket" "$@"
-EOF
-
-        chmod +x "$cmd_file"
-        echo -e "${GREEN}    ✓ 创建 $cmd_name 用户命令${NC}"
-    }
-
-    # 创建三个命令别名
-    create_user_command "coderocket"
-    create_user_command "codereview-cli"
-    create_user_command "cr"
-
-    # 配置 PATH
-    configure_user_path "$user_bin_dir"
-
-    echo -e "${GREEN}✓ 用户命令设置完成${NC}"
-    echo -e "${BLUE}  可用命令: cr, codereview-cli, coderocket${NC}"
-}
 
 # 检测用户的 shell 类型
 detect_user_shell() {

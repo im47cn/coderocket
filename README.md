@@ -132,7 +132,7 @@ claudecode config
 
 ```bash
 git clone https://github.com/im47cn/coderocket-cli.git
-cd coderocket
+cd coderocket-cli
 ```
 
 #### 4. 运行安装脚本

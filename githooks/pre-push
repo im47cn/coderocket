@@ -38,6 +38,14 @@ if [ -f "$HOME/.coderocket/env" ]; then
             export "$key=$value"
         fi
     done < "$HOME/.coderocket/env" 2>/dev/null
+elif [ -f "$HOME/.codereview-cli/env" ]; then   # backward-compat (remove in next major)
+    while IFS='=' read -r key value; do
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z $key ]] && continue
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_) ]]; then
+            export "$key=$value"
+        fi
+    done < "$HOME/.codereview-cli/env" 2>/dev/null
 fi
 
 # 导入AI服务管理器
@@ -45,6 +53,8 @@ if [ -f "$REPO_ROOT/lib/ai-service-manager.sh" ]; then
     source "$REPO_ROOT/lib/ai-service-manager.sh"
 elif [ -f "$HOME/.coderocket/lib/ai-service-manager.sh" ]; then
     source "$HOME/.coderocket/lib/ai-service-manager.sh"
+elif [ -f "$HOME/.codereview-cli/lib/ai-service-manager.sh" ]; then   # backward-compat
+    source "$HOME/.codereview-cli/lib/ai-service-manager.sh"
 fi
 
 # 从环境变量获取配置
