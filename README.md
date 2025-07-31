@@ -7,7 +7,7 @@
 
 一个基于多种 AI 服务（Gemini、OpenCode、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
 
-> **项目重命名通知**：CodeRocket 现已更名为 **CodeRocket**！为保持兼容性，原有的 `coderocket` 和 `cr` 命令仍可正常使用。
+> **项目重命名通知**：CodeRocket 现已更名为 **CodeRocket**！为保持兼容性，原有的 `codereview-cli` 和 `cr` 命令仍可正常使用。
 
 ## 🚀 核心功能
 
