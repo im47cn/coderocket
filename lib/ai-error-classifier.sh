@@ -47,7 +47,7 @@ classify_ai_error() {
     LAST_ERROR_SERVICE="$service"
     
     # 成功情况
-    if [ $exit_code -eq 0 ] && [ -n "$stdout_output" ]; then
+    if [ "$exit_code" -eq 0 ] && [ -n "$stdout_output" ]; then
         LAST_ERROR_TYPE="$ERROR_SUCCESS"
         echo "$ERROR_SUCCESS"
         return 0

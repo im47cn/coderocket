@@ -517,7 +517,7 @@ intelligent_ai_call() {
     # 检查是否启用自动切换
     if [ "$AI_AUTO_SWITCH" != "true" ]; then
         # 禁用自动切换，使用原有逻辑
-        return $(smart_ai_call "$primary_service" "$type" "$prompt" "$fallback_context")
+        smart_ai_call "$primary_service" "$type" "$prompt" "$fallback_context"; return $?
     fi
 
     # 获取可用服务列表
