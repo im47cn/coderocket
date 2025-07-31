@@ -1,4 +1,8 @@
-# CodeRocket
+# CodeRocket CLI
+
+<div align="center">
+  <img src="docs/assets/banner.png" alt="CodeRocket Banner" />
+</div>
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![GitHub stars](https://img.shields.io/github/stars/im47cn/coderocket-cli.svg)](https://github.com/im47cn/coderocket-cli/stargazers)
