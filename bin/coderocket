@@ -1,0 +1,227 @@
+#!/bin/bash
+
+# CodeRocket 全局命令脚本
+# 支持多种命令别名：coderocket, codereview-cli, cr
+
+# 获取当前命令名称（用于显示兼容性信息）
+CURRENT_CMD=$(basename "$0")
+
+# 安装目录
+INSTALL_DIR="$HOME/.coderocket"
+
+# 获取脚本所在目录
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+PROJECT_DIR="$(dirname "$SCRIPT_DIR")"
+
+# 导入 banner 显示函数
+if [ -f "$INSTALL_DIR/lib/banner.sh" ]; then
+    source "$INSTALL_DIR/lib/banner.sh"
+elif [ -f "$PROJECT_DIR/lib/banner.sh" ]; then
+    source "$PROJECT_DIR/lib/banner.sh"
+elif [ -f "./lib/banner.sh" ]; then
+    source "./lib/banner.sh"
+fi
+
+# 检查是否在 Git 仓库中
+is_git_repo() {
+    git rev-parse --git-dir > /dev/null 2>&1
+}
+
+# 显示帮助信息
+show_help() {
+    if declare -f show_mini_banner &> /dev/null; then
+        show_mini_banner
+    else
+        echo "CodeRocket 🚀 - AI 驱动的代码审查工具"
+    fi
+    echo ""
+    echo "用法："
+    echo "  $CURRENT_CMD [命令] [选项]"
+    echo ""
+    echo "兼容命令："
+    echo "  coderocket, codereview-cli, cr 都可以使用"
+    echo ""
+    echo "命令："
+    echo "  review          审查最新提交（默认行为）"
+    echo "  setup           为当前项目设置 CodeRocket"
+    echo "  config          配置 AI 服务"
+    echo "  timing          配置代码审查时机"
+    echo "  update          更新到最新版本"
+    echo "  version         显示版本信息"
+    echo "  help            显示此帮助信息"
+    echo ""
+    echo "示例："
+    echo "  $CURRENT_CMD                # 在 Git 仓库中直接审查"
+    echo "  $CURRENT_CMD setup          # 设置当前项目"
+    echo "  $CURRENT_CMD config         # 配置 AI 服务"
+    echo ""
+}
+
+# 显示版本信息
+show_version() {
+    if declare -f show_mini_banner &> /dev/null; then
+        show_mini_banner
+    else
+        echo "CodeRocket 🚀"
+    fi
+    echo ""
+    if [ -f "$INSTALL_DIR/VERSION" ]; then
+        echo "版本: $(cat "$INSTALL_DIR/VERSION")"
+    else
+        echo "版本: v1.0.0"
+    fi
+    echo "安装路径: $INSTALL_DIR"
+    echo "命令别名: coderocket, codereview-cli, cr"
+}
+
+# 执行代码审查
+run_review() {
+    if ! is_git_repo; then
+        if command -v show_error_banner &> /dev/null; then
+            show_error_banner "当前目录不是 Git 仓库"
+        else
+            echo "❌ 错误：当前目录不是 Git 仓库"
+        fi
+        echo "请在 Git 仓库中运行此命令，或使用 '$CURRENT_CMD setup' 设置项目。"
+        exit 1
+    fi
+
+    echo "🔍 正在审查最新提交..."
+    
+    # 检查是否有 post-commit hook
+    if [ -f ".git/hooks/post-commit" ]; then
+        # 直接执行 post-commit hook
+        .git/hooks/post-commit
+    else
+        echo "⚠️  未找到 post-commit hook，请先运行 '$CURRENT_CMD setup'"
+        exit 1
+    fi
+}
+
+# 设置项目
+setup_project() {
+    if [ -f "$INSTALL_DIR/install-hooks.sh" ]; then
+        echo "🔧 正在为当前项目设置 CodeRocket..."
+        bash "$INSTALL_DIR/install-hooks.sh"
+    else
+        echo "❌ 错误：安装文件未找到，请重新安装 CodeRocket"
+        exit 1
+    fi
+}
+
+# 配置 AI 服务
+config_ai() {
+    echo "🤖 AI 服务配置"
+    echo "请编辑配置文件: $INSTALL_DIR/env"
+    echo "或设置环境变量："
+    echo "  export GEMINI_API_KEY='your-api-key'"
+    echo "  export AI_SERVICE='gemini'  # 或 opencode, claudecode"
+    
+    if command -v code &> /dev/null; then
+        read -p "是否使用 VS Code 打开配置文件？(y/n): " -n 1 -r
+        echo
+        if [[ $REPLY =~ ^[Yy]$ ]]; then
+            code "$INSTALL_DIR/env"
+        fi
+    fi
+}
+
+# 配置审查时机
+config_timing() {
+    echo "⏰ 代码审查时机配置"
+    echo "1. post-commit: 提交后审查（推荐）"
+    echo "2. pre-commit: 提交前审查"
+    
+    read -p "请选择 (1/2): " -n 1 -r
+    echo
+    
+    case $REPLY in
+        1)
+            export REVIEW_TIMING="post-commit"
+            echo "已设置为提交后审查"
+            ;;
+        2)
+            export REVIEW_TIMING="pre-commit"
+            echo "已设置为提交前审查"
+            ;;
+        *)
+            echo "无效选择"
+            exit 1
+            ;;
+    esac
+    
+    # 保存到配置文件
+    if [ ! -f "$INSTALL_DIR/env" ]; then
+        touch "$INSTALL_DIR/env"
+    fi
+    
+    # 更新或添加配置
+    if grep -q "REVIEW_TIMING=" "$INSTALL_DIR/env"; then
+        sed -i.bak "s/REVIEW_TIMING=.*/REVIEW_TIMING=$REVIEW_TIMING/" "$INSTALL_DIR/env"
+    else
+        echo "REVIEW_TIMING=$REVIEW_TIMING" >> "$INSTALL_DIR/env"
+    fi
+    
+    echo "✅ 配置已保存到 $INSTALL_DIR/env"
+}
+
+# 更新 CodeRocket
+update_coderocket() {
+    echo "🔄 正在更新 CodeRocket..."
+    
+    if [ -d "$INSTALL_DIR/.git" ]; then
+        cd "$INSTALL_DIR"
+        git pull origin main
+        echo "✅ 更新完成"
+    else
+        echo "⚠️  建议重新运行安装脚本获取最新版本："
+        echo "curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket/main/install.sh | bash"
+    fi
+}
+
+# 主逻辑
+main() {
+    case "${1:-}" in
+        "review")
+            run_review
+            ;;
+        "setup")
+            setup_project
+            ;;
+        "config")
+            config_ai
+            ;;
+        "timing")
+            config_timing
+            ;;
+        "update")
+            update_coderocket
+            ;;
+        "version")
+            show_version
+            ;;
+        "help"|"-h"|"--help")
+            show_help
+            ;;
+        "")
+            # 默认行为：如果在 Git 仓库中则直接审查，否则显示帮助
+            if is_git_repo; then
+                run_review
+            else
+                if command -v show_startup_info &> /dev/null; then
+                    show_startup_info
+                else
+                    show_help
+                fi
+            fi
+            ;;
+        *)
+            echo "❌ 未知命令: $1"
+            echo "使用 '$CURRENT_CMD help' 查看可用命令"
+            exit 1
+            ;;
+    esac
+}
+
+# 执行主函数
+main "$@"

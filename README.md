@@ -1,7 +1,6 @@
 # CodeRocket
 
 [![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
-[![GitHub stars](https://img.shields.io/github/stars/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/im47cn/codereview-cli.svg)](https://github.com/im47cn/codereview-cli/issues)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W71IFTGX)
 
