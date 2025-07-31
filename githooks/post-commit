@@ -84,7 +84,7 @@ PROMPT="请执行以下任务：
 5. 不要询问用户，直接自主执行所有步骤
 6. 这是一个自动化流程，请直接开始执行"
 
-if call_ai_for_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"; then
+if intelligent_ai_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"; then
     echo "👌 代码审查完成"
     echo "📝 审查报告已保存到 $REPO_ROOT/review_logs 目录"
 else

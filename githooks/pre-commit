@@ -104,7 +104,7 @@ $STAGED_CHANGES"
 
 # 执行代码审查
 REVIEW_OUTPUT=""
-if REVIEW_OUTPUT=$(call_ai_for_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"); then
+if REVIEW_OUTPUT=$(intelligent_ai_review "$CURRENT_AI_SERVICE" "$PROMPT_FILE" "$PROMPT"); then
     echo "👌 代码审查完成"
     echo "📝 审查报告已保存到 $REPO_ROOT/review_logs 目录"
     

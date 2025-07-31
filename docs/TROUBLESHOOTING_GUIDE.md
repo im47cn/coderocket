@@ -159,18 +159,21 @@ Timeout: AI service call exceeded 30 seconds
 
 **解决方案**：
 ```bash
-# 1. 增加超时时间
+# 1. 启用智能故障转移（推荐）
+export AI_AUTO_SWITCH=true
+
+# 2. 增加超时时间
 echo "AI_TIMEOUT=60" >> .env
 
-# 2. 检查网络连接
+# 3. 检查网络连接
 ping google.com
 curl -I https://generativelanguage.googleapis.com
 
-# 3. 使用备用服务
-echo "AI_SERVICE=opencode" >> .ai-config
+# 4. 配置多个备用服务
+echo "AI_SERVICE_PRIORITY=gemini opencode claudecode" >> .ai-config
 
-# 4. 启用重试机制
-echo "AI_MAX_RETRIES=5" >> .env
+# 5. 测试故障转移功能
+./test-ai-failover.sh
 ```
 
 #### 问题6：多AI服务冲突
