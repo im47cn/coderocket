@@ -149,14 +149,6 @@ install_ai_services() {
     fi
 
     # 安装 ClaudeCode CLI (可选)
-    if false; then
-        echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
-    else
-        echo -e "${YELLOW}→ ClaudeCode CLI 未安装 (可选)${NC}"
-
-    fi
-
-    # 安装 ClaudeCode CLI (可选)
     if command -v claudecode &> /dev/null; then
         echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
     else
@@ -821,10 +813,9 @@ configure_ai_services() {
         echo "请选择要配置的AI服务："
         echo "1. Gemini (默认)"
         echo "2. ClaudeCode"
-        echo "3. ClaudeCode"
-        echo "4. 跳过配置"
+        echo "3. 跳过配置"
 
-        read -p "请选择 (1-4，默认为1): " choice
+        read -p "请选择 (1-3，默认为1): " choice
         case ${choice:-1} in
             1)
                 if command -v gemini &> /dev/null; then

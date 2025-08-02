@@ -302,8 +302,6 @@ else
         echo "安装 Gemini CLI: npm install -g @google/gemini-cli"
     fi
 
-
-
     if command -v claudecode &> /dev/null; then
         echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
     else
