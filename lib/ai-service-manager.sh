@@ -82,7 +82,7 @@ check_ai_service_available() {
             command -v gemini &> /dev/null  # 检查gemini命令是否存在
             ;;
         "claudecode")
-            command -v claudecode &> /dev/null  # 检查claudecode命令是否存在
+            command -v claude &> /dev/null  # 检查claude命令是否存在
             ;;
         *)
             echo -e "${RED}❌ 不支持的AI服务: $service${NC}" >&2
@@ -144,7 +144,7 @@ get_config_command() {
             ;;
 
         "claudecode")
-            echo "claudecode config"  # ClaudeCode配置命令
+            echo "claude config"  # ClaudeCode配置命令
             ;;
         *)
             echo "未知服务"  # 不支持的服务
