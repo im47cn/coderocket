@@ -33,6 +33,8 @@
 - [使用说明](#-使用说明)
 - [配置说明](#️-配置说明)
 - [审查报告](#-审查报告)
+- [版本更新](#-版本更新)
+- [卸载说明](#️-卸载说明)
 - [贡献指南](#-贡献指南)
 - [许可证](#-许可证)
 
@@ -117,7 +119,7 @@ gemini config
 
 **ClaudeCode 配置**
 ```bash
-claudecode config
+claude config
 # 或设置环境变量: export CLAUDECODE_API_KEY='your_key'
 ```
 
@@ -591,10 +593,8 @@ coderocket setup
 # Gemini 重新配置
 gemini config --reset
 
-
-
 # ClaudeCode 重新配置
-claudecode config
+claude config
 ```
 
 **问题 3**: Hook 权限问题
@@ -652,6 +652,51 @@ curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/install.
 cd ~/.coderocket
 git pull origin main
 ```
+
+## 🗑️ 卸载说明
+
+如果需要完全移除 CodeRocket CLI，可以使用专门的卸载脚本：
+
+### 一键卸载
+
+```bash
+# 方式1：直接运行卸载脚本
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/uninstall.sh | bash
+
+# 方式2：下载后运行（推荐，可以查看将要删除的内容）
+wget https://raw.githubusercontent.com/im47cn/coderocket-cli/main/uninstall.sh
+chmod +x uninstall.sh
+./uninstall.sh
+
+# 方式3：如果已安装，直接使用本地卸载脚本
+bash ~/.coderocket/uninstall.sh
+```
+
+### 强制卸载（跳过确认）
+
+```bash
+# 强制卸载，不询问确认
+curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/uninstall.sh | bash -s -- --force
+```
+
+### 卸载内容
+
+卸载脚本将完全移除以下内容：
+
+- **📁 安装目录**：`~/.coderocket/` 及其所有文件
+- **🔧 全局命令**：`/usr/local/bin/coderocket`, `codereview-cli`, `cr`
+- **👤 用户命令**：`~/.local/bin/` 中的相关命令
+- **⚙️ Shell 配置**：从 `.bashrc`/`.zshrc` 中移除 PATH 配置
+- **🔗 Git 模板**：`~/.git-templates/` 中的 CodeRocket hooks
+- **📋 项目 hooks**：扫描并清理项目中的 CodeRocket Git hooks
+- **🧹 残留文件**：缓存、日志等临时文件
+
+### 注意事项
+
+- ⚠️ **卸载操作不可逆**，请确认后再执行
+- 🔄 **配置文件备份**：卸载前会自动备份 shell 配置文件
+- 🔍 **项目扫描**：可选择扫描并清理项目中的 Git hooks
+- 🔧 **手动清理**：如有特殊项目，可能需要手动清理残留的 hooks
 
 ---
 

@@ -901,6 +901,10 @@ show_next_steps() {
     echo "- VS Code 设置: $INSTALL_DIR/docs/VSCODE_SETUP.md"
     echo "- 测试指南: $INSTALL_DIR/docs/VSCODE_TEST_GUIDE.md"
     echo ""
+    echo -e "${BLUE}卸载说明：${NC}"
+    echo "- 如需卸载，请运行: bash $INSTALL_DIR/uninstall.sh"
+    echo "- 或者下载最新卸载脚本: curl -fsSL https://raw.githubusercontent.com/im47cn/coderocket-cli/main/uninstall.sh | bash"
+    echo ""
     echo -e "${GREEN}现在你可以正常使用 git commit 和 git push 了！${NC}"
 }
 
