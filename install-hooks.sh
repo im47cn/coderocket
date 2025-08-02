@@ -20,6 +20,28 @@ fi
 REPO_ROOT=$(git rev-parse --show-toplevel)
 echo "仓库根目录: $REPO_ROOT"
 
+# 安全地加载环境变量的函数
+# 参数: $1 - 环境变量文件路径
+safe_load_env() {
+    local env_file="$1"
+    if [ -f "$env_file" ]; then
+        while read -r line || [ -n "$line" ]; do
+            # 跳过注释和空行
+            [[ $line =~ ^[[:space:]]*# ]] && continue
+            [[ -z $line ]] && continue
+            
+            # 分割键值对
+            local key="${line%%=*}"
+            local value="${line#*=}"
+            
+            # 只加载特定前缀的环境变量，防止代码注入
+            if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|CLAUDECODE_|REVIEW_) ]]; then
+                export "$key=$value"
+            fi
+        done < "$env_file" 2>/dev/null
+    fi
+}
+
 # 获取配置值的函数
 get_config_value() {
     local key=$1
@@ -30,11 +52,11 @@ get_config_value() {
     if [ ! -z "${!key}" ]; then
         value="${!key}"
     elif [ -f "$REPO_ROOT/.ai-config" ]; then
-        value=$(grep "^$key=" "$REPO_ROOT/.ai-config" 2>/dev/null | cut -d'=' -f2)
+        value=$(grep "^$key=" "$REPO_ROOT/.ai-config" 2>/dev/null | sed "s/^$key=//")
     elif [ -f "$HOME/.coderocket/ai-config" ]; then
-        value=$(grep "^$key=" "$HOME/.coderocket/ai-config" 2>/dev/null | cut -d'=' -f2)
+        value=$(grep "^$key=" "$HOME/.coderocket/ai-config" 2>/dev/null | sed "s/^$key=//")
     elif [ -f "$REPO_ROOT/.env" ]; then
-        value=$(grep "^$key=" "$REPO_ROOT/.env" 2>/dev/null | cut -d'=' -f2)
+        value=$(grep "^$key=" "$REPO_ROOT/.env" 2>/dev/null | sed "s/^$key=//")
     fi
 
     if [ -z "$value" ]; then
@@ -82,9 +104,22 @@ if [ -f "$HOME/.profile" ]; then
     source "$HOME/.profile" 2>/dev/null
 fi
 
-# 尝试从项目环境文件加载
+# 尝试从项目环境文件安全加载
 if [ -f "$REPO_ROOT/.env" ]; then
-    source "$REPO_ROOT/.env" 2>/dev/null
+    while read -r line || [ -n "$line" ]; do
+        # 跳过注释和空行
+        [[ \$line =~ ^[[:space:]]*# ]] && continue
+        [[ -z \$line ]] && continue
+        
+        # 分割键值对
+        local key="\${line%%=*}"
+        local value="\${line#*=}"
+        
+        # 只加载特定前缀的环境变量，防止代码注入
+        if [[ \$key =~ ^(AI_|GITLAB_|GEMINI_|CLAUDECODE_|REVIEW_) ]]; then
+            export "\$key=\$value"
+        fi
+    done < "\$REPO_ROOT/.env" 2>/dev/null
 fi
 
 # 查找 pre-commit 脚本
@@ -131,9 +166,22 @@ if [ -f "$HOME/.profile" ]; then
     source "$HOME/.profile" 2>/dev/null
 fi
 
-# 尝试从项目环境文件加载
+# 尝试从项目环境文件安全加载
 if [ -f "$REPO_ROOT/.env" ]; then
-    source "$REPO_ROOT/.env" 2>/dev/null
+    while read -r line || [ -n "$line" ]; do
+        # 跳过注释和空行
+        [[ \$line =~ ^[[:space:]]*# ]] && continue
+        [[ -z \$line ]] && continue
+        
+        # 分割键值对
+        local key="\${line%%=*}"
+        local value="\${line#*=}"
+        
+        # 只加载特定前缀的环境变量，防止代码注入
+        if [[ \$key =~ ^(AI_|GITLAB_|GEMINI_|CLAUDECODE_|REVIEW_) ]]; then
+            export "\$key=\$value"
+        fi
+    done < "\$REPO_ROOT/.env" 2>/dev/null
 fi
 
 # 查找 post-commit 脚本
@@ -182,9 +230,22 @@ if [ -f "$HOME/.profile" ]; then
     source "$HOME/.profile" 2>/dev/null
 fi
 
-# 尝试从项目环境文件加载
+# 尝试从项目环境文件安全加载
 if [ -f "$REPO_ROOT/.env" ]; then
-    source "$REPO_ROOT/.env" 2>/dev/null
+    while read -r line || [ -n "$line" ]; do
+        # 跳过注释和空行
+        [[ \$line =~ ^[[:space:]]*# ]] && continue
+        [[ -z \$line ]] && continue
+        
+        # 分割键值对
+        local key="\${line%%=*}"
+        local value="\${line#*=}"
+        
+        # 只加载特定前缀的环境变量，防止代码注入
+        if [[ \$key =~ ^(AI_|GITLAB_|GEMINI_|CLAUDECODE_|REVIEW_) ]]; then
+            export "\$key=\$value"
+        fi
+    done < "\$REPO_ROOT/.env" 2>/dev/null
 fi
 
 # 查找 pre-push 脚本
@@ -241,12 +302,7 @@ else
         echo "安装 Gemini CLI: npm install -g @google/gemini-cli"
     fi
 
-    if command -v opencode &> /dev/null; then
-        echo -e "${GREEN}✓ OpenCode CLI 已安装${NC}"
-    else
-        echo -e "${YELLOW}⚠ 未检测到 OpenCode CLI${NC}"
-        echo "安装 OpenCode CLI: npm install -g @opencode/cli"
-    fi
+
 
     if command -v claudecode &> /dev/null; then
         echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"

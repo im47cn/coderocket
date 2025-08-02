@@ -17,7 +17,7 @@ get_ai_service()
 ```
 
 **返回值**
-- 字符串: AI服务名称 (`gemini`|`opencode`|`claudecode`)
+- 字符串: AI服务名称 (`gemini`|`claudecode`)
 
 **示例**
 ```bash
@@ -180,27 +180,7 @@ show_config "all"
 - `0`: 调用成功
 - `1`: 调用失败
 
-### OpenCode Service
 
-#### `call_opencode_cli(prompt)`
-调用OpenCode CLI
-
-**参数**
-- `prompt`: 提示信息
-
-**返回值**
-- `0`: 调用成功
-- `1`: 调用失败
-
-#### `call_opencode_api(prompt)`
-调用OpenCode API
-
-**参数**
-- `prompt`: 提示信息
-
-**返回值**
-- `0`: 调用成功
-- `1`: 调用失败
 
 ### ClaudeCode Service
 
@@ -341,11 +321,6 @@ project_id=$(auto_get_project_id)
 #### Gemini
 - `GEMINI_API_KEY`: API密钥
 - `GEMINI_MODEL`: 模型名称 (默认: `gemini-pro`)
-
-#### OpenCode
-- `OPENCODE_API_KEY`: API密钥
-- `OPENCODE_MODEL`: 模型名称 (默认: `opencode-pro`)
-- `OPENCODE_API_URL`: API地址
 
 #### ClaudeCode
 - `CLAUDECODE_API_KEY`: API密钥

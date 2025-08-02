@@ -57,11 +57,7 @@ gemini config
 
 #### 选项B：其他AI服务
 ```bash
-# OpenCode
-npm install -g @opencode/cli
-opencode config
-
-# ClaudeCode  
+# ClaudeCode
 npm install -g @anthropic-ai/claude-code
 claudecode config
 ```
@@ -104,7 +100,6 @@ gemini --version
 echo "测试提示" | gemini
 
 # 测试其他服务
-opencode --version
 claudecode --version
 ```
 
@@ -247,7 +242,7 @@ git push origin feature/team-feature
 ./lib/ai-service-manager.sh status
 
 # 切换服务
-./lib/ai-config.sh set AI_SERVICE opencode
+./lib/ai-config.sh set AI_SERVICE claudecode
 
 # 测试新服务
 ./lib/ai-service-manager.sh test

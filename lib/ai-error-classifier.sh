@@ -72,9 +72,7 @@ classify_ai_error() {
         "gemini")
             classify_gemini_error "$error_output"
             ;;
-        "opencode")
-            classify_opencode_error "$error_output"
-            ;;
+
         "claudecode")
             classify_claudecode_error "$error_output"
             ;;
@@ -116,30 +114,6 @@ classify_gemini_error() {
     
     # 默认为未知错误
     LAST_ERROR_TYPE="$ERROR_UNKNOWN"
-}
-
-# 分类OpenCode CLI错误
-classify_opencode_error() {
-    local error_output=$1
-    
-    # OpenCode特定的错误模式
-    if echo "$error_output" | grep -qi "rate limit\|quota\|429"; then
-        LAST_ERROR_TYPE="$ERROR_RATE_LIMIT"
-        return 0
-    fi
-    
-    if echo "$error_output" | grep -qi "unauthorized\|invalid token\|authentication failed"; then
-        LAST_ERROR_TYPE="$ERROR_AUTH"
-        return 0
-    fi
-    
-    if echo "$error_output" | grep -qi "connection\|network\|timeout"; then
-        LAST_ERROR_TYPE="$ERROR_NETWORK"
-        return 0
-    fi
-    
-    # 使用通用分类
-    classify_generic_error "$error_output"
 }
 
 # 分类ClaudeCode CLI错误
@@ -285,7 +259,7 @@ test_error_classifier() {
     echo "认证错误分类: $result (期望: $ERROR_AUTH)"
     
     # 测试网络错误
-    result=$(classify_ai_error "opencode" 1 "Error: Connection timeout")
+    result=$(classify_ai_error "claudecode" 1 "Error: Connection timeout")
     echo "网络错误分类: $result (期望: $ERROR_NETWORK)"
     
     # 测试CLI未安装

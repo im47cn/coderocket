@@ -30,7 +30,7 @@ CodeRocket 是一个基于多种 AI 服务的智能 Git 提交代码审查工具
 ┌─────────────────────────────────────────────────────────────┐
 │                    服务层 (AI Services)                      │
 │  ┌─────────────┐  ┌─────────────┐  ┌─────────────────────┐  │
-│  │   Gemini    │  │  OpenCode   │  │    ClaudeCode       │  │
+│  │   Gemini    │  │    ClaudeCode       │  │
 │  │   Service   │  │   Service   │  │     Service         │  │
 │  └─────────────┘  └─────────────┘  └─────────────────────┘  │
 └─────────────────────────────────────────────────────────────┘
@@ -92,11 +92,6 @@ CodeRocket 是一个基于多种 AI 服务的智能 Git 提交代码审查工具
 - **API调用**: 直接API调用备用方案
 - **模型支持**: gemini-pro, gemini-pro-vision
 
-#### OpenCode Service
-- **CLI集成**: 使用 `@opencode/cli`
-- **API调用**: RESTful API接口
-- **模型支持**: opencode-pro
-
 #### ClaudeCode Service
 - **CLI集成**: 使用 `@anthropic-ai/claude-code`
 - **API调用**: Claude API接口
@@ -113,11 +108,11 @@ CodeRocket 是一个基于多种 AI 服务的智能 Git 提交代码审查工具
 
 - **配置项**:
   ```bash
-  AI_SERVICE=gemini|opencode|claudecode
+  AI_SERVICE=gemini|claudecode
   AI_TIMEOUT=30
   AI_MAX_RETRIES=3
   GEMINI_API_KEY=xxx
-  OPENCODE_API_KEY=xxx
+
   CLAUDECODE_API_KEY=xxx
   ```
 
@@ -233,7 +228,7 @@ Git Push → 提交历史 → AI生成 → MR内容 → GitLab API
 ## 📚 技术栈
 
 - **脚本语言**: Bash Shell
-- **AI服务**: Gemini, OpenCode, ClaudeCode
+- **AI服务**: Gemini, ClaudeCode
 - **版本控制**: Git Hooks
 - **API集成**: GitLab REST API
 - **配置管理**: 文件系统配置

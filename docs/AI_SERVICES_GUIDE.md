@@ -11,14 +11,7 @@
 - **安装**: `npm install -g @google/gemini-cli`
 - **配置**: 需要 Google AI Studio API 密钥
 
-### 2. OpenCode
-
-- **模型**: OpenCode Pro
-- **特点**: 专注于代码分析和优化
-- **安装**: `npm install -g @opencode/cli`
-- **配置**: 需要 OpenCode API 密钥
-
-### 3. ClaudeCode
+### 2. ClaudeCode
 
 - **模型**: Claude 4 Sonnet
 - **特点**: 优秀的代码审查和建议能力
@@ -37,7 +30,7 @@
 
 # 配置特定服务
 ./lib/ai-config.sh configure gemini
-./lib/ai-config.sh configure opencode
+
 ./lib/ai-config.sh configure claudecode
 ```
 
@@ -47,16 +40,11 @@
 
 ```bash
 # 选择AI服务
-export AI_SERVICE=gemini  # 或 opencode, claudecode
+export AI_SERVICE=gemini  # 或 claudecode
 
 # Gemini 配置
 export GEMINI_API_KEY=your_gemini_api_key
 export GEMINI_MODEL=gemini-pro
-
-# OpenCode 配置
-export OPENCODE_API_KEY=your_opencode_api_key
-export OPENCODE_API_URL=https://api.opencode.com/v1
-export OPENCODE_MODEL=opencode-pro
 
 # ClaudeCode 配置
 export CLAUDECODE_API_KEY=your_claudecode_api_key
@@ -153,7 +141,7 @@ export DEBUG=true
 
 # 重新安装CLI工具
 npm install -g @google/gemini-cli
-npm install -g @opencode/cli
+
 npm install -g @anthropic-ai/claude-code
 ```
 
@@ -172,7 +160,7 @@ npm install -g @anthropic-ai/claude-code
 ```bash
 # 测试网络连接
 curl -I https://aistudio.google.com
-curl -I https://api.opencode.com
+
 curl -I https://api.claudecode.com
 
 # 设置代理（如需要）
@@ -197,13 +185,13 @@ chmod 644 .ai-config
 | 服务 | 响应速度 | 代码理解 | 中文支持 | 成本 |
 |------|----------|----------|----------|------|
 | Gemini | ⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐⭐ | 💰💰 |
-| OpenCode | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | ⭐⭐⭐ | 💰💰💰 |
+
 | ClaudeCode | ⭐⭐⭐ | ⭐⭐⭐⭐⭐ | ⭐⭐⭐⭐ | 💰💰💰💰 |
 
 ## 🔗 相关链接
 
 - [Google AI Studio](https://aistudio.google.com/app/apikey)
-- [OpenCode API 文档](https://docs.opencode.com)
+
 - [ClaudeCode API 文档](https://docs.claudecode.com)
 - [CodeRocket 主文档](../README.md)
 

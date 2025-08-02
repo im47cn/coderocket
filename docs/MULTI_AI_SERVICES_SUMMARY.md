@@ -2,7 +2,7 @@
 
 ## 🎯 项目目标
 
-为 CodeRocket 工具增加对 OpenCode 和 ClaudeCode 的支持，实现多AI服务的统一管理和智能切换。
+为 CodeRocket 工具增加对 ClaudeCode 的支持，实现多AI服务的统一管理和智能切换。
 
 ## ✅ 完成的功能
 
@@ -33,10 +33,7 @@
 ./lib/ai-config.sh show             # 显示当前配置
 ```
 
-### 3. OpenCode 服务集成 (`lib/opencode-service.sh`)
 
-- **CLI集成**: 支持 OpenCode CLI 工具
-- **API调用**: 直接API调用备用方案
 - **参数适配**: 自动适配不同的调用参数
 - **错误处理**: 完善的错误处理和重试机制
 
@@ -75,7 +72,7 @@
 **新增环境变量**:
 ```bash
 # AI服务选择
-AI_SERVICE=gemini|opencode|claudecode
+AI_SERVICE=gemini|claudecode
 
 # 通用配置
 AI_TIMEOUT=30
@@ -84,11 +81,6 @@ AI_MAX_RETRIES=3
 # Gemini配置
 GEMINI_API_KEY=your_key
 GEMINI_MODEL=gemini-pro
-
-# OpenCode配置
-OPENCODE_API_KEY=your_key
-OPENCODE_API_URL=https://api.opencode.com/v1
-OPENCODE_MODEL=opencode-pro
 
 # ClaudeCode配置
 CLAUDECODE_API_KEY=your_key
@@ -139,8 +131,8 @@ CLAUDECODE_MODEL=claude-3-sonnet
 ### 切换AI服务
 
 ```bash
-# 切换到OpenCode
-./lib/ai-config.sh set AI_SERVICE opencode
+# 切换到ClaudeCode
+./lib/ai-config.sh set AI_SERVICE claudecode
 
 # 切换到ClaudeCode
 ./lib/ai-config.sh set AI_SERVICE claudecode
@@ -158,7 +150,7 @@ CLAUDECODE_MODEL=claude-3-sonnet
     ↓
 抽象层 (ai-service-manager.sh)
     ↓
-服务层 (gemini/opencode/claudecode-service.sh)
+服务层 (gemini/claudecode-service.sh)
     ↓
 配置层 (ai-config.sh)
 ```
@@ -204,7 +196,7 @@ CLAUDECODE_MODEL=claude-3-sonnet
 
 成功为 CodeRocket 工具实现了完整的多AI服务支持，包括：
 
-- 🎯 **3个AI服务**: Gemini、OpenCode、ClaudeCode
+- 🎯 **2个AI服务**: Gemini、ClaudeCode
 - 🔧 **4个核心模块**: 服务管理、配置管理、服务集成、测试验证
 - 📚 **完整文档**: 使用指南、API文档、故障排除
 - ✅ **全面测试**: 29个测试用例，100%通过率

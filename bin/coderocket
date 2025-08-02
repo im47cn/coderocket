@@ -24,7 +24,13 @@ fi
 
 # 检查是否在 Git 仓库中
 is_git_repo() {
-    git rev-parse --git-dir > /dev/null 2>&1
+    # 检查是否存在 .git 目录或文件（子模块情况下是文件）
+    if git rev-parse --git-dir > /dev/null 2>&1; then
+        # 进一步验证是否是有效的 Git 仓库
+        git rev-parse --is-inside-work-tree > /dev/null 2>&1
+    else
+        return 1
+    fi
 }
 
 # 显示帮助信息
@@ -135,7 +141,7 @@ config_ai() {
     echo "请编辑配置文件: $INSTALL_DIR/env"
     echo "或设置环境变量："
     echo "  export GEMINI_API_KEY='your-api-key'"
-    echo "  export AI_SERVICE='gemini'  # 或 opencode, claudecode"
+    echo "  export AI_SERVICE='gemini'  # 或 claudecode"
     
     if command -v code &> /dev/null; then
         read -p "是否使用 VS Code 打开配置文件？(y/n): " -n 1 -r

@@ -26,7 +26,7 @@
 
 # 结果示例：
 # Gemini: 平均 18秒
-# OpenCode: 平均 22秒  
+# ClaudeCode: 平均 22秒
 # ClaudeCode: 平均 25秒
 ```
 

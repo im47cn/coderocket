@@ -37,8 +37,8 @@ export AI_MAX_RETRIES=3
 # 重试延迟时间，秒 (默认: 1)
 export AI_RETRY_DELAY=1
 
-# 服务优先级 (默认: "gemini opencode claudecode")
-export AI_SERVICE_PRIORITY="gemini opencode claudecode"
+# 服务优先级 (默认: "gemini claudecode")
+export AI_SERVICE_PRIORITY="gemini claudecode"
 
 # 超时时间，秒 (默认: 30)
 export AI_TIMEOUT=30
@@ -50,7 +50,7 @@ export AI_TIMEOUT=30
 ```bash
 AI_SERVICE=gemini
 AI_AUTO_SWITCH=true
-AI_SERVICE_PRIORITY=gemini opencode claudecode
+AI_SERVICE_PRIORITY=gemini claudecode
 AI_MAX_RETRIES=3
 ```
 
@@ -58,7 +58,7 @@ AI_MAX_RETRIES=3
 ```bash
 AI_SERVICE=gemini
 AI_AUTO_SWITCH=true
-AI_SERVICE_PRIORITY=gemini opencode claudecode
+AI_SERVICE_PRIORITY=gemini claudecode
 AI_MAX_RETRIES=5
 AI_RETRY_DELAY=2
 ```
@@ -81,7 +81,7 @@ export AI_AUTO_SWITCH=false
 coderocket review
 
 # 设置自定义服务优先级
-export AI_SERVICE_PRIORITY="opencode claudecode gemini"
+export AI_SERVICE_PRIORITY="claudecode gemini"
 coderocket review
 ```
 
@@ -107,12 +107,12 @@ coderocket review
 ```bash
 # 推荐配置：安装多个AI服务作为备用
 npm install -g @google/gemini-cli
-npm install -g @opencode/cli
+
 npm install -g @anthropic-ai/claude-code
 
 # 配置API密钥
 export GEMINI_API_KEY="your_gemini_key"
-export OPENCODE_API_KEY="your_opencode_key"
+
 export CLAUDECODE_API_KEY="your_claude_key"
 ```
 

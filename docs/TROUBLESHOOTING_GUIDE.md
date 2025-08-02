@@ -170,7 +170,7 @@ ping google.com
 curl -I https://generativelanguage.googleapis.com
 
 # 4. 配置多个备用服务
-echo "AI_SERVICE_PRIORITY=gemini opencode claudecode" >> .ai-config
+echo "AI_SERVICE_PRIORITY=gemini claudecode" >> .ai-config
 
 # 5. 测试故障转移功能
 ./test-ai-failover.sh

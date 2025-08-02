@@ -34,7 +34,7 @@
 
 #### 🔧 技术实现
 - **新增错误分类器** (`lib/ai-error-classifier.sh`)：
-  - 支持Gemini、OpenCode、ClaudeCode等多种AI服务的错误模式识别
+  - 支持Gemini、ClaudeCode等多种AI服务的错误模式识别
   - 提供结构化的错误分类和处理策略
   - 支持用户友好的错误描述生成
 
@@ -52,7 +52,7 @@
 - `AI_AUTO_SWITCH=true`: 启用/禁用自动切换 (默认启用)
 - `AI_MAX_RETRIES=3`: 最大重试次数
 - `AI_RETRY_DELAY=1`: 重试延迟时间(秒)
-- `AI_SERVICE_PRIORITY="gemini opencode claudecode"`: 服务优先级
+- `AI_SERVICE_PRIORITY="gemini claudecode"`: 服务优先级
 
 #### 📚 文档和测试
 - 新增 `docs/AI_FAILOVER_CONFIG.md`：详细的故障转移配置指南

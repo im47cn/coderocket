@@ -9,7 +9,7 @@
 [![GitHub issues](https://img.shields.io/github/issues/im47cn/coderocket-cli.svg)](https://github.com/im47cn/coderocket-cli/issues)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W71IFTGX)
 
-一个基于多种 AI 服务（Gemini、OpenCode、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
+一个基于多种 AI 服务（Gemini、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
 
 > **项目重命名通知**：CodeRocket 现已更名为 **CodeRocket**！为保持兼容性，原有的 `codereview-cli` 和 `cr` 命令仍可正常使用。
 
@@ -38,7 +38,7 @@
 
 ## 🛠 技术栈
 
-- **AI 引擎**: 多AI服务支持（Gemini、OpenCode、ClaudeCode）
+- **AI 引擎**: 多AI服务支持（Gemini、ClaudeCode）
 - **脚本语言**: Shell Script
 - **版本控制**: Git Hooks (post-commit, pre-push)
 - **文档格式**: Markdown
@@ -100,11 +100,6 @@ chmod +x install.sh
 npm install -g @google/gemini-cli
 ```
 
-**OpenCode (可选)**
-```bash
-npm install -g @opencode/cli
-```
-
 **ClaudeCode (可选)**
 ```bash
 npm install -g @anthropic-ai/claude-code
@@ -118,12 +113,6 @@ npm install -g @anthropic-ai/claude-code
 ```bash
 gemini config
 # 按照提示输入您的 Google AI Studio API 密钥
-```
-
-**OpenCode 配置**
-```bash
-opencode config
-# 或设置环境变量: export OPENCODE_API_KEY='your_key'
 ```
 
 **ClaudeCode 配置**
@@ -406,7 +395,7 @@ git push
 | `AI_TIMEOUT` | AI服务调用超时时间 | `30` |
 | `AI_MAX_RETRIES` | AI服务重试次数 | `3` |
 | `GEMINI_MODEL` | Gemini 模型参数 | `gemini-pro` |
-| `OPENCODE_MODEL` | OpenCode 模型参数 | `opencode-pro` |
+
 | `CLAUDECODE_MODEL` | ClaudeCode 模型参数 | `claude-3-sonnet` |
 | `DEBUG` | 启用调试模式 | `false` |
 
@@ -423,7 +412,7 @@ cp .env.example .env
 **必填环境变量**：
 - `GITLAB_PERSONAL_ACCESS_TOKEN` - GitLab访问令牌（必须）
 - `GEMINI_API_KEY` - Gemini API密钥（如果使用Gemini）
-- `OPENCODE_API_KEY` - OpenCode API密钥（如果使用OpenCode）
+
 - `CLAUDECODE_API_KEY` - ClaudeCode API密钥（如果使用ClaudeCode）
 
 **选填环境变量**：
@@ -435,7 +424,7 @@ cp .env.example .env
 - `AI_MAX_RETRIES` - 重试次数（默认: 3次）
 - `GITLAB_API_URL` - GitLab API地址（默认: https://gitlab.com/api/v4）
 - `GEMINI_MODEL` - Gemini模型（默认: gemini-pro）
-- `OPENCODE_MODEL` - OpenCode模型（默认: opencode-pro）
+
 - `CLAUDECODE_MODEL` - ClaudeCode模型（默认: claude-3-sonnet）
 - `REVIEW_LOGS_DIR` - 审查日志目录（默认: ./review_logs）
 - `DEBUG` - 调试模式（默认: false）
@@ -446,7 +435,7 @@ cp .env.example .env
 
 **方式一：环境变量**
 ```bash
-export AI_SERVICE=gemini  # 或 opencode, claudecode
+export AI_SERVICE=gemini  # 或 claudecode
 ```
 
 **方式二：配置文件**
@@ -551,7 +540,7 @@ YYYYMMDD_HHmm_[状态符号]_[commit_hash前6位]_[简短描述].md
 
 ### AI 驱动的智能分析
 
-- **多AI服务支持**：支持 Gemini、OpenCode、ClaudeCode 等多种AI服务
+- **多AI服务支持**：支持 Gemini、ClaudeCode 等多种AI服务
 - **智能故障转移**：🆕 当AI服务遇到429限流等错误时，自动切换到其他可用服务
 - **深度代码理解**：基于先进 AI 模型的代码分析能力
 - **上下文感知**：理解代码变更的业务逻辑和技术影响
@@ -602,8 +591,7 @@ coderocket setup
 # Gemini 重新配置
 gemini config --reset
 
-# OpenCode 重新配置
-opencode config
+
 
 # ClaudeCode 重新配置
 claudecode config

@@ -16,7 +16,7 @@ GLOBAL_CONFIG="$HOME/.coderocket/ai-config"
 ENV_FILE=".env"
 
 # 支持的AI服务列表
-SUPPORTED_SERVICES=("gemini" "opencode" "claudecode")
+SUPPORTED_SERVICES=("gemini" "claudecode")
 
 # 创建配置目录
 #
@@ -193,14 +193,13 @@ show_config() {
 # 功能: 验证指定AI服务的配置完整性
 # 参数:
 #   $1 - service: AI服务名称 (必需)
-#        支持: "gemini", "opencode", "claudecode"
+#        支持: "gemini", "claudecode"
 # 返回: 0=验证通过, 1=验证失败或不支持的服务
 # 复杂度: O(1) - 常数时间检查
 # 依赖: get_config_value()
 # 调用者: main()
 # 验证规则:
 #   - gemini: 需要 GEMINI_API_KEY
-#   - opencode: 需要 OPENCODE_API_KEY, OPENCODE_API_URL
 #   - claudecode: 需要 CLAUDECODE_API_KEY, CLAUDECODE_API_URL
 # 示例:
 #   validate_service_config "gemini"
@@ -215,18 +214,6 @@ validate_service_config() {
             local api_key=$(get_config_value "GEMINI_API_KEY")
             if [ -z "$api_key" ]; then
                 echo -e "${RED}❌ 缺少 GEMINI_API_KEY${NC}"
-                errors=$((errors + 1))
-            fi
-            ;;
-        "opencode")
-            local api_key=$(get_config_value "OPENCODE_API_KEY")
-            local api_url=$(get_config_value "OPENCODE_API_URL")
-            if [ -z "$api_key" ]; then
-                echo -e "${RED}❌ 缺少 OPENCODE_API_KEY${NC}"
-                errors=$((errors + 1))
-            fi
-            if [ -z "$api_url" ]; then
-                echo -e "${RED}❌ 缺少 OPENCODE_API_URL${NC}"
                 errors=$((errors + 1))
             fi
             ;;
@@ -262,7 +249,7 @@ validate_service_config() {
 # 功能: 通过交互式界面配置指定的AI服务
 # 参数:
 #   $1 - service: AI服务名称 (必需)
-#        支持: "gemini", "opencode", "claudecode"
+#        支持: "gemini", "claudecode"
 #   $2 - scope: 配置范围 (可选, 默认: "project")
 #        - "project": 保存到项目配置
 #        - "global": 保存到全局配置
@@ -292,21 +279,6 @@ configure_service_interactive() {
             read -p "请输入 Gemini Model (默认: gemini-pro): " model
             model=${model:-"gemini-pro"}
             set_config_value "GEMINI_MODEL" "$model" "$scope"
-            ;;
-        "opencode")
-            read -sp "请输入 OpenCode API Key: " api_key
-            echo  # 换行
-            if [ ! -z "$api_key" ]; then
-                set_config_value "OPENCODE_API_KEY" "$api_key" "$scope"
-            fi
-            
-            read -p "请输入 OpenCode API URL (默认: https://api.opencode.com/v1): " api_url
-            api_url=${api_url:-"https://api.opencode.com/v1"}
-            set_config_value "OPENCODE_API_URL" "$api_url" "$scope"
-            
-            read -p "请输入 OpenCode Model (默认: opencode-pro): " model
-            model=${model:-"opencode-pro"}
-            set_config_value "OPENCODE_MODEL" "$model" "$scope"
             ;;
         "claudecode")
             read -sp "请输入 ClaudeCode API Key: " api_key

@@ -84,22 +84,27 @@ check_requirements() {
     # 检查 Node.js
     if ! command -v node &> /dev/null; then
         echo -e "${YELLOW}⚠ Node.js 未安装${NC}"
-        echo "将尝试安装 Node.js..."
-        
-        # 尝试使用不同的包管理器安装 Node.js
+        echo -e "${RED}✗ 请手动安装 Node.js${NC}"
+        echo "安全建议：请使用官方包管理器安装 Node.js："
+        echo ""
         if command -v brew &> /dev/null; then
-            brew install node
+            echo "  brew install node"
         elif command -v apt-get &> /dev/null; then
-            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
-            sudo apt-get install -y nodejs
+            echo "  # 使用官方 APT 仓库安装："
+            echo "  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg"
+            echo "  echo 'deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_lts.x nodistro main' | sudo tee /etc/apt/sources.list.d/nodesource.list"
+            echo "  sudo apt-get update && sudo apt-get install -y nodejs"
         elif command -v yum &> /dev/null; then
-            curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -
-            sudo yum install -y nodejs
+            echo "  # 使用官方 YUM 仓库安装："
+            echo "  sudo yum install -y curl"
+            echo "  curl -fsSL https://rpm.nodesource.com/setup_lts.x | sudo bash -"
+            echo "  sudo yum install -y nodejs"
         else
-            echo -e "${RED}✗ 无法自动安装 Node.js${NC}"
-            echo "请手动安装 Node.js: https://nodejs.org/"
-            exit 1
+            echo "  访问 https://nodejs.org/ 下载适合您系统的安装包"
         fi
+        echo ""
+        echo "安装完成后请重新运行此脚本。"
+        exit 1
     fi
     echo -e "${GREEN}✓ Node.js 已安装${NC}"
     
@@ -107,19 +112,21 @@ check_requirements() {
     if ! command -v python3 &> /dev/null; then
         echo -e "${YELLOW}⚠ Python3 未安装${NC}"
         echo "Python3 是 GitLab API 调用所必需的"
-        
-        # 尝试安装 Python3
+        echo -e "${RED}✗ 请手动安装 Python3${NC}"
+        echo "推荐安装方式："
+        echo ""
         if command -v brew &> /dev/null; then
-            brew install python3
+            echo "  brew install python3"
         elif command -v apt-get &> /dev/null; then
-            sudo apt-get update && sudo apt-get install -y python3
+            echo "  sudo apt-get update && sudo apt-get install -y python3"
         elif command -v yum &> /dev/null; then
-            sudo yum install -y python3
+            echo "  sudo yum install -y python3"
         else
-            echo -e "${RED}✗ 无法自动安装 Python3${NC}"
-            echo "请手动安装 Python3"
-            exit 1
+            echo "  访问 https://www.python.org/downloads/ 下载适合您系统的Python3"
         fi
+        echo ""
+        echo "安装完成后请重新运行此脚本。"
+        exit 1
     fi
     echo -e "${GREEN}✓ Python3 已安装${NC}"
 }
@@ -141,12 +148,12 @@ install_ai_services() {
         fi
     fi
 
-    # 安装 OpenCode CLI (可选)
-    if command -v opencode &> /dev/null; then
-        echo -e "${GREEN}✓ OpenCode CLI 已安装${NC}"
+    # 安装 ClaudeCode CLI (可选)
+    if false; then
+        echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
     else
-        echo -e "${YELLOW}→ OpenCode CLI 未安装 (可选)${NC}"
-        echo "  手动安装: npm install -g @opencode/cli"
+        echo -e "${YELLOW}→ ClaudeCode CLI 未安装 (可选)${NC}"
+
     fi
 
     # 安装 ClaudeCode CLI (可选)
@@ -185,10 +192,21 @@ install_to_directory() {
     # 复制文件（排除.git目录）
     rsync -av --exclude='.git' "$TEMP_DIR"/ "$INSTALL_DIR/"
 
-    # 设置执行权限
-    chmod +x "$INSTALL_DIR/install-hooks.sh"
-    chmod +x "$INSTALL_DIR/githooks/post-commit"
-    chmod +x "$INSTALL_DIR/githooks/pre-push"
+    # 设置必要的执行权限（只对已知的脚本文件）
+    local scripts=(
+        "$INSTALL_DIR/install-hooks.sh"
+        "$INSTALL_DIR/githooks/post-commit"
+        "$INSTALL_DIR/githooks/pre-push"
+        "$INSTALL_DIR/githooks/pre-commit"
+        "$INSTALL_DIR/bin/coderocket"
+    )
+    
+    for script in "${scripts[@]}"; do
+        if [ -f "$script" ]; then
+            chmod +x "$script"
+            echo -e "${GREEN}    ✓ 设置执行权限: $(basename "$script")${NC}"
+        fi
+    done
 
     echo -e "${GREEN}✓ 安装完成${NC}"
 }
@@ -296,8 +314,7 @@ $INSTALL_DIR/install-hooks.sh
         else
             echo "请选择要配置的AI服务："
             echo "1. Gemini - gemini config"
-            echo "2. OpenCode - opencode config"
-            echo "3. ClaudeCode - claudecode config"
+            echo "2. ClaudeCode - claudecode config"
         fi
         ;;
     "timing")
@@ -659,9 +676,18 @@ if [ -f "$HOME/.profile" ]; then
     source "$HOME/.profile" 2>/dev/null
 fi
 
-# 尝试从项目环境文件加载
+# 尝试从项目环境文件安全加载
 if [ -f "$REPO_ROOT/.env" ]; then
-    source "$REPO_ROOT/.env" 2>/dev/null
+    while IFS='=' read -r key value; do
+        # 跳过注释和空行
+        [[ $key =~ ^[[:space:]]*# ]] && continue
+        [[ -z $key ]] && continue
+        
+        # 只加载特定前缀的环境变量，防止代码注入
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|CLAUDECODE_|REVIEW_) ]]; then
+            export "$key=$value"
+        fi
+    done < "$REPO_ROOT/.env" 2>/dev/null
 fi
 
 # 检查提示词文件是否存在（优先使用项目级配置）
@@ -794,7 +820,7 @@ configure_ai_services() {
         # 备用配置方式
         echo "请选择要配置的AI服务："
         echo "1. Gemini (默认)"
-        echo "2. OpenCode"
+        echo "2. ClaudeCode"
         echo "3. ClaudeCode"
         echo "4. 跳过配置"
 
@@ -817,18 +843,12 @@ configure_ai_services() {
                 fi
                 ;;
             2)
-                echo "OpenCode 配置说明："
-                echo "1. 获取 OpenCode API 密钥"
-                echo "2. 运行: opencode config"
-                echo "3. 或设置环境变量: export OPENCODE_API_KEY='your_key'"
-                ;;
-            3)
                 echo "ClaudeCode 配置说明："
                 echo "1. 获取 ClaudeCode API 密钥"
                 echo "2. 运行: claudecode config"
                 echo "3. 或设置环境变量: export CLAUDECODE_API_KEY='your_key'"
                 ;;
-            4)
+            3)
                 echo -e "${YELLOW}⚠ 跳过AI服务配置${NC}"
                 ;;
             *)

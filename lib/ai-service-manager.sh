@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # AI Service Manager - 多AI服务抽象层
-# 支持 Gemini、OpenCode、ClaudeCode 等多种AI服务
+# 支持 Gemini、ClaudeCode 等多种AI服务
 
 # 颜色定义
 RED='\033[0;31m'
@@ -17,7 +17,6 @@ DEFAULT_TIMEOUT=30
 # 导入服务模块
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/ai-config.sh"
-source "$SCRIPT_DIR/opencode-service.sh"
 source "$SCRIPT_DIR/claudecode-service.sh"
 source "$SCRIPT_DIR/ai-error-classifier.sh" 2>/dev/null
 
@@ -30,7 +29,7 @@ AI_RETRY_DELAY=${AI_RETRY_DELAY:-1}
 #
 # 功能: 按优先级获取当前配置的AI服务
 # 参数: 无
-# 返回: AI服务名称 (gemini/opencode/claudecode)
+# 返回: AI服务名称 (gemini/claudecode)
 # 复杂度: O(1) - 常数时间查找
 # 依赖: grep, cut命令
 # 调用者: smart_ai_call(), show_ai_service_status(), main()
@@ -46,10 +45,10 @@ get_ai_service() {
         service="$AI_SERVICE"
     # 2. 检查项目配置文件
     elif [ -f ".ai-config" ]; then
-        service=$(grep "^AI_SERVICE=" .ai-config 2>/dev/null | cut -d'=' -f2)
+        service=$(grep "^AI_SERVICE=" .ai-config 2>/dev/null | sed 's/^AI_SERVICE=//')
     # 3. 检查全局配置文件
     elif [ -f "$HOME/.coderocket/ai-config" ]; then
-        service=$(grep "^AI_SERVICE=" "$HOME/.coderocket/ai-config" 2>/dev/null | cut -d'=' -f2)
+        service=$(grep "^AI_SERVICE=" "$HOME/.coderocket/ai-config" 2>/dev/null | sed 's/^AI_SERVICE=//')
     fi
 
     # 4. 使用默认值 (最低优先级)
@@ -65,7 +64,7 @@ get_ai_service() {
 # 功能: 检查指定AI服务的CLI工具是否已安装
 # 参数:
 #   $1 - service: AI服务名称 (必需)
-#        支持: "gemini", "opencode", "claudecode"
+#        支持: "gemini", "claudecode"
 # 返回: 0=服务可用, 1=服务不可用或不支持
 # 复杂度: O(1) - 常数时间命令检查
 # 依赖: command命令
@@ -82,9 +81,6 @@ check_ai_service_available() {
         "gemini")
             command -v gemini &> /dev/null  # 检查gemini命令是否存在
             ;;
-        "opencode")
-            command -v opencode &> /dev/null  # 检查opencode命令是否存在
-            ;;
         "claudecode")
             command -v claudecode &> /dev/null  # 检查claudecode命令是否存在
             ;;
@@ -100,7 +96,7 @@ check_ai_service_available() {
 # 功能: 获取指定AI服务的安装命令字符串
 # 参数:
 #   $1 - service: AI服务名称 (必需)
-#        支持: "gemini", "opencode", "claudecode"
+#        支持: "gemini", "claudecode"
 # 返回: 安装命令字符串，未知服务返回"未知服务"
 # 复杂度: O(1) - 常数时间查找
 # 依赖: 无
@@ -116,9 +112,6 @@ get_install_command() {
         "gemini")
             echo "npm install -g @google/gemini-cli"  # Google Gemini CLI
             ;;
-        "opencode")
-            echo "npm install -g @opencode/cli"  # OpenCode CLI
-            ;;
         "claudecode")
             echo "npm install -g @anthropic-ai/claude-code"  # ClaudeCode CLI
             ;;
@@ -133,7 +126,7 @@ get_install_command() {
 # 功能: 获取指定AI服务的配置命令字符串
 # 参数:
 #   $1 - service: AI服务名称 (必需)
-#        支持: "gemini", "opencode", "claudecode"
+#        支持: "gemini", "claudecode"
 # 返回: 配置命令字符串，未知服务返回"未知服务"
 # 复杂度: O(1) - 常数时间查找
 # 依赖: 无
@@ -149,9 +142,7 @@ get_config_command() {
         "gemini")
             echo "gemini config"  # Gemini配置命令
             ;;
-        "opencode")
-            echo "opencode config"  # OpenCode配置命令
-            ;;
+
         "claudecode")
             echo "claudecode config"  # ClaudeCode配置命令
             ;;
@@ -170,7 +161,7 @@ get_config_command() {
 #   $3 - additional_prompt: 附加提示词 (必需)
 # 返回: 0=成功, 1=文件不存在或服务不支持
 # 复杂度: O(n) - n为提示词文件大小
-# 依赖: cat, gemini命令, opencode_code_review(), claudecode_code_review()
+# 依赖: cat, gemini命令, claudecode_code_review()
 # 调用者: Git hooks (post-commit)
 # 流程: 验证文件 -> 根据服务类型调用相应函数
 # 示例:
@@ -190,10 +181,6 @@ call_ai_for_review() {
         "gemini")
             # 使用管道将文件内容传递给gemini CLI
             cat "$prompt_file" | gemini -p "$additional_prompt" -y
-            ;;
-        "opencode")
-            # 调用OpenCode服务的代码审查函数
-            opencode_code_review "$prompt_file" "$additional_prompt"
             ;;
         "claudecode")
             # 调用ClaudeCode服务的代码审查函数
@@ -258,10 +245,6 @@ intelligent_ai_review() {
                 result=$(cat "$prompt_file" | gemini -p "$additional_prompt" -y 2>&1)
                 exit_code=$?
                 ;;
-            "opencode")
-                result=$(opencode_code_review "$prompt_file" "$additional_prompt" 2>&1)
-                exit_code=$?
-                ;;
             "claudecode")
                 result=$(claudecode_code_review "$prompt_file" "$additional_prompt" 2>&1)
                 exit_code=$?
@@ -302,10 +285,6 @@ intelligent_ai_review() {
                         result=$(cat "$prompt_file" | gemini -p "$additional_prompt" -y 2>&1)
                         exit_code=$?
                         ;;
-                    "opencode")
-                        result=$(opencode_code_review "$prompt_file" "$additional_prompt" 2>&1)
-                        exit_code=$?
-                        ;;
                     "claudecode")
                         result=$(claudecode_code_review "$prompt_file" "$additional_prompt" 2>&1)
                         exit_code=$?
@@ -343,7 +322,7 @@ intelligent_ai_review() {
 # 返回: 0=成功, 1=服务不支持
 # 输出: 生成的文本内容到stdout
 # 复杂度: O(n) - n为提示词长度，实际受AI服务响应时间影响
-# 依赖: echo, timeout, gemini命令, call_opencode_api(), call_claudecode_api()
+# 依赖: echo, timeout, gemini命令, call_claudecode_api()
 # 调用者: smart_ai_call()
 # 超时处理: 使用timeout命令防止长时间等待
 # 示例:
@@ -357,10 +336,6 @@ call_ai_for_generation() {
         "gemini")
             # 使用timeout防止长时间等待，重定向错误输出
             echo "$prompt" | timeout "$timeout" gemini -y 2>/dev/null
-            ;;
-        "opencode")
-            # 调用OpenCode API函数
-            call_opencode_api "$prompt" "$timeout"
             ;;
         "claudecode")
             # 调用ClaudeCode API函数
@@ -400,11 +375,6 @@ call_ai_with_error_handling() {
         "gemini")
             # 捕获stdout和stderr
             echo "$prompt" | timeout "$timeout" gemini -y >"$temp_stdout" 2>"$temp_stderr"
-            exit_code=$?
-            ;;
-        "opencode")
-            # 调用OpenCode API函数，捕获输出
-            call_opencode_api "$prompt" "$timeout" >"$temp_stdout" 2>"$temp_stderr"
             exit_code=$?
             ;;
         "claudecode")
@@ -448,7 +418,7 @@ call_ai_with_error_handling() {
 get_available_services() {
     local primary_service=${1:-$(get_ai_service)}
     local available_services=()
-    local all_services=("gemini" "opencode" "claudecode")
+    local all_services=("gemini" "claudecode")
 
     # 首先添加主要服务（如果可用）
     if check_ai_service_available "$primary_service"; then
@@ -493,7 +463,7 @@ get_service_priority() {
         echo "$priority_config"
     else
         # 默认优先级
-        echo "gemini opencode claudecode"
+        echo "gemini claudecode"
     fi
 }
 
@@ -702,7 +672,7 @@ show_ai_service_status() {
     echo ""
 
     # 检查各个服务的可用性
-    local services=("gemini" "opencode" "claudecode")
+    local services=("gemini" "claudecode")
     for service in "${services[@]}"; do
         if check_ai_service_available "$service"; then
             echo -e "  ${GREEN}✓ $service${NC} - 已安装"
@@ -718,7 +688,7 @@ show_ai_service_status() {
 # 功能: 设置当前使用的AI服务
 # 参数:
 #   $1 - service: AI服务名称 (必需)
-#        支持: "gemini", "opencode", "claudecode"
+#        支持: "gemini", "claudecode"
 #   $2 - scope: 配置范围 (可选, 默认: "project")
 #        - "project": 保存到项目配置文件
 #        - "global": 保存到全局配置文件
@@ -729,18 +699,18 @@ show_ai_service_status() {
 # 配置文件: 项目级(.ai-config) 或 全局级(~/.coderocket/ai-config)
 # 示例:
 #   set_ai_service "gemini" "project"
-#   set_ai_service "opencode" "global"
+#   set_ai_service "claudecode" "global"
 set_ai_service() {
     local service=$1
     local scope=${2:-"project"}  # project 或 global
 
     # 验证服务名称
     case "$service" in
-        "gemini"|"opencode"|"claudecode")
+        "gemini"|"claudecode")
             ;;
         *)
             echo -e "${RED}❌ 不支持的AI服务: $service${NC}"
-            echo "支持的服务: gemini, opencode, claudecode"
+            echo "支持的服务: gemini, claudecode"
             return 1
             ;;
     esac

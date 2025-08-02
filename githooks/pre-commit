@@ -21,7 +21,7 @@ if [ -f "$REPO_ROOT/.env" ]; then
         [[ -z $key ]] && continue
 
         # 只加载AI和GitLab相关的环境变量
-        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_|REVIEW_) ]]; then
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|CLAUDECODE_|REVIEW_) ]]; then
             export "$key=$value"
         fi
     done < "$REPO_ROOT/.env" 2>/dev/null
@@ -33,7 +33,7 @@ if [ -f "$HOME/.coderocket/env" ]; then
         [[ $key =~ ^[[:space:]]*# ]] && continue
         [[ -z $key ]] && continue
 
-        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|OPENCODE_|CLAUDECODE_|REVIEW_) ]]; then
+        if [[ $key =~ ^(AI_|GITLAB_|GEMINI_|CLAUDECODE_|REVIEW_) ]]; then
             export "$key=$value"
         fi
     done < "$HOME/.coderocket/env" 2>/dev/null

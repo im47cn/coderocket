@@ -18,7 +18,7 @@ NC='\033[0m' # No Color
 # 返回: 无 (直接输出到stdout)
 # 复杂度: O(1) - 常数时间模式匹配
 # 依赖: bash正则表达式匹配
-# 调用者: opencode_generate_mr_title(), claudecode_generate_mr_title()
+# 调用者: claudecode_generate_mr_title()
 # 模式匹配: 支持feature/, fix/, hotfix/, refactor/, docs/, test/前缀
 # 示例:
 #   generate_fallback_mr_title "feature/user-login"  # 输出: "✨ Feature: user-login"
@@ -53,7 +53,7 @@ generate_fallback_mr_title() {
 # 返回: 无 (直接输出到stdout)
 # 复杂度: O(n) - n为提交数量
 # 依赖: echo命令, while循环, IFS分隔符处理
-# 调用者: opencode_generate_mr_description(), claudecode_generate_mr_description()
+# 调用者: claudecode_generate_mr_description()
 # 输出格式: Markdown格式的MR描述，包含变更概述和检查清单
 # 示例:
 #   generate_fallback_mr_description "abc123|feat: add login|user|2024-01-01" "1"
@@ -91,7 +91,7 @@ generate_fallback_mr_description() {
 # 返回: 无 (直接输出到stdout)
 # 复杂度: O(1) - 常数时间模板生成
 # 依赖: cat命令, here document (<<EOF)
-# 调用者: opencode_generate_mr_title(), claudecode_generate_mr_title()
+# 调用者: claudecode_generate_mr_title()
 # 输出格式: 结构化的AI提示词，包含要求和示例
 # 提示词要求: 中文、50字符限制、emoji支持、概括性
 # 示例:
@@ -123,7 +123,7 @@ EOF
 # 返回: 无 (直接输出到stdout)
 # 复杂度: O(1) - 常数时间模板生成
 # 依赖: cat命令, here document (<<EOF)
-# 调用者: opencode_generate_mr_description(), claudecode_generate_mr_description()
+# 调用者: claudecode_generate_mr_description()
 # 输出格式: 结构化的AI提示词，包含格式要求和模板
 # 提示词要求: 中文、结构化、概括性、审查者友好
 # 示例:
@@ -164,7 +164,7 @@ EOF
 # 输出: 清理后的标题到stdout
 # 复杂度: O(n) - n为标题长度
 # 依赖: echo, head, sed命令
-# 调用者: opencode_generate_mr_title(), claudecode_generate_mr_title()
+# 调用者: claudecode_generate_mr_title()
 # 处理逻辑: 取首行 -> 去除首尾空白 -> 长度检查 -> 截断处理 -> 空值检查
 # 示例:
 #   clean_title=$(clean_and_validate_title "  很长的标题内容...  " 20)

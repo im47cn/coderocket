@@ -10,7 +10,7 @@
    - 影响：版本更新时需要手动修改多处
 
 2. **API URL 中的版本号硬编码** ⚠️
-   - `lib/opencode-service.sh`：`DEFAULT_OPENCODE_API_URL="https://api.opencode.com/v1"`
+
    - `lib/claudecode-service.sh`：`DEFAULT_CLAUDECODE_API_URL="https://api.claudecode.com/v1"`
    - `lib/claudecode-service.sh`：`anthropic-version: 2023-06-01`
    - 影响：API版本升级时需要修改代码
@@ -49,7 +49,7 @@
 - **提供获取函数**
 
 **支持的API配置：**
-- OpenCode API: `https://api.opencode.com/v1`
+
 - ClaudeCode API: `https://api.claudecode.com/v1`
 - Anthropic Version: `2023-06-01`
 - GitLab API: `https://gitlab.com/api/v4`
@@ -68,11 +68,11 @@ echo "CodeRocket v$(get_version)"
 #### 服务模块修复
 ```bash
 # 修复前
-DEFAULT_OPENCODE_API_URL="https://api.opencode.com/v1"
+DEFAULT_CLAUDECODE_API_URL="https://api.claudecode.com/v1"
 
 # 修复后
-get_default_opencode_api_url() {
-    get_opencode_api_url
+get_default_claudecode_api_url() {
+    get_claudecode_api_url
 }
 ```
 
@@ -133,7 +133,7 @@ git tag v1.1.0
 ### API版本自定义
 ```bash
 # 环境变量方式
-export OPENCODE_API_VERSION="v2"
+export CLAUDECODE_API_VERSION="v2"
 export CLAUDECODE_API_BASE="https://custom.api.com"
 
 # 验证配置
