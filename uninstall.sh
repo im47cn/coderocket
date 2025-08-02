@@ -619,47 +619,50 @@ main() {
 # 错误处理
 trap 'echo -e "${RED}卸载过程中发生错误${NC}"; exit 1' ERR
 
-# 检查参数
-case "${1:-}" in
-    "--help"|"-h")
-        echo "CodeRocket CLI 卸载脚本"
-        echo ""
-        echo "用法: $0 [选项]"
-        echo ""
-        echo "选项:"
-        echo "  --help, -h     显示此帮助信息"
-        echo "  --force        强制卸载，不询问确认"
-        echo ""
-        echo "此脚本将完全移除 CodeRocket CLI 及其所有组件，包括："
-        echo "• 安装目录 (~/.coderocket)"
-        echo "• 全局和用户命令"
-        echo "• Shell 配置中的 PATH 设置"
-        echo "• Git 模板和 hooks"
-        echo "• 残留的配置和日志文件"
-        exit 0
-        ;;
-    "--force")
-        # 跳过确认，直接卸载
-        show_uninstall_banner
-        check_installation
-        echo -e "\n${YELLOW}强制卸载模式，跳过确认...${NC}"
-        echo -e "\n${BLUE}🚀 开始卸载 CodeRocket CLI...${NC}"
-        remove_install_directory
-        remove_global_commands
-        remove_user_commands
-        clean_shell_config
-        remove_git_templates
-        clean_project_hooks
-        clean_other_files
-        show_completion_message
-        ;;
-    "")
-        # 正常卸载流程
-        main
-        ;;
-    *)
-        echo -e "${RED}错误：未知参数 '$1'${NC}"
-        echo "使用 '$0 --help' 查看帮助信息"
-        exit 1
-        ;;
-esac
+# 只在直接执行时运行主逻辑（不是被 source 时）
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    # 检查参数
+    case "${1:-}" in
+        "--help"|"-h")
+            echo "CodeRocket CLI 卸载脚本"
+            echo ""
+            echo "用法: $0 [选项]"
+            echo ""
+            echo "选项:"
+            echo "  --help, -h     显示此帮助信息"
+            echo "  --force        强制卸载，不询问确认"
+            echo ""
+            echo "此脚本将完全移除 CodeRocket CLI 及其所有组件，包括："
+            echo "• 安装目录 (~/.coderocket)"
+            echo "• 全局和用户命令"
+            echo "• Shell 配置中的 PATH 设置"
+            echo "• Git 模板和 hooks"
+            echo "• 残留的配置和日志文件"
+            exit 0
+            ;;
+        "--force")
+            # 跳过确认，直接卸载
+            show_uninstall_banner
+            check_installation
+            echo -e "\n${YELLOW}强制卸载模式，跳过确认...${NC}"
+            echo -e "\n${BLUE}🚀 开始卸载 CodeRocket CLI...${NC}"
+            remove_install_directory
+            remove_global_commands
+            remove_user_commands
+            clean_shell_config
+            remove_git_templates
+            clean_project_hooks
+            clean_other_files
+            show_completion_message
+            ;;
+        "")
+            # 正常卸载流程
+            main
+            ;;
+        *)
+            echo -e "${RED}错误：未知参数 '$1'${NC}"
+            echo "使用 '$0 --help' 查看帮助信息"
+            exit 1
+            ;;
+    esac
+fi
