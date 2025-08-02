@@ -40,7 +40,7 @@ get_claudecode_config() {
 
 # 检查ClaudeCode CLI是否可用
 check_claudecode_cli() {
-    if command -v claudecode &> /dev/null; then
+    if command -v claude &> /dev/null; then
         return 0
     else
         return 1
@@ -86,8 +86,8 @@ configure_claudecode_api() {
     
     # 配置ClaudeCode CLI
     if check_claudecode_cli; then
-        claudecode config set api_key "$api_key"
-        claudecode config set api_url "$api_url"
+        claude config set api_key "$api_key"
+        claude config set api_url "$api_url"
         echo -e "${GREEN}✓ ClaudeCode API 配置完成${NC}"
         return 0
     else
@@ -111,7 +111,7 @@ call_claudecode_api() {
     
     # 如果有CLI工具，优先使用CLI
     if check_claudecode_cli; then
-        echo "$prompt" | timeout "$timeout" claudecode chat --model "$model" --yes 2>/dev/null
+        echo "$prompt" | timeout "$timeout" claude chat --model "$model" --yes 2>/dev/null
         return $?
     fi
     

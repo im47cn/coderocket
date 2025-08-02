@@ -149,7 +149,7 @@ install_ai_services() {
     fi
 
     # 安装 ClaudeCode CLI (可选)
-    if command -v claudecode &> /dev/null; then
+    if command -v claude &> /dev/null; then
         echo -e "${GREEN}✓ ClaudeCode CLI 已安装${NC}"
     else
         echo -e "${YELLOW}→ ClaudeCode CLI 未安装 (可选)${NC}"
@@ -306,7 +306,7 @@ $INSTALL_DIR/install-hooks.sh
         else
             echo "请选择要配置的AI服务："
             echo "1. Gemini - gemini config"
-            echo "2. ClaudeCode - claudecode config"
+            echo "2. ClaudeCode - claude config"
         fi
         ;;
     "timing")
@@ -836,7 +836,7 @@ configure_ai_services() {
             2)
                 echo "ClaudeCode 配置说明："
                 echo "1. 获取 ClaudeCode API 密钥"
-                echo "2. 运行: claudecode config"
+                echo "2. 运行: claude config"
                 echo "3. 或设置环境变量: export CLAUDECODE_API_KEY='your_key'"
                 ;;
             3)
