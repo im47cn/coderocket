@@ -400,23 +400,81 @@ remove_git_templates() {
     fi
 }
 
-# 扫描并清理项目 hooks
+# 备份项目hooks
+backup_project_hooks() {
+    local project_dir="$1"
+    local hooks_dir="$project_dir/.git/hooks"
+    local backup_dir="$project_dir/.git/hooks.backup.coderocket.$(date +%Y%m%d_%H%M%S)"
+
+    if [ ! -d "$hooks_dir" ]; then
+        return 1
+    fi
+
+    # 只备份包含 CodeRocket 的 hooks
+    local has_coderocket_hooks=false
+    for hook in "$hooks_dir"/*; do
+        if [ -f "$hook" ] && grep -q "CodeRocket\|coderocket" "$hook" 2>/dev/null; then
+            has_coderocket_hooks=true
+            break
+        fi
+    done
+
+    if [ "$has_coderocket_hooks" = false ]; then
+        return 1
+    fi
+
+    # 创建备份目录
+    if mkdir -p "$backup_dir" 2>/dev/null; then
+        # 复制所有 hooks（保持权限）
+        for hook in "$hooks_dir"/*; do
+            if [ -f "$hook" ]; then
+                cp -p "$hook" "$backup_dir/" 2>/dev/null || true
+            fi
+        done
+        echo "$backup_dir"
+        return 0
+    else
+        return 1
+    fi
+}
+
+# 扫描并清理项目 hooks（增强版）
 clean_project_hooks() {
     echo -e "\n${BLUE}🔍 扫描项目 Git hooks...${NC}"
 
     # 询问是否扫描项目 hooks
     echo -e "${YELLOW}是否扫描并清理项目中的 CodeRocket Git hooks？${NC}"
-    echo "这将搜索常见的项目目录并移除 CodeRocket 相关的 hooks"
+    echo "这将搜索项目目录并移除 CodeRocket 相关的 hooks"
     echo ""
-    read -p "扫描项目 hooks？(y/N): " -n 1 -r
+    echo -e "${CYAN}可选操作模式：${NC}"
+    echo "  1) 自动搜索常见目录"
+    echo "  2) 手动指定项目路径"
+    echo "  3) 跳过项目 hooks 清理"
+    echo ""
+    read -p "请选择操作模式 (1/2/3): " -n 1 -r
     echo
 
-    if [[ ! $REPLY =~ ^[Yy]$ ]]; then
-        echo -e "${BLUE}跳过项目 hooks 清理${NC}"
-        return 0
-    fi
+    case $REPLY in
+        1)
+            echo -e "${BLUE}选择：自动搜索模式${NC}"
+            clean_project_hooks_auto
+            ;;
+        2)
+            echo -e "${BLUE}选择：手动指定模式${NC}"
+            clean_project_hooks_manual
+            ;;
+        3|*)
+            echo -e "${BLUE}跳过项目 hooks 清理${NC}"
+            return 0
+            ;;
+    esac
+}
 
-    # 搜索可能的项目目录
+# 自动搜索并清理项目hooks
+clean_project_hooks_auto() {
+    echo -e "${YELLOW}  自动搜索项目目录...${NC}"
+
+    # 扩展的搜索目录列表
     local search_dirs=(
         "$HOME/Projects"
         "$HOME/projects"
@@ -428,21 +486,44 @@ clean_project_hooks() {
         "$HOME/repos"
         "$HOME/Documents/Projects"
         "$HOME/Documents/projects"
+        "$HOME/Desktop"
+        "$HOME/Downloads"
+        "/Users/Shared"
+        "$(pwd)"  # 当前目录
     )
 
-    local found_projects=()
-    local cleaned_projects=0
+    # 允许用户添加自定义搜索目录
+    echo ""
+    echo -e "${CYAN}是否添加自定义搜索目录？${NC}"
+    read -p "输入额外的搜索路径（回车跳过）: " custom_dir
+    if [ -n "$custom_dir" ] && [ -d "$custom_dir" ]; then
+        search_dirs+=("$custom_dir")
+        echo -e "${GREEN}  ✓ 已添加: $custom_dir${NC}"
+    fi
 
-    echo -e "${YELLOW}  搜索项目目录...${NC}"
+    local found_projects=()
+    local search_errors=()
+    local total_searched=0
+
+    echo -e "\n${YELLOW}  开始搜索项目...${NC}"
 
     for search_dir in "${search_dirs[@]}"; do
         if [ -d "$search_dir" ]; then
             echo -e "${CYAN}    搜索: $search_dir${NC}"
 
+            # 使用 timeout 防止搜索时间过长
+            local search_timeout=30  # 30秒超时
+
             # 查找 Git 仓库（限制深度避免搜索太久）
             while IFS= read -r -d '' git_dir; do
                 local project_dir=$(dirname "$git_dir")
                 local hooks_dir="$git_dir/hooks"
+                total_searched=$((total_searched + 1))
+
+                # 显示搜索进度（每10个项目显示一次）
+                if [ $((total_searched % 10)) -eq 0 ]; then
+                    echo -e "${CYAN}      已搜索 $total_searched 个仓库...${NC}"
+                fi
 
                 # 检查是否有 CodeRocket hooks
                 local has_coderocket_hooks=false
@@ -457,55 +538,319 @@ clean_project_hooks() {
 
                 if [ "$has_coderocket_hooks" = true ]; then
                     found_projects+=("$project_dir")
+                    echo -e "${GREEN}      ✓ 发现: $(basename "$project_dir")${NC}"
                 fi
 
-            done < <(find "$search_dir" -maxdepth 3 -name ".git" -type d -print0 2>/dev/null)
+            done < <(timeout $search_timeout find "$search_dir" -maxdepth 3 -name ".git" -type d -print0 2>/dev/null || echo "")
+
+            # 检查搜索是否超时
+            if [ $? -eq 124 ]; then
+                search_errors+=("$search_dir (搜索超时)")
+                echo -e "${YELLOW}      ⚠️ 搜索超时: $search_dir${NC}"
+            fi
+        else
+            echo -e "${YELLOW}    跳过不存在的目录: $search_dir${NC}"
         fi
     done
+
+    echo -e "${CYAN}  搜索完成: 检查了 $total_searched 个 Git 仓库${NC}"
+
+    # 显示搜索错误（如果有）
+    if [ ${#search_errors[@]} -gt 0 ]; then
+        echo -e "\n${YELLOW}⚠️ 搜索警告：${NC}"
+        for error in "${search_errors[@]}"; do
+            echo "  • $error"
+        done
+    fi
 
     if [ ${#found_projects[@]} -eq 0 ]; then
         echo -e "${GREEN}  ✓ 未发现包含 CodeRocket hooks 的项目${NC}"
         return 0
     fi
 
-    echo -e "\n${YELLOW}发现 ${#found_projects[@]} 个包含 CodeRocket hooks 的项目：${NC}"
-    for project in "${found_projects[@]}"; do
-        echo "  • $(basename "$project") ($project)"
+    # 显示发现的项目
+    echo -e "\n${YELLOW}📋 发现 ${#found_projects[@]} 个包含 CodeRocket hooks 的项目：${NC}"
+    for i in "${!found_projects[@]}"; do
+        local project="${found_projects[$i]}"
+        local project_name=$(basename "$project")
+        local hooks_count=$(find "$project/.git/hooks" -type f -exec grep -l "CodeRocket\|coderocket" {} \; 2>/dev/null | wc -l)
+        echo "  $((i+1)). $project_name ($hooks_count 个 hooks) - $project"
+    done
+
+    # 提供清理选项
+    echo ""
+    echo -e "${CYAN}清理选项：${NC}"
+    echo "  1) 全部清理（推荐）"
+    echo "  2) 逐个选择清理"
+    echo "  3) 备份后清理"
+    echo "  4) 跳过清理"
+    echo ""
+    read -p "请选择清理方式 (1/2/3/4): " -n 1 -r
+    echo
+
+    case $REPLY in
+        1)
+            echo -e "${BLUE}选择：全部清理${NC}"
+            process_projects_batch "${found_projects[@]}"
+            ;;
+        2)
+            echo -e "${BLUE}选择：逐个选择清理${NC}"
+            process_projects_selective "${found_projects[@]}"
+            ;;
+        3)
+            echo -e "${BLUE}选择：备份后清理${NC}"
+            process_projects_with_backup "${found_projects[@]}"
+            ;;
+        4|*)
+            echo -e "${BLUE}跳过项目 hooks 清理${NC}"
+            return 0
+            ;;
+    esac
+}
+
+# 批量处理项目hooks
+process_projects_batch() {
+    local projects=("$@")
+    local cleaned_projects=0
+    local failed_projects=0
+
+    echo -e "\n${BLUE}🚀 开始批量清理 ${#projects[@]} 个项目...${NC}"
+
+    for i in "${!projects[@]}"; do
+        local project="${projects[$i]}"
+        local project_name=$(basename "$project")
+        local progress=$((i + 1))
+
+        echo -e "\n${CYAN}[$progress/${#projects[@]}] 清理项目: $project_name${NC}"
+
+        if clean_single_project "$project"; then
+            cleaned_projects=$((cleaned_projects + 1))
+        else
+            failed_projects=$((failed_projects + 1))
+            echo -e "${RED}    ✗ 清理失败${NC}"
+        fi
+    done
+
+    echo -e "\n${GREEN}📊 批量清理完成：${NC}"
+    echo "  • ✅ 成功清理: $cleaned_projects 个项目"
+    echo "  • ❌ 清理失败: $failed_projects 个项目"
+}
+
+# 选择性处理项目hooks
+process_projects_selective() {
+    local projects=("$@")
+    local cleaned_projects=0
+    local skipped_projects=0
+
+    echo -e "\n${BLUE}🎯 逐个选择清理模式${NC}"
+
+    for i in "${!projects[@]}"; do
+        local project="${projects[$i]}"
+        local project_name=$(basename "$project")
+        local hooks_count=$(find "$project/.git/hooks" -type f -exec grep -l "CodeRocket\|coderocket" {} \; 2>/dev/null | wc -l)
+
+        echo -e "\n${YELLOW}项目 $((i+1))/${#projects[@]}: $project_name${NC}"
+        echo "  路径: $project"
+        echo "  CodeRocket hooks: $hooks_count 个"
+
+        # 显示具体的hooks
+        echo "  包含的 hooks:"
+        find "$project/.git/hooks" -type f -exec grep -l "CodeRocket\|coderocket" {} \; 2>/dev/null | while read hook; do
+            echo "    • $(basename "$hook")"
+        done
+
+        echo ""
+        read -p "  是否清理此项目的 hooks？(y/N/q): " -n 1 -r
+        echo
+
+        case $REPLY in
+            [Yy])
+                if clean_single_project "$project"; then
+                    cleaned_projects=$((cleaned_projects + 1))
+                else
+                    echo -e "${RED}    ✗ 清理失败${NC}"
+                fi
+                ;;
+            [Qq])
+                echo -e "${BLUE}    用户退出选择模式${NC}"
+                break
+                ;;
+            *)
+                echo -e "${BLUE}    跳过此项目${NC}"
+                skipped_projects=$((skipped_projects + 1))
+                ;;
+        esac
+    done
+
+    echo -e "\n${GREEN}📊 选择性清理完成：${NC}"
+    echo "  • ✅ 清理项目: $cleaned_projects 个"
+    echo "  • ⏭️ 跳过项目: $skipped_projects 个"
+}
+
+# 备份后处理项目hooks
+process_projects_with_backup() {
+    local projects=("$@")
+    local cleaned_projects=0
+    local backup_failed=0
+
+    echo -e "\n${BLUE}💾 备份后清理模式${NC}"
+    echo -e "${YELLOW}将为每个项目创建 hooks 备份${NC}"
+
+    for i in "${!projects[@]}"; do
+        local project="${projects[$i]}"
+        local project_name=$(basename "$project")
+        local progress=$((i + 1))
+
+        echo -e "\n${CYAN}[$progress/${#projects[@]}] 处理项目: $project_name${NC}"
+
+        # 创建备份
+        local backup_dir=$(backup_project_hooks "$project")
+        if [ $? -eq 0 ] && [ -n "$backup_dir" ]; then
+            echo -e "${GREEN}    ✓ 备份创建: $backup_dir${NC}"
+
+            # 清理hooks
+            if clean_single_project "$project"; then
+                cleaned_projects=$((cleaned_projects + 1))
+                echo -e "${GREEN}    ✓ 清理完成，备份已保存${NC}"
+            else
+                echo -e "${RED}    ✗ 清理失败，但备份已保存${NC}"
+            fi
+        else
+            echo -e "${RED}    ✗ 备份失败，跳过清理${NC}"
+            backup_failed=$((backup_failed + 1))
+        fi
+    done
+
+    echo -e "\n${GREEN}📊 备份清理完成：${NC}"
+    echo "  • ✅ 成功处理: $cleaned_projects 个项目"
+    echo "  • ❌ 备份失败: $backup_failed 个项目"
+    echo -e "\n${CYAN}💡 提示：备份文件位于各项目的 .git/hooks.backup.coderocket.* 目录${NC}"
+}
+
+# 清理单个项目的hooks
+clean_single_project() {
+    local project="$1"
+    local hooks_dir="$project/.git/hooks"
+    local project_name=$(basename "$project")
+    local removed_hooks=0
+    local failed_hooks=0
+
+    if [ ! -d "$hooks_dir" ]; then
+        echo -e "${YELLOW}    ⚠️ hooks 目录不存在${NC}"
+        return 1
+    fi
+
+    # 清理 CodeRocket hooks
+    for hook in "$hooks_dir"/*; do
+        if [ -f "$hook" ] && grep -q "CodeRocket\|coderocket" "$hook" 2>/dev/null; then
+            local hook_name=$(basename "$hook")
+
+            # 尝试删除hook
+            if rm -f "$hook" 2>/dev/null; then
+                echo -e "${GREEN}      ✓ 删除 hook: $hook_name${NC}"
+                removed_hooks=$((removed_hooks + 1))
+            else
+                echo -e "${RED}      ✗ 删除失败: $hook_name (权限不足?)${NC}"
+                failed_hooks=$((failed_hooks + 1))
+            fi
+        fi
+    done
+
+    # 检查是否还有其他 CodeRocket 相关文件
+    local coderocket_files=$(find "$hooks_dir" -name "*coderocket*" -o -name "*CodeRocket*" 2>/dev/null | wc -l)
+    if [ $coderocket_files -gt 0 ]; then
+        echo -e "${YELLOW}      ⚠️ 发现 $coderocket_files 个其他 CodeRocket 相关文件${NC}"
+        find "$hooks_dir" -name "*coderocket*" -o -name "*CodeRocket*" 2>/dev/null | while read file; do
+            echo "        • $(basename "$file")"
+        done
+    fi
+
+    if [ $removed_hooks -gt 0 ]; then
+        echo -e "${GREEN}    ✅ 清理完成: 删除 $removed_hooks 个 hooks${NC}"
+        if [ $failed_hooks -gt 0 ]; then
+            echo -e "${YELLOW}    ⚠️ 部分失败: $failed_hooks 个 hooks 删除失败${NC}"
+        fi
+        return 0
+    elif [ $failed_hooks -gt 0 ]; then
+        echo -e "${RED}    ❌ 清理失败: $failed_hooks 个 hooks 无法删除${NC}"
+        return 1
+    else
+        echo -e "${YELLOW}    ℹ️ 未发现需要清理的 hooks${NC}"
+        return 0
+    fi
+}
+
+# 手动指定项目路径模式
+clean_project_hooks_manual() {
+    echo -e "${YELLOW}  手动指定项目路径模式${NC}"
+    echo "请输入要清理的项目路径（支持多个路径，用空格分隔）"
+    echo ""
+
+    local manual_projects=()
+
+    while true; do
+        read -p "项目路径（回车完成输入）: " project_path
+
+        if [ -z "$project_path" ]; then
+            break
+        fi
+
+        # 展开路径（支持 ~ 和相对路径）
+        project_path=$(eval echo "$project_path")
+
+        if [ ! -d "$project_path" ]; then
+            echo -e "${RED}  ✗ 目录不存在: $project_path${NC}"
+            continue
+        fi
+
+        if [ ! -d "$project_path/.git" ]; then
+            echo -e "${RED}  ✗ 不是 Git 仓库: $project_path${NC}"
+            continue
+        fi
+
+        # 检查是否有 CodeRocket hooks
+        local has_coderocket_hooks=false
+        if [ -d "$project_path/.git/hooks" ]; then
+            for hook in "$project_path/.git/hooks"/*; do
+                if [ -f "$hook" ] && grep -q "CodeRocket\|coderocket" "$hook" 2>/dev/null; then
+                    has_coderocket_hooks=true
+                    break
+                fi
+            done
+        fi
+
+        if [ "$has_coderocket_hooks" = false ]; then
+            echo -e "${YELLOW}  ⚠️ 未发现 CodeRocket hooks: $project_path${NC}"
+            read -p "  是否仍要添加到清理列表？(y/N): " -n 1 -r
+            echo
+            if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                continue
+            fi
+        fi
+
+        manual_projects+=("$project_path")
+        echo -e "${GREEN}  ✓ 已添加: $(basename "$project_path")${NC}"
+    done
+
+    if [ ${#manual_projects[@]} -eq 0 ]; then
+        echo -e "${BLUE}未指定任何项目，跳过清理${NC}"
+        return 0
+    fi
+
+    echo -e "\n${YELLOW}📋 将清理以下 ${#manual_projects[@]} 个项目：${NC}"
+    for i in "${!manual_projects[@]}"; do
+        local project="${manual_projects[$i]}"
+        echo "  $((i+1)). $(basename "$project") - $project"
     done
 
     echo ""
-    read -p "是否清理这些项目中的 CodeRocket hooks？(y/N): " -n 1 -r
+    read -p "确认清理这些项目？(y/N): " -n 1 -r
     echo
 
     if [[ $REPLY =~ ^[Yy]$ ]]; then
-        for project in "${found_projects[@]}"; do
-            local hooks_dir="$project/.git/hooks"
-            local project_name=$(basename "$project")
-
-            echo -e "${CYAN}  清理项目: $project_name${NC}"
-
-            local removed_hooks=0
-            for hook in "$hooks_dir"/*; do
-                if [ -f "$hook" ] && grep -q "CodeRocket\|coderocket" "$hook" 2>/dev/null; then
-                    local hook_name=$(basename "$hook")
-                    if rm -f "$hook"; then
-                        echo -e "${GREEN}    ✓ 删除 hook: $hook_name${NC}"
-                        removed_hooks=$((removed_hooks + 1))
-                    else
-                        echo -e "${RED}    ✗ 删除失败: $hook_name${NC}"
-                    fi
-                fi
-            done
-
-            if [ $removed_hooks -gt 0 ]; then
-                cleaned_projects=$((cleaned_projects + 1))
-                echo -e "${GREEN}    清理完成: 删除 $removed_hooks 个 hooks${NC}"
-            else
-                echo -e "${YELLOW}    未发现需要清理的 hooks${NC}"
-            fi
-        done
-
-        echo -e "${CYAN}  项目清理完成: 处理了 $cleaned_projects 个项目${NC}"
+        process_projects_batch "${manual_projects[@]}"
+    else
+        echo -e "${BLUE}取消清理${NC}"
     fi
 }
 
@@ -624,7 +969,7 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
     # 检查参数
     case "${1:-}" in
         "--help"|"-h")
-            echo "CodeRocket CLI 卸载脚本"
+            echo "CodeRocket CLI 卸载脚本 v2.0"
             echo ""
             echo "用法: $0 [选项]"
             echo ""
@@ -638,6 +983,19 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
             echo "• Shell 配置中的 PATH 设置"
             echo "• Git 模板和 hooks"
             echo "• 残留的配置和日志文件"
+            echo ""
+            echo "项目 hooks 清理功能："
+            echo "• 🔍 智能搜索：自动扫描常见项目目录"
+            echo "• 📝 手动指定：支持手动输入项目路径"
+            echo "• 🎯 选择清理：逐个项目确认清理"
+            echo "• 💾 备份保护：清理前自动备份 hooks"
+            echo "• ⚠️ 异常处理：完善的错误处理和恢复机制"
+            echo ""
+            echo "安全特性："
+            echo "• 配置文件自动备份和恢复"
+            echo "• 详细的卸载预览和确认"
+            echo "• 智能识别，避免误删其他内容"
+            echo "• 支持部分失败后的手动清理"
             exit 0
             ;;
         "--force")
