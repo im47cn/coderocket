@@ -8,6 +8,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/im47cn/coderocket-cli.svg)](https://github.com/im47cn/coderocket-cli/stargazers)
 [![GitHub issues](https://img.shields.io/github/issues/im47cn/coderocket-cli.svg)](https://github.com/im47cn/coderocket-cli/issues)
 [![ko-fi](https://ko-fi.com/img/githubbutton_sm.svg)](https://ko-fi.com/W7W71IFTGX)
+![CodeRabbit Pull Request Reviews](https://img.shields.io/coderabbit/prs/github/im47cn/coderocket-cli?utm_source=oss&utm_medium=github&utm_campaign=im47cn%2Fcoderocket-cli&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews)
 
 一个基于多种 AI 服务（Gemini、ClaudeCode）的智能 Git 提交代码审查工具，通过 Git Hook 自动对每次提交进行全面的代码质量分析和审查，支持 GitLab MR 自动创建。
 
